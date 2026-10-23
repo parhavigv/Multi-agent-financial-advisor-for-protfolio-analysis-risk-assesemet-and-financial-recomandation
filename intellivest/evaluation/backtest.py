@@ -1,0 +1,253 @@
+"""Walk-forward comparison of three advisory configurations.
+
+A — **quant_only**: constrained mean-variance/CVaR optimization, no agent tilts,
+    no suitability remediation. Isolates the numerical engine.
+B — **agents_only**: allocation taken directly from agent consensus (top
+    positive convictions, equal-weighted), bypassing the optimizer, position
+    caps, exclusions and suitability. This is the "let the agents decide"
+    failure mode the survey warns about.
+C — **hybrid**: agent tilts feed a bounded quantitative optimizer, then a
+    blocking suitability gate remediates the result. The proposed design.
+
+All configurations share the same seeded market, rebalance dates, lookback and
+transaction-cost assumption. Only the decision logic differs.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from datetime import date
+from typing import Iterable, Mapping
+
+import numpy as np
+import pandas as pd
+
+from intellivest.agents import AgentContext, default_agents
+from intellivest.agents.base import AnalystAgent
+from intellivest.config import Settings
+from intellivest.contracts import InvestorProfile, OptimizationResult
+from intellivest.data.market import MarketDataProvider, MarketSnapshot, build_provider
+from intellivest.data.universe import asset_class_of, TICKERS
+from intellivest.evaluation.metrics import PerformanceSummary, summarise
+from intellivest.orchestration.coordinator import Coordinator, CoordinatorDecision
+from intellivest.orchestration.orchestrator import AdvisoryEngine
+from intellivest.personalization.suitability import SuitabilityEngine, policy_for
+from intellivest.quant.engine import QuantEngine, QuantFeatures
+from intellivest.quant.risk import portfolio_returns
+
+CONFIGS: tuple[str, ...] = ("quant_only", "agents_only", "hybrid")
+
+
+@dataclass
+class BacktestResult:
+    config: str
+    summary: PerformanceSummary
+    equity_curve: pd.Series
+    weights_history: list[dict[str, float]] = field(default_factory=list)
+    period_notes: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "config": self.config,
+            "metrics": self.summary.to_dict(),
+            "final_equity": round(float(self.equity_curve.iloc[-1]), 6),
+            "periods": len(self.weights_history),
+        }
+
+
+class Backtester:
+    def __init__(
+        self,
+        settings: Settings | None = None,
+        provider: MarketDataProvider | None = None,
+        agents: list[AnalystAgent] | None = None,
+        rebalance_every: int = 21,
+    ) -> None:
+        from intellivest.config import load_settings
+
+        self.settings = settings or load_settings()
+        self.provider = provider or build_provider(self.settings)
+        self.quant = QuantEngine(self.settings)
+        self.agents = agents or default_agents()
+        self.coordinator = Coordinator(self.agents)
+        self.engine = AdvisoryEngine(self.settings, provider=self.provider, agents=self.agents)
+        self.suitability = SuitabilityEngine(self.settings)
+        self.rebalance_every = rebalance_every
+
+    # -- data preparation -------------------------------------------------
+    def _periods(self, profile: InvestorProfile) -> list[dict[str, object]]:
+        history = self.provider.history()
+        lookback = self.settings.lookback_days
+        if len(history) < lookback + 30:
+            raise ValueError("history shorter than lookback; extend the data window")
+        start = lookback + 5
+        indices = list(range(start, len(history) - 1, self.rebalance_every))
+        periods: list[dict[str, object]] = []
+        for index in indices:
+            as_of = history.index[index].date()
+            snapshot = self.provider.snapshot(as_of)
+            features = self.quant.build(snapshot)
+            ctx = AgentContext(
+                profile=profile,
+                snapshot=snapshot,
+                features=features,
+                current_weights={},
+                settings=self.settings,
+            )
+            reports = [agent.analyze(ctx) for agent in self.agents]
+            decision = self.coordinator.coordinate(reports, features.tickers)
+            periods.append(
+                {
+                    "index": index,
+                    "as_of": as_of,
+                    "snapshot": snapshot,
+                    "features": features,
+                    "ctx": ctx,
+                    "decision": decision,
+                    "next_index": min(index + self.rebalance_every, len(history) - 1),
+                }
+            )
+        return periods
+
+    # -- configuration logic ---------------------------------------------
+    def _weights_for(
+        self,
+        config: str,
+        profile: InvestorProfile,
+        period: Mapping[str, object],
+        previous: Mapping[str, float],
+    ) -> tuple[dict[str, float], OptimizationResult | None, bool]:
+        ctx: AgentContext = period["ctx"]  # type: ignore[assignment]
+        decision: CoordinatorDecision = period["decision"]  # type: ignore[assignment]
+        features: QuantFeatures = period["features"]  # type: ignore[assignment]
+        ctx = AgentContext(
+            profile=profile,
+            snapshot=ctx.snapshot,
+            features=features,
+            current_weights=dict(previous),
+            settings=self.settings,
+        )
+
+        if config == "hybrid":
+            optimization, suitability, _ = self.engine.construct(profile, ctx, decision)
+            return optimization.weights, optimization, not suitability.passed
+
+        if config == "quant_only":
+            neutral = CoordinatorDecision(
+                tilts={},
+                market_score=0.0,
+                portfolio_score=0.0,
+                agreement=1.0,
+                dispersion=0.0,
+            )
+            optimization, _ = self.engine.optimise(
+                profile, features, ctx.snapshot.returns, neutral, dict(previous)
+            )
+            report = self.suitability.evaluate(
+                optimization.weights,
+                profile,
+                features,
+                ctx.snapshot.returns,
+                turnover=optimization.turnover,
+            )
+            return optimization.weights, optimization, not report.passed
+
+        # agents_only: direct consensus allocation, no quantitative guardrails.
+        candidates = sorted(
+            ((t, s) for t, s in decision.tilts.items() if s > 0.05),
+            key=lambda pair: pair[1],
+            reverse=True,
+        )[:5]
+        if not candidates:
+            ranked = features.expected_returns.sort_values(ascending=False).head(5)
+            candidates = [(t, float(score)) for t, score in ranked.items()]
+        total = sum(score for _, score in candidates)
+        weights = {ticker: score / total for ticker, score in candidates if total > 0}
+        report = self.suitability.evaluate(
+            weights, profile, features, ctx.snapshot.returns, turnover=0.0
+        )
+        return weights, None, not report.passed
+
+    # -- execution --------------------------------------------------------
+    def run(self, profile: InvestorProfile, configs: Iterable[str] = CONFIGS) -> list[BacktestResult]:
+        history = self.provider.history()
+        daily_returns = history.pct_change().fillna(0.0)
+        periods = self._periods(profile)
+        results: list[BacktestResult] = []
+
+        for config in configs:
+            previous: dict[str, float] = {}
+            pieces: list[pd.Series] = []
+            turnovers: list[float] = []
+            equity_weights: list[float] = []
+            breaches: list[bool] = []
+            weights_history: list[dict[str, float]] = []
+            notes: list[str] = []
+
+            for period in periods:
+                index = int(period["index"])  # type: ignore[arg-type]
+                next_index = int(period["next_index"])  # type: ignore[arg-type]
+                weights, _, breached = self._weights_for(config, profile, period, previous)
+                weights_history.append(dict(weights))
+                breaches.append(breached)
+                equity_weights.append(
+                    float(sum(w for t, w in weights.items() if asset_class_of(t) == "equity"))
+                )
+                turnover = _turnover(weights, previous)
+                turnovers.append(turnover)
+                previous = weights
+
+                window = daily_returns.iloc[index + 1 : next_index + 1]
+                series = portfolio_returns(weights, window)
+                if not series.empty:
+                    cost = turnover * self.settings.transaction_cost_bps / 10_000.0
+                    series = series.copy()
+                    series.iloc[0] = (1.0 + series.iloc[0]) * (1.0 - cost) - 1.0
+                pieces.append(series)
+                if breached:
+                    notes.append(f"{period['as_of']}: suitability breach recorded")
+
+            combined = pd.concat(pieces) if pieces else pd.Series(dtype=float)
+            summary = summarise(
+                combined,
+                risk_free=self.settings.risk_free_rate,
+                periods=self.settings.trading_days,
+                turnovers=turnovers,
+                equity_weights=equity_weights,
+                breaches=breaches,
+                cost_bps=self.settings.transaction_cost_bps,
+            )
+            equity_curve = (1.0 + combined.fillna(0.0)).cumprod()
+            results.append(
+                BacktestResult(
+                    config=config,
+                    summary=summary,
+                    equity_curve=equity_curve,
+                    weights_history=weights_history,
+                    period_notes=notes,
+                )
+            )
+        return results
+
+
+def _turnover(weights: Mapping[str, float], previous: Mapping[str, float]) -> float:
+    keys = set(weights) | set(previous)
+    return float(sum(abs(weights.get(k, 0.0) - previous.get(k, 0.0)) for k in keys) / 2.0)
+
+
+def default_profile(as_of: date) -> InvestorProfile:
+    """The reference investor used by the reported evaluation."""
+    return InvestorProfile(
+        investor_id="EVAL-001",
+        as_of=as_of,
+        age=34,
+        horizon_years=12.0,
+        risk_tolerance=4,
+        loss_tolerance_pct=0.20,
+        goal="growth",
+        liquidity_need="low",
+        current_holdings={"SPX": 0.35, "TECH": 0.30, "GOLD": 0.10, "GOVT": 0.25},
+    )
+
+
+__all__ = ["Backtester", "BacktestResult", "CONFIGS", "default_profile"]

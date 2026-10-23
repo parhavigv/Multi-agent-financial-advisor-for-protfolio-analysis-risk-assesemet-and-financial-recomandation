@@ -1,0 +1,417 @@
+"""End-to-end advisory orchestration.
+
+    profile -> data -> quant features -> specialist agents -> coordinator
+            -> optimizer -> suitability (with repair) -> recommendation
+            -> explanation -> hash-chained decision trace
+
+The orchestrator is the only place that knows the ordering. Each stage is
+swappable, and every stage records a digest into the trace.
+"""
+
+from __future__ import annotations
+
+import uuid
+from datetime import datetime, timezone
+from typing import Mapping
+
+import pandas as pd
+
+from intellivest.agents import AgentContext, AnalystAgent, RecommendationAgent, default_agents
+from intellivest.config import Settings, load_settings
+from intellivest.contracts import (
+    AgentReport,
+    DecisionTrace,
+    Explanation,
+    InvestorProfile,
+    OptimizationResult,
+    RiskMetrics,
+    SuitabilityReport,
+)
+from intellivest.data.market import MarketDataProvider, build_provider
+from intellivest.data.universe import asset_class_of, excluded_tickers, sector_of
+from intellivest.explain.attribution import (
+    return_contributions,
+    variance_shapley,
+)
+from intellivest.orchestration.coordinator import Coordinator, CoordinatorDecision
+from intellivest.orchestration.trace import AuditChain, TraceRecorder, digest
+from intellivest.personalization.suitability import (
+    SuitabilityEngine,
+    policy_for,
+    suitability_summary,
+)
+from intellivest.quant.engine import QuantEngine, QuantFeatures
+from intellivest.quant.optimize import Constraints, annotate, mean_variance, min_cvar, portfolio_volatility
+
+
+class AdvisoryEngine:
+    def __init__(
+        self,
+        settings: Settings | None = None,
+        provider: MarketDataProvider | None = None,
+        agents: list[AnalystAgent] | None = None,
+    ) -> None:
+        self.settings = settings or load_settings()
+        self.provider = provider or build_provider(self.settings)
+        self.quant = QuantEngine(self.settings)
+        self.agents = agents or default_agents()
+        self.coordinator = Coordinator(self.agents)
+        self.suitability = SuitabilityEngine(self.settings)
+        self.recommender = RecommendationAgent(self.settings)
+        self.audit = AuditChain(self.settings.audits_dir)
+
+    # -- public -----------------------------------------------------------
+    def advise(self, profile: InvestorProfile) -> DecisionTrace:
+        recorder = TraceRecorder()
+        trace_id = uuid.uuid4().hex[:16]
+        created_at = datetime.now(timezone.utc)
+        config_digest = digest(
+            {
+                "seed": self.settings.seed,
+                "max_weight": self.settings.max_weight,
+                "max_sector_weight": self.settings.max_sector_weight,
+                "risk_free": self.settings.risk_free_rate,
+                "turnover_penalty": self.settings.turnover_penalty,
+                "transaction_cost_bps": self.settings.transaction_cost_bps,
+                "llm_provider": self.settings.llm_provider,
+                "llm_model": self.settings.llm_model if self.settings.llm_enabled else "none",
+                "covariance": self.quant.covariance_method,
+            }
+        )
+        profile_digest = digest(profile.model_dump(mode="json"))
+        current_weights = _normalise_holdings(profile.current_holdings)
+
+        with recorder.step("profile.normalise") as step:
+            step["inputs"] = profile.model_dump(mode="json")
+            step["outputs"] = {
+                "risk_class": profile.suitability_class,
+                "risk_capacity": profile.risk_capacity,
+                "horizon_years": profile.horizon_years,
+                "exclusions": profile.exclusions,
+                "current_weights": current_weights,
+            }
+            step["notes"] = (
+                f"Binding risk class {profile.suitability_class} = min(tolerance "
+                f"{profile.risk_tolerance}, capacity {profile.risk_capacity}, loss tolerance)."
+            )
+
+        with recorder.step("data.snapshot") as step:
+            snapshot = self.provider.snapshot(profile.as_of)
+            step["inputs"] = {"as_of": profile.as_of.isoformat(), "lookback_days": self.settings.lookback_days}
+            step["outputs"] = {
+                "rows": len(snapshot.prices),
+                "first": str(snapshot.prices.index[0].date()),
+                "last": str(snapshot.prices.index[-1].date()),
+                "regime": snapshot.regime,
+                "news_items": len(snapshot.news),
+            }
+            step["notes"] = "Prices truncated at as_of; no future row can enter the pipeline."
+
+        with recorder.step("quant.features") as step:
+            features = self.quant.build(snapshot)
+            step["inputs"] = {"returns_rows": len(snapshot.returns)}
+            step["outputs"] = {
+                "covariance_method": features.covariance_method,
+                "expected_returns": features.expected_returns.round(4).to_dict(),
+                "volatility": features.volatility_forecast.round(4).to_dict(),
+                "regime": features.regime,
+            }
+
+        with recorder.step("agents.analyse") as step:
+            ctx = AgentContext(
+                profile=profile,
+                snapshot=snapshot,
+                features=features,
+                current_weights=current_weights,
+                settings=self.settings,
+            )
+            reports: list[AgentReport] = [agent.analyze(ctx) for agent in self.agents]
+            step["inputs"] = {"agents": [agent.name for agent in self.agents]}
+            step["outputs"] = {
+                "reports": [
+                    {"agent": r.agent, "signals": len(r.signals), "confidence": r.confidence,
+                     "degraded": r.degraded}
+                    for r in reports
+                ]
+            }
+            degraded_agents = any(report.degraded for report in reports)
+            if degraded_agents:
+                step["status"] = "degraded"
+                step["notes"] = "One or more agents fell back to the deterministic analyst."
+
+        with recorder.step("agents.coordinate") as step:
+            decision = self.coordinator.coordinate(reports, features.tickers)
+            step["inputs"] = {"tickers": features.tickers}
+            step["outputs"] = {
+                "tilts": decision.tilts,
+                "agreement": decision.agreement,
+                "dispersion": decision.dispersion,
+                "conflicts": decision.conflicts,
+                "contribution": decision.per_agent_contribution,
+            }
+            if decision.conflicts:
+                step["status"] = "degraded"
+                step["notes"] = "; ".join(decision.conflicts)
+
+        with recorder.step("portfolio.optimise") as step:
+            optimization, adjusted_expected = self.optimise(
+                profile, features, snapshot.returns, decision, current_weights
+            )
+            step["inputs"] = {
+                "method": optimization.method,
+                "exclusions": sorted(excluded_tickers(profile.exclusions)),
+                "previous_weights": current_weights,
+            }
+            step["outputs"] = optimization.model_dump(mode="json")
+            step["notes"] = f"Solver status: {optimization.solver_status}"
+
+        with recorder.step("suitability.validate") as step:
+            optimization, suitability = self.apply_suitability(
+                profile,
+                features,
+                snapshot.returns,
+                optimization,
+                adjusted_expected,
+                current_weights,
+            )
+            step["inputs"] = {"weights": optimization.weights}
+            step["outputs"] = suitability.model_dump(mode="json")
+            if not suitability.passed:
+                step["status"] = "failed"
+                step["notes"] = "Residual suitability breaches require human review."
+
+        with recorder.step("explain.attribute") as step:
+            metrics = features.metrics_for(
+                optimization.weights, snapshot.returns, self.settings
+            )
+            contributions = variance_shapley(optimization.weights, features.covariance)
+            counterfactual = self._counterfactual(
+                profile, features, snapshot.returns, decision, current_weights, optimization
+            )
+            explanation = Explanation(
+                portfolio_variance_contributions=contributions,
+                return_contributions=return_contributions(
+                    optimization.weights, adjusted_expected
+                ),
+                agent_contributions=decision.per_agent_contribution,
+                binding_constraints=optimization.binding_constraints,
+                suitability_rationale=suitability_summary(suitability),
+                counterfactual=counterfactual,
+            )
+            step["inputs"] = {"weights": optimization.weights}
+            step["outputs"] = explanation.model_dump(mode="json")
+
+        with recorder.step("recommendation.compose") as step:
+            recommendation = self.recommender.build(
+                ctx,
+                optimization,
+                suitability,
+                metrics,
+                agreement=decision.agreement,
+                degraded=degraded_agents or not suitability.passed,
+                max_drawdown_estimate=abs(metrics.max_drawdown),
+            )
+            step["inputs"] = {"agreement": decision.agreement, "suitability_passed": suitability.passed}
+            step["outputs"] = recommendation.model_dump(mode="json")
+
+        body = {
+            "trace_id": trace_id,
+            "created_at": created_at.isoformat(),
+            "as_of": profile.as_of.isoformat(),
+            "investor_id": profile.investor_id,
+            "profile_digest": profile_digest,
+            "config_digest": config_digest,
+            "steps": [step.model_dump(mode="json") for step in recorder.steps],
+            "agents": [report.model_dump(mode="json") for report in reports],
+            "optimizer": optimization.model_dump(mode="json"),
+            "suitability": suitability.model_dump(mode="json"),
+            "explanation": explanation.model_dump(mode="json"),
+            "recommendation": recommendation.model_dump(mode="json"),
+        }
+        previous_hash, final_hash = self.audit.seal(body)
+        return DecisionTrace(**body, previous_hash=previous_hash, hash=final_hash)
+
+    # -- internals --------------------------------------------------------
+    def optimise(
+        self,
+        profile: InvestorProfile,
+        features: QuantFeatures,
+        returns: pd.DataFrame,
+        decision: CoordinatorDecision,
+        current_weights: Mapping[str, float],
+    ) -> tuple[OptimizationResult, pd.Series]:
+        policy = policy_for(profile)
+        risk_class = profile.suitability_class
+        constraints = Constraints(
+            max_weight=min(self.settings.max_weight, policy.max_single),
+            max_sector_weight=self.settings.max_sector_weight,
+            turnover_penalty=self.settings.turnover_penalty,
+            risk_aversion={1: 6.0, 2: 4.5, 3: 3.0, 4: 2.0, 5: 1.4}[risk_class],
+            diversification=0.6,
+        )
+        exclude = excluded_tickers(profile.exclusions)
+
+        # Risk agents' net portfolio view scales conviction; market view tilts equity.
+        conviction = float(max(0.70, min(1.10, 1.0 + 0.35 * decision.portfolio_score)))
+        tilts = {ticker: value * conviction for ticker, value in decision.tilts.items()}
+        equity_overlay = 0.25 * decision.market_score
+        for ticker in features.tickers:
+            if asset_class_of(ticker) == "equity":
+                tilts[ticker] = tilts.get(ticker, 0.0) + equity_overlay
+
+        adjusted_expected = self.quant.apply_tilts(features, tilts, max_adjustment=0.03)
+
+        if risk_class <= 2:
+            result = min_cvar(
+                returns,
+                features.covariance,
+                previous_weights=dict(current_weights),
+                constraints=constraints,
+                sector_of=sector_of,
+                exclude=exclude,
+            )
+        else:
+            result = mean_variance(
+                adjusted_expected,
+                features.covariance,
+                previous_weights=dict(current_weights),
+                constraints=constraints,
+                sector_of=sector_of,
+                exclude=exclude,
+            )
+        result = annotate(result, adjusted_expected, returns, self.settings.risk_free_rate)
+        return result, adjusted_expected
+
+    def apply_suitability(
+        self,
+        profile: InvestorProfile,
+        features: QuantFeatures,
+        returns: pd.DataFrame,
+        optimization: OptimizationResult,
+        adjusted_expected: pd.Series,
+        current_weights: Mapping[str, float],
+    ) -> tuple[OptimizationResult, "SuitabilityReport"]:
+        """Validate and, if necessary, remediate the optimized weights."""
+        repaired_weights, suitability = self.suitability.repair(
+            optimization.weights,
+            profile,
+            features,
+            returns,
+            turnover=optimization.turnover,
+        )
+        if _weights_differ(repaired_weights, optimization.weights):
+            optimization = optimization.model_copy(
+                update={
+                    "weights": repaired_weights,
+                    "expected_volatility": portfolio_volatility(
+                        repaired_weights, features.covariance
+                    ),
+                    "turnover": _turnover(repaired_weights, current_weights),
+                    "method": f"{optimization.method}+suitability_repair",
+                }
+            )
+            optimization = annotate(
+                optimization, adjusted_expected, returns, self.settings.risk_free_rate
+            )
+        return optimization, suitability
+
+    def construct(
+        self,
+        profile: InvestorProfile,
+        ctx: AgentContext,
+        decision: CoordinatorDecision,
+    ) -> tuple[OptimizationResult, "SuitabilityReport", "RiskMetrics"]:
+        """Optimize, validate and measure in one call (used by the backtester)."""
+        optimization, adjusted = self.optimise(
+            profile, ctx.features, ctx.snapshot.returns, decision, ctx.current_weights
+        )
+        optimization, suitability = self.apply_suitability(
+            profile,
+            ctx.features,
+            ctx.snapshot.returns,
+            optimization,
+            adjusted,
+            ctx.current_weights,
+        )
+        metrics = ctx.features.metrics_for(
+            optimization.weights, ctx.snapshot.returns, self.settings
+        )
+        return optimization, suitability, metrics
+
+    def _counterfactual(
+        self,
+        profile: InvestorProfile,
+        features: QuantFeatures,
+        returns: pd.DataFrame,
+        decision: CoordinatorDecision,
+        current_weights: Mapping[str, float],
+        current: OptimizationResult,
+    ) -> dict[str, object]:
+        """One-step "what if the investor were more risk tolerant?" comparison."""
+        if profile.suitability_class >= 5:
+            return {
+                "question": "Already at the highest risk class; counterfactual omitted.",
+                "alternative_risk_class": profile.suitability_class,
+            }
+        relaxed = profile.model_copy(
+            update={
+                "risk_tolerance": min(5, profile.risk_tolerance + 1),
+                "loss_tolerance_pct": min(1.0, profile.loss_tolerance_pct * 1.5),
+            }
+        )
+        policy = policy_for(relaxed)
+        constraints = Constraints(
+            max_weight=min(self.settings.max_weight, policy.max_single),
+            max_sector_weight=self.settings.max_sector_weight,
+            turnover_penalty=self.settings.turnover_penalty,
+            risk_aversion=max(1.0, {1: 6.0, 2: 4.5, 3: 3.0, 4: 2.0, 5: 1.4}[relaxed.suitability_class] - 1.0),
+        )
+        adjusted = self.quant.apply_tilts(features, decision.tilts)
+        alternative = mean_variance(
+            adjusted,
+            features.covariance,
+            previous_weights=dict(current_weights),
+            constraints=constraints,
+            sector_of=sector_of,
+            exclude=excluded_tickers(profile.exclusions),
+        )
+        current_equity = sum(
+            w for t, w in current.weights.items() if asset_class_of(t) == "equity"
+        )
+        alternative_equity = sum(
+            w for t, w in alternative.weights.items() if asset_class_of(t) == "equity"
+        )
+        return {
+            "question": "What changes if the investor accepts one risk class higher?",
+            "alternative_risk_class": relaxed.suitability_class,
+            "current_equity_weight": round(current_equity, 4),
+            "alternative_equity_weight": round(alternative_equity, 4),
+            "equity_shift": round(alternative_equity - current_equity, 4),
+            "alternative_expected_volatility": round(alternative.expected_volatility, 4),
+            "alternative_max_single_weight": round(max(alternative.weights.values()), 4),
+        }
+
+    # -- utilities --------------------------------------------------------
+    def verify_audit_chain(self) -> tuple[bool, str]:
+        return self.audit.verify()
+
+
+def _normalise_holdings(holdings: Mapping[str, float]) -> dict[str, float]:
+    clean = {ticker: float(weight) for ticker, weight in holdings.items() if weight > 1e-9}
+    total = sum(clean.values())
+    if total <= 0:
+        return {}
+    return {ticker: weight / total for ticker, weight in clean.items()}
+
+
+def _weights_differ(left: Mapping[str, float], right: Mapping[str, float]) -> bool:
+    keys = set(left) | set(right)
+    return any(abs(left.get(k, 0.0) - right.get(k, 0.0)) > 1e-6 for k in keys)
+
+
+def _turnover(weights: Mapping[str, float], previous: Mapping[str, float]) -> float:
+    keys = set(weights) | set(previous)
+    return float(sum(abs(weights.get(k, 0.0) - previous.get(k, 0.0)) for k in keys) / 2.0)
+
+
+__all__ = ["AdvisoryEngine"]
