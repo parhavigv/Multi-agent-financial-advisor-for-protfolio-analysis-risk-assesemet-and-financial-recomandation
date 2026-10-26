@@ -30,14 +30,13 @@ from __future__ import annotations
 from datetime import date, timedelta
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 from intellivest.config import Settings
 from intellivest.data.market import (
-    REGIME_NAMES,
     MarketDataProvider,
     MarketSnapshot,
+    infer_market_regime,
 )
 from intellivest.data.news import NewsItem
 from intellivest.data.universe import TICKERS
@@ -266,10 +265,9 @@ class RealMarket(MarketDataProvider):
         returns = window.pct_change().dropna(how="all")
         benchmark = returns["SPX"] if "SPX" in returns else returns.iloc[:, 0]
 
-        realised = float(benchmark.iloc[-63:].std() * np.sqrt(self.settings.trading_days))
-        if not np.isfinite(realised):
-            realised = 0.0
-        regime = REGIME_NAMES[2] if realised > 0.28 else REGIME_NAMES[1] if realised > 0.16 else REGIME_NAMES[0]
+        regime, regime_probability = infer_market_regime(
+            benchmark, self.settings.trading_days
+        )
 
         return MarketSnapshot(
             as_of=cutoff.date(),
@@ -279,7 +277,7 @@ class RealMarket(MarketDataProvider):
             fundamentals=self._fundamentals,
             news=[],  # no real news feed wired in; sentiment must abstain
             regime=regime,
-            regime_probability=0.5,
+            regime_probability=regime_probability,
         )
 
 

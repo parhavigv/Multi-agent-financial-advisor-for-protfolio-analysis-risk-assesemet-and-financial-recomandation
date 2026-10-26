@@ -30,6 +30,36 @@ from intellivest.data.universe import ASSET_BY_TICKER, TICKERS, UNIVERSE
 
 REGIME_NAMES: tuple[str, str, str] = ("calm", "elevated", "stress")
 
+
+def infer_market_regime(
+    benchmark: pd.Series, trading_days: int = 252
+) -> tuple[str, float]:
+    """Regime label for a market snapshot.
+
+    Prefers the causal 3-state HMM (:func:`intellivest.forecasting.regime.infer_regime`)
+    and falls back to the legacy realised-volatility thresholds if the optional
+    ``hmmlearn`` dependency is missing or the fit fails. The caller must pass a
+    series that has already been truncated at ``as_of``.
+    """
+    series = pd.Series(benchmark).dropna().astype(float)
+    if len(series) >= 120:
+        try:
+            from intellivest.forecasting.regime import infer_regime
+
+            return infer_regime(series, trading_days=trading_days)
+        except Exception:  # pragma: no cover - optional dependency guard
+            pass
+    if len(series) < 63:
+        return "elevated", 0.4
+    realised = float(series.iloc[-63:].std(ddof=1) * np.sqrt(trading_days))
+    if not np.isfinite(realised):
+        return "elevated", 0.4
+    if realised > 0.28:
+        return "stress", 0.7
+    if realised > 0.16:
+        return "elevated", 0.5
+    return "calm", 0.7
+
 # The macro backdrop is generated from a fixed seed so that every backtest
 # configuration — and every robustness seed — faces the same regime path and
 # market factor. ``Settings.seed`` then controls only the cross-sectional
@@ -315,9 +345,9 @@ class CsvMarket(MarketDataProvider):
         returns = window.pct_change().dropna(how="all")
         benchmark = returns["SPX"] if "SPX" in returns else returns.iloc[:, 0]
         prices_window = window
-        # Simple realised-vol regime label for real data.
-        realised = benchmark.iloc[-63:].std() * np.sqrt(self.settings.trading_days)
-        regime = "stress" if realised > 0.28 else "elevated" if realised > 0.16 else "calm"
+        regime, regime_probability = infer_market_regime(
+            benchmark, self.settings.trading_days
+        )
         fundamentals = pd.DataFrame(index=pd.Index(returns.columns, name="ticker"))
         return MarketSnapshot(
             as_of=cutoff.date(),
@@ -327,7 +357,7 @@ class CsvMarket(MarketDataProvider):
             fundamentals=fundamentals,
             news=list(self._news),
             regime=regime,
-            regime_probability=0.5,
+            regime_probability=regime_probability,
         )
 
 
@@ -364,6 +394,7 @@ __all__ = [
     "SyntheticMarket",
     "CsvMarket",
     "build_provider",
+    "infer_market_regime",
     "REGIME_NAMES",
     "UNIVERSE",
 ]

@@ -105,6 +105,24 @@ class QuantEngine:
         )
 
         regime_label, regime_confidence = risk.detect_regime(bench, self.settings.trading_days)
+        regime = snapshot.regime if snapshot.regime else regime_label
+
+        # Optional ML overlay. The service applies the models that survived the
+        # purged walk-forward evaluation, with an inner time split at this date
+        # and a documented fallback to the simple estimators above.
+        self.last_ml_forecast = None
+        if self._ml_service is not None:
+            try:
+                ml = self._ml_service.forecast(snapshot, self.settings)
+                self.last_ml_forecast = ml
+                expected = ml.expected_returns.reindex(tickers).fillna(0.0)
+                vol_forecast = ml.volatility_forecast.reindex(tickers)
+                vol_forecast = vol_forecast.fillna(realized_vol).fillna(1e-3)
+                regime = ml.regime
+                regime_confidence = ml.regime_confidence
+            except Exception:  # pragma: no cover - defensive
+                self.last_ml_forecast = None
+
         return QuantFeatures(
             as_of=snapshot.as_of,
             tickers=tickers,
@@ -117,7 +135,7 @@ class QuantEngine:
             per_asset_drawdown=per_asset_dd,
             betas=betas,
             correlation=correlation,
-            regime=snapshot.regime if snapshot.regime else regime_label,
+            regime=regime,
             regime_confidence=regime_confidence,
             benchmark_metrics=benchmark_metrics,
             covariance_method=self.covariance_method,

@@ -64,6 +64,9 @@ intellivest-advise --profile path/to/profile.json
 
 # Output as JSON
 intellivest-advise --json
+
+# Enable the validated ML forecast overlay (opt-in)
+intellivest-advise --ml
 ```
 
 ### Run Backtesting & Evaluation
@@ -97,6 +100,38 @@ not wired in for real data, so the sentiment agent abstains
 [docs/REAL_DATA.md](docs/REAL_DATA.md) for the ticker mapping and no-lookahead
 guarantees.
 
+### Forecasting Evaluation (Phase 2)
+
+Return, volatility and regime models are evaluated with a purged, embargoed,
+expanding walk-forward. The split is time-based: dev through 2021-12-31,
+validation 2022-2023 (model selection only), and a single held-out test window
+from 2024. Six return candidates (baselines plus Ridge/ElasticNet/LightGBM),
+three volatility models (EWMA/HAR/GARCH), and a 2-3 state causal HMM are scored
+with RMSE, MAE, rank IC (Newey-West t), hit rate, QLIKE and Diebold-Mariano
+tests, plus a shuffled-label control.
+
+```bash
+# Dev + validation only (safe to run while developing)
+python scripts/run_forecast_evaluation.py
+
+# Final report, including the held-out test window
+python scripts/run_forecast_evaluation.py --include-test --output results/forecast_report.md
+```
+
+The current evaluation retains `shrunk_mean` for returns and `ewma` for
+volatility: the ML candidates did not clear the pre-registered stability and
+margin rules. The full protocol, leakage controls, test results and limitations
+are in [docs/FORECASTING.md](docs/FORECASTING.md); the generated evidence is
+versioned at [results/forecast_report.md](results/forecast_report.md).
+
+The same models are integrated into the pipeline behind
+`AdvisoryEngine(use_ml=True)` / `intellivest-advise --ml`. The service makes a
+single inner time split at the decision date, uses a candidate only if it beats
+the baseline there, and otherwise falls back to `shrunk_mean` + `ewma`,
+recording the rejection in `DecisionTrace.ml_forecast`. Market snapshots use the
+causal HMM regime with a threshold fallback if the optional dependency is
+missing.
+
 ### Run Tests
 
 ```bash
@@ -113,15 +148,18 @@ multi-agent-financial-advisor/
 │   ├── data/             # Market data providers & universe
 │   ├── evaluation/       # Backtesting framework
 │   ├── explain/          # XAI & attribution modules
+│   ├── forecasting/      # Phase-2 returns/vol/regime models & CV
+│   ├── ml/               # Production bridge to the validated models
 │   ├── orchestration/    # Agent coordination & audit trail
 │   ├── personalization/  # Suitability engine & investor profiling
 │   ├── quant/            # Quantitative models & optimization
 │   ├── cli.py            # CLI entry points
 │   ├── config.py         # Configuration management
 │   └── contracts.py      # Pydantic data models
+├── docs/                 # Audit, real-data and forecasting notes
 ├── scripts/              # Utility scripts
 ├── tests/                # Test suite
-├── results/              # Evaluation outputs (gitignored)
+├── results/              # Run artifacts (gitignored, except the forecast report)
 ├── audits/               # Audit trail logs (gitignored)
 └── pyproject.toml        # Project metadata & dependencies
 ```
@@ -172,6 +210,13 @@ metrics including Sharpe ratio, Sortino ratio, max drawdown, CVaR, turnover,
 and suitability breach rates. Synthetic and real-data runs are reported
 separately; synthetic results are never presented as real-world performance.
 
+Forecast-model evaluation is separate and reported in
+`results/forecast_report.md` (see [docs/FORECASTING.md](docs/FORECASTING.md)).
+Its selection is made on validation only; the test window is added by the final
+run and never changes the selected models. The dev/validation metrics, flags,
+shuffled control and selection are verified to be identical with and without
+the test window.
+
 ## 🧪 Testing
 
 The test suite ensures:
@@ -184,6 +229,10 @@ The test suite ensures:
 - Evidence dating constraints
 - Audit chain integrity
 - Exclusion list enforcement
+- Forecast causality, purge/embargo and split-boundary exclusion
+- Selection invariance when the test window is added (no test-driven tuning)
+- Shuffled-label control (no cross-sectional signal after permutation)
+- ML overlay end-to-end: trace fields, fallback on short history, JSON round-trip
 
 ```bash
 # Run all tests
@@ -196,7 +245,7 @@ pytest --cov=intellivest --cov-report=html
 ## 🛠️ Technology Stack
 
 - **Core**: Python 3.10+, NumPy, Pandas, SciPy
-- **ML/Stats**: scikit-learn
+- **ML/Stats**: scikit-learn; optional `hmmlearn` (regimes), `arch` (GARCH), `lightgbm` (gradient boosting)
 - **Validation**: Pydantic v2
 - **API**: FastAPI, Uvicorn
 - **Testing**: pytest

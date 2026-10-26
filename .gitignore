@@ -20,6 +20,10 @@ htmlcov/
 # Runtime artifacts
 results/*
 !results/.gitkeep
+# The forecast evaluation is the evidence for the Phase-2 claim, so the final
+# report is versioned even though other run artifacts are not.
+!results/forecast_report.md
+!results/forecast_report.json
 audits/*
 !audits/.gitkeep
 data/cache/

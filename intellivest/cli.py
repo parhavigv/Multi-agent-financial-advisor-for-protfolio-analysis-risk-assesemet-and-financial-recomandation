@@ -70,6 +70,22 @@ def _print_trace(trace) -> None:
     print("Suitability checks")
     for line in trace.explanation.suitability_rationale:
         print(f"  {line}")
+    if trace.ml_forecast is not None:
+        section = trace.ml_forecast
+        print("-" * 78)
+        print("ML forecast")
+        print(f"  models    : {', '.join(section.model_identifiers)}")
+        if section.regime_prediction:
+            confidence = section.regime_confidence
+            suffix = f" ({confidence:.0%} confidence)" if confidence is not None else ""
+            print(f"  regime    : {section.regime_prediction}{suffix}")
+        for fallback in section.fallbacks:
+            print(f"  fallback  : {fallback}")
+        for rejected in section.rejected_models:
+            print(
+                f"  rejected  : {rejected.get('model', '?')} - "
+                f"{rejected.get('reason', '')}"
+            )
     if trace.explanation.counterfactual:
         print("-" * 78)
         print("Counterfactual")
@@ -86,6 +102,11 @@ def advise_main(argv: list[str] | None = None) -> int:
     parser.add_argument("--profile", type=Path, help="Path to an investor-profile JSON file.")
     parser.add_argument("--as-of", type=str, help="Override the as_of date (YYYY-MM-DD).")
     parser.add_argument("--json", action="store_true", help="Emit the full trace as JSON.")
+    parser.add_argument(
+        "--ml",
+        action="store_true",
+        help="Enable the validated ML forecast overlay (Ridge/log-HAR with fallback).",
+    )
     args = parser.parse_args(argv)
     _use_utf8_stdout()
 
@@ -96,7 +117,7 @@ def advise_main(argv: list[str] | None = None) -> int:
         payload["as_of"] = args.as_of
     profile = InvestorProfile(**payload)
 
-    trace = AdvisoryEngine(load_settings()).advise(profile)
+    trace = AdvisoryEngine(load_settings(), use_ml=args.ml).advise(profile)
     if args.json:
         print(json.dumps(trace.model_dump(mode="json"), indent=2))
     else:
