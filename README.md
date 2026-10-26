@@ -20,22 +20,9 @@ A production-grade, multi-agent financial advisory system that combines quantita
 
 ## 🏗️ Architecture
 
-```mermaid
-graph TD
-    A[Investor Profile] --> B[Orchestrator/Advisory Engine]
-    B --> C[Data Layer]
-    B --> D[Multi-Agent System]
-    B --> E[Quant Engine]
-    D --> F[Market/Fundamental/Sentiment/Risk/Portfolio/Recommendation Agents]
-    E --> G[Optimization & Risk Models]
-    F --> H[Consensus & Signals]
-    G --> I[Candidate Portfolio]
-    H --> I
-    I --> J[Suitability Engine]
-    J --> K[Repair/Block Logic]
-    K --> L[Recommendation + XAI Trace]
-    L --> M[Audit Trail]
-```
+![Multi-Agent Financial Advisory System Architecture](architecture.png)
+
+*System architecture as designed for the INTELLIVEST-MAS framework.*
 
 ### Agent Responsibilities
 
