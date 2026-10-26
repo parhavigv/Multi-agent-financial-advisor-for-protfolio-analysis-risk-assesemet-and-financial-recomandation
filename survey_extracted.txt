@@ -1,0 +1,384 @@
+A Hybrid Multi-Agent Financial Advisory System for Portfolio Analysis, Risk Assessment, and Investment Recommendation — A Literature Survey
+
+Parhavi G.V, Akkihebbal Bhargava Surya, Mekala Kirthana, Shefali Chimmanda Ganapati
+
+Department of Computer Science and Engineering (Artificial Intelligence and Machine Learning)
+
+School of Engineering, Dayananda Sagar University, Bengaluru, Karnataka, India
+
+Under the Supervision of Dr. Jitendra Kumar Jaiswal, Professor, Dept. of CSE (AI&ML), SOE, DSU — Co-Supervisor: Prof. Kanishk Ravindra Kadam, Assistant Professor
+
+Abstract—Artificial intelligence (AI) has progressively changed financial decision support from rule-based portfolio construction toward machine-learning forecasting, risk-aware optimization, robo-advisory, natural-language processing, large language models (LLMs), and agentic systems. However, these streams have evolved at different levels of the investment-advisory pipeline. This survey reviews a 100-paper analytical corpus spanning portfolio theory and optimization, financial forecasting, risk assessment, reinforcement learning, robo-advisory and investor personalization, financial natural-language processing, LLMs, multi-agent financial systems, and explainable and trustworthy AI. The literature indicates that quantitative methods remain central for portfolio allocation and risk measurement, while LLMs and multi-agent architectures are increasingly useful for information synthesis, reasoning, coordination, and communication. At the same time, challenges remain in numerical reliability, non-stationarity, data leakage, transaction costs, investor suitability, explainability, robustness, and end-to-end evaluation. The survey synthesizes these streams and identifies an integration-oriented research direction: hybrid advisory architectures in which specialized agents perform financial reasoning and coordination while validated quantitative models perform forecasting, risk calculation, portfolio optimization, and constraint validation. The findings provide the research foundation for a proposed multi-agent financial advisory framework for portfolio analysis, risk assessment, and personalized investment recommendation.
+
+Index Terms—Artificial intelligence, financial advisory, portfolio optimization, risk assessment, robo-advisory, personalized investment, large language models, multi-agent systems, explainable AI, investment recommendation.
+
+I. INTRODUCTION
+
+Financial advisory is a multi-objective decision problem rather than a single prediction task. An investor must consider expected return, volatility, downside risk, diversification, asset relationships, market conditions, investment horizon, financial goals, and risk tolerance. Classical portfolio theory established a mathematical foundation for balancing return and risk, while later work introduced robust estimation, downside-risk measures, constraints, and alternative allocation principles [1]–[12]. The increasing availability of market, fundamental, macroeconomic, textual, and alternative data has subsequently encouraged the use of machine learning and deep learning for forecasting and portfolio management [13]–[22].
+
+The research landscape has recently expanded beyond numerical models. Robo-advisors introduced automated personalization based on investor characteristics and risk profiles [23]–[28]. Financial NLP models began extracting information from analyst reports, filings, news, and other text [29]–[35]. LLMs then extended financial language processing toward reasoning, question answering, summarization, financial analysis, and decision support [36]–[44]. More recent systems use LLM-powered agents to decompose financial tasks, coordinate specialized roles, retrieve external information, maintain memory, and produce investment analyses [45]–[54]. Explainable AI (XAI) provides another layer for making model outputs understandable and auditable [55]–[62].
+
+The central question therefore shifts from whether AI can perform a particular financial task to how heterogeneous AI capabilities can be reliably combined into an advisory workflow. Existing studies demonstrate strong individual components—portfolio optimization, volatility forecasting, investor profiling, LLM-based financial reasoning, multi-agent collaboration, and explainability—but these components are often evaluated separately or only partially connected. This survey examines that fragmentation systematically and derives design implications for integrated, personalized, risk-aware, and explainable financial advisory systems.
+
+A. Contributions of This Survey
+
+1) It organizes the literature into eight connected research streams: portfolio optimization; risk and forecasting; ML/DL/RL investment methods; robo-advisory and personalization; financial NLP; LLMs; multi-agent finance; and explainable/trustworthy AI.
+
+2) It compares the role of numerical models and LLM-based agents across the investment-advisory pipeline.
+
+3) It identifies recurring methodological limitations, including non-stationarity, data leakage, transaction costs, numerical reasoning limitations, personalization gaps, and incomplete explanation.
+
+4) It synthesizes an integration-oriented research agenda and positions the proposed system as a hybrid architecture rather than an LLM-only financial decision maker.
+
+II. SURVEY METHODOLOGY
+
+A structured literature-survey process was used to construct a 100-paper analytical corpus. The corpus was organized around the project problem rather than around a single algorithm. Papers were identified across IEEE Xplore, ACM Digital Library, ScienceDirect, SpringerLink, Scopus/Web of Science-indexed literature where accessible, and arXiv for recent LLM and agent research. Search terms combined financial-advisory concepts with technical concepts, including "portfolio optimization," "risk assessment," "volatility forecasting," "robo-advisor," "personalized investment," "financial sentiment," "financial NLP," "large language model finance," "LLM agents finance," "multi-agent investment," and "explainable AI finance."
+
+The inclusion principle emphasized research directly relevant to at least one stage of an AI-enabled investment-advisory pipeline. Foundational finance papers were retained when they established methods still used by current AI systems, while recent AI and LLM papers were prioritized for emerging capabilities. Papers focused solely on unrelated financial domains were excluded from the analytical core. Each selected study was examined for problem definition, method, data, financial task, risk treatment, personalization, dynamic adaptation, explainability, evaluation metrics, findings, and limitations.
+
+The final corpus is therefore a thematic analytical set rather than a claim that every publication in financial AI was exhaustively indexed. Recent survey papers were also used to cross-check coverage. For example, a 2023 systematic review of machine learning applications in finance analyzed 126 selected articles across multiple financial domains [14], while recent LLM surveys provide broader taxonomies of financial tasks, models, datasets, and deployment challenges [39]–[42]. A 2025 survey of LLM agents in finance organizes the field into data analysis, investment research, trading, investment management, and risk management and highlights numerical reasoning, prompt sensitivity, and real-time adaptability as continuing challenges [45].
+
+A. Research Questions
+
+RQ1: What AI and quantitative methods are used for portfolio optimization and asset allocation?
+
+RQ2: How are return, volatility, downside risk, and market regimes modeled?
+
+RQ3: How is investor information incorporated into personalized investment advice?
+
+RQ4: How are financial NLP, LLMs, and LLM agents used in investment analysis?
+
+RQ5: What multi-agent coordination patterns have been demonstrated in financial applications?
+
+RQ6: How is explainability and trustworthy decision support addressed?
+
+RQ7: To what extent are these capabilities integrated into end-to-end advisory systems?
+
+III. EVOLUTION OF AI IN FINANCIAL ADVISORY
+
+The literature shows a progression from mathematically specified allocation toward increasingly data-driven and agentic systems. Modern portfolio theory frames allocation as a trade-off between expected return and covariance risk [1]. Subsequent research addressed estimation error, parameter uncertainty, sparsity, transaction costs, and alternative risk objectives [5]–[12]. Machine learning introduced nonlinear prediction and flexible feature interactions, with empirical asset-pricing studies showing that trees and neural networks can capture nonlinear interactions in return-prediction problems [18]. Deep learning then expanded sequential modeling through recurrent networks and other architectures [19]–[21].
+
+Reinforcement learning (RL) treats portfolio management as sequential decision making. SARL incorporates predicted asset movements and heterogeneous information into the state [20], DeepTrader embeds market conditions and downside-oriented reward design [21], and hierarchical RL models explicitly separate allocation from trade execution [22]. Recent DRL studies add risk aversion, transaction costs, and portfolio constraints [30]. These developments demonstrate that portfolio intelligence can adapt to market states, but they also show why rigorous out-of-sample testing and realistic execution assumptions are essential.
+
+A parallel evolution occurred in automated advice. Robo-advisory research established that risk profiles can materially affect recommended allocations [23], while dynamic client interaction models allow risk preferences to adapt with client characteristics and economic conditions [24]. Financial NLP added textual information, and LLMs now provide a general interface for financial reasoning. Multi-agent systems extend this interface by decomposing tasks into specialized roles. The current research frontier is consequently moving toward coordinated, tool-using, multimodal and explainable financial agents rather than isolated predictors.
+
+IV. AI-BASED PORTFOLIO OPTIMIZATION AND ASSET ALLOCATION
+
+Portfolio optimization remains the quantitative core of investment management. Markowitz's mean-variance framework established the efficient frontier formulation [1], while Sharpe's capital asset pricing framework formalized the relationship between systematic risk and expected return [2]. Practical portfolio construction subsequently introduced shrinkage covariance estimation [8], constraints [7], robust optimization [9], and sparse portfolio selection [10]. A recurring empirical finding is that estimation error can materially degrade theoretically optimal portfolios, motivating simple diversification baselines and robust methods [6].
+
+AI-based portfolio research generally follows three strategies. First, ML models predict asset returns, rankings, or risk quantities that are subsequently passed to a classical optimizer [17]–[19]. Second, deep networks learn nonlinear mappings from historical and cross-sectional information to portfolio weights. Third, RL learns a policy that directly maps market states to allocation actions [20]–[22], [29]–[31]. The literature increasingly combines these approaches instead of treating them as mutually exclusive.
+
+Agal et al. combine LSTM volatility forecasting, differentiable risk budgeting, and regime switching to obtain dynamic risk-based allocation [31]. Nguyen combines LSTM and 1-D CNN forecasts with risk-aligned portfolio optimization [32]. Ha et al. compare machine-learning portfolio models against an All-Weather strategy [33]. Sheng et al. combine machine learning with CVaR risk parity and dynamic rebalancing [34]. Biswas et al. investigate ML-based volatility forecasting for portfolio optimization [35]. These studies strengthen the case for a quantitative engine that is separate from natural-language reasoning and can be validated using financial metrics.
+
+V. FINANCIAL FORECASTING AND RISK ASSESSMENT
+
+Forecasting is difficult because financial series are noisy, non-stationary, regime-dependent, and subject to changing market microstructure. Classical volatility modeling began with ARCH and GARCH families [15], [16]. Deep-learning research introduced recurrent architectures capable of representing temporal dependencies, with LSTM models becoming particularly common in financial time-series forecasting [19], [27]. Systematic reviews report that RNN-family models, including LSTM and GRU, have been widely used in financial forecasting [28].
+
+Risk-aware portfolio research increasingly goes beyond standard deviation. Value-at-Risk and Conditional Value-at-Risk provide tail-focused measures, with CVaR offering a coherent risk measure and an optimization-friendly formulation [11], [12]. Maximum drawdown, downside deviation, turnover, transaction costs, and risk-adjusted return are also important when evaluating investment policies [21], [30]. The survey therefore finds that a realistic advisory architecture should expose multiple risk dimensions rather than reducing risk to a single prediction.
+
+An important methodological issue is the separation between forecasting and decision evaluation. A low prediction error does not necessarily imply a profitable or suitable portfolio, while a strong backtest can result from leakage, survivorship bias, excessive turnover, or unrealistic transaction assumptions. The strongest studies consequently use time-based out-of-sample evaluation and report both predictive and portfolio-level metrics [18]–[22], [30]–[35].
+
+VI. ROBO-ADVISORY AND INVESTOR PERSONALIZATION
+
+Robo-advisory research provides the conceptual foundation for personalized financial advice. Boreiko and Massarotti analyzed recommendations from 53 robo-advisory platforms in the United States and Germany and found that investor risk profiles influence portfolio composition, while also observing variation across platforms [23]. Capponi, Ólafsson, and Zariphopoulou formulated personalized robo-advising as an adaptive portfolio optimization problem in which client risk profiles depend on client characteristics, market returns, and economic conditions [24].
+
+The literature indicates that personalization should not be limited to selecting a risk category at system initialization. Goals, investment horizon, loss tolerance, preferences, and changing financial conditions can influence suitable allocation. Recent LLM-based portfolio recommendation research further explores individualized risk preferences and dynamic strategy optimization [44]. However, personalized recommendation introduces a second evaluation dimension: an allocation can be financially attractive but unsuitable for the stated investor constraints. Suitability therefore needs to be an explicit validation stage.
+
+VII. FINANCIAL NLP AND UNSTRUCTURED INFORMATION
+
+Financial decisions depend heavily on textual information, including annual reports, regulatory filings, earnings calls, analyst reports, news, and market commentary. Loughran and McDonald demonstrated that generic sentiment dictionaries can be misleading in finance and introduced finance-specific textual analysis resources [37]. FinBERT-style domain adaptation subsequently improved financial sentiment representation [38]. FinQA created a benchmark for numerical reasoning over financial reports, emphasizing the need to combine language understanding with numerical operations [40].
+
+This literature supports a multimodal advisory pipeline in which textual agents summarize and interpret unstructured evidence while quantitative models process numerical time series. Importantly, textual evidence should be linked to dated sources and transformed into auditable signals rather than treated as unrestricted natural-language intuition.
+
+VIII. LARGE LANGUAGE MODELS IN FINANCE
+
+LLM research in finance has progressed from domain-adapted language models to general-purpose models, instruction tuning, retrieval-augmented workflows, financial question answering, and tool-using agents. Li et al. surveyed zero-shot/few-shot prompting, domain-specific fine-tuning, and custom financial model development [39]. Lee et al. reviewed FinLLM training approaches, datasets, benchmarks, hallucination, privacy, and efficiency [41]. Nie et al. organized financial LLM applications into linguistic tasks, sentiment analysis, time-series applications, financial reasoning, agent-based modeling, and decision support [42].
+
+Recent financial LLM work emphasizes that language competence does not automatically imply numerical reliability. FinQA explicitly demonstrates the complexity of financial numerical reasoning [40]. Recent surveys identify numerical reasoning limitations, prompt sensitivity, data privacy, hallucination, and real-time adaptability as major concerns [41], [45]. Consequently, a financial advisory architecture should use LLMs where language and reasoning are advantageous, while delegating numerical calculations and optimization to deterministic or statistically validated tools.
+
+IX. MULTI-AGENT SYSTEMS FOR FINANCIAL DECISION SUPPORT
+
+Multi-agent financial systems address task complexity through specialization. FINCON uses a manager-analyst structure and conceptual verbal reinforcement for financial decision making [46]. TradingAgents decomposes financial analysis into specialized fundamental, technical, sentiment, bull/bear, trader, and risk roles [47]. FinMem emphasizes memory and agent character design [48]. FinRobot provides specialized financial agents and a layered tool/model/data architecture [49], while a subsequent FinRobot equity-research system decomposes analysis into Data-CoT, Concept-CoT, and Thesis-CoT agents [50].
+
+The 2026 Expert Investment Teams work further explores fine-grained task decomposition for investment research [51]. Recent survey work on LLM agents in finance identifies five broad application domains and emphasizes the need for coordination-aware systems [45]. These studies demonstrate the usefulness of specialization, but they also expose a central systems problem: adding agents does not automatically improve reliability. Agent outputs must be grounded in data, reconciled when they disagree, and validated against portfolio and risk constraints.
+
+For financial advisory, a practical agent organization is therefore not simply a collection of chatbots. A stronger design is a controlled workflow consisting of investor profiling, market/fundamental/sentiment analysis, portfolio analysis, quantitative risk analysis, optimization, suitability validation, and recommendation generation. The agents can communicate through structured outputs so that downstream numerical modules do not depend on free-form text.
+
+X. EXPLAINABLE AND TRUSTWORTHY FINANCIAL AI
+
+Explainability has become a major requirement for high-impact financial AI. Local surrogate explanations were popularized by LIME [55], while SHAP provides a unified feature-attribution framework based on Shapley values [56]. Broader XAI literature distinguishes intrinsic interpretability, post-hoc explanation, feature attribution, example-based explanations, rule-based explanations, and counterfactual reasoning [57]–[59].
+
+Financial XAI reviews show strong research activity in credit, risk management, fraud, and market applications, while portfolio optimization and end-to-end investment decision explanation remain comparatively less mature [60]–[62]. Explainable reinforcement-learning portfolio research demonstrates that feature attribution and post-hoc explanation can be attached to investment policies [63], [64].
+
+For a multi-agent advisory system, explanation should operate at several levels: feature level, model level, agent level, and decision-path level. A useful explanation can answer: Which investor constraints mattered? Which financial signals influenced the prediction? What did each specialist agent conclude? Which risk measures constrained the portfolio? Why did the optimizer select the final allocation? What suitability rules were satisfied or violated? This produces an auditable decision trace rather than an explanation generated only after the recommendation.
+
+TABLE I. COMPARATIVE SYNTHESIS OF RESEARCH STREAMS
+
+The synthesis indicates that no single research stream fully addresses the complete advisory problem. Portfolio optimization provides mathematical decision machinery but generally does not provide natural-language reasoning or broad personalization. Robo-advisory contributes personalization but may rely on predefined allocation rules or optimization models. Financial NLP and LLMs contribute unstructured-information processing and communication but face numerical reliability concerns. Multi-agent systems improve decomposition and coordination but require strong validation. XAI provides transparency mechanisms but is often applied to individual models rather than the entire advisory chain. The research opportunity therefore lies in controlled integration rather than simply adding another prediction algorithm.
+
+XII. RESEARCH GAPS AND OPEN CHALLENGES
+
+A. Fragmented functionality. The literature contains mature solutions for forecasting, risk assessment, portfolio optimization, personalization, LLM reasoning, and multi-agent analysis, but many studies focus on one or two functions. A complete advisory workflow remains a systems-integration challenge.
+
+B. Separation of reasoning and numerical decision making. LLMs are effective for interpretation and language-based reasoning but should not be assumed to replace deterministic financial calculations. Hybrid architectures that connect LLM agents to validated quantitative tools provide a safer division of responsibility.
+
+C. Suitability-aware decision making. Investor risk tolerance, goals, horizon, and constraints should influence the portfolio decision itself. Treating personalization only as a final text-generation step is insufficient.
+
+D. Dynamic adaptation. Markets and investor conditions change. Systems need mechanisms for regime detection, updated forecasts, revised risk estimates, and controlled rebalancing without introducing instability.
+
+E. End-to-end explainability. Feature-level explanations are common, but the full path from investor profile and evidence to agent conclusions, quantitative optimization, suitability validation, and final recommendation is less consistently exposed.
+
+F. Evaluation beyond return. A robust advisory system should be evaluated using return, volatility, Sharpe ratio, maximum drawdown, CVaR or related risk measures, turnover/transaction costs, forecasting error where applicable, robustness, personalization/suitability, and explanation quality.
+
+G. Reproducibility and realistic deployment. Financial data availability, API changes, proprietary datasets, transaction costs, survivorship bias, temporal leakage, and model drift can make reported performance difficult to reproduce. Standardized benchmarks and time-aware evaluation are needed.
+
+H. Governance and human oversight. Financial recommendations can have significant consequences. Systems need explicit constraints, audit logs, confidence indicators, escalation rules, and human review for uncertain or unsuitable recommendations.
+
+XIII. FUTURE RESEARCH DIRECTIONS
+
+1) Hybrid LLM–quantitative architectures in which agents orchestrate reasoning and tools while quantitative models calculate forecasts, risk and optimization.
+
+2) Agent coordination protocols using structured outputs, confidence scores, evidence references, and explicit conflict-resolution mechanisms.
+
+3) Dynamic investor profiling that updates suitability constraints as investor objectives and market conditions change.
+
+4) Market-regime-aware portfolio advisory combining macro indicators, volatility forecasts, and regime detection.
+
+5) End-to-end decision tracing that records the evidence, agent contribution, model output, constraint and optimization decision behind each recommendation.
+
+6) Human-in-the-loop validation for low-confidence, high-risk, or constraint-violating cases.
+
+7) Standardized evaluation benchmarks that jointly measure financial performance, risk, personalization, robustness, explainability, and operational cost.
+
+8) Privacy-preserving financial AI for sensitive investor information and institution-specific data.
+
+9) Continual and retrieval-augmented financial agents that can incorporate new filings, news, market data and portfolio states without uncontrolled model updates.
+
+10) Multimodal advisory systems that combine numerical time series, financial documents, charts, news and investor-provided information.
+
+XIV. POSITIONING OF THE PROPOSED SYSTEM
+
+The literature supports positioning the proposed system as a hybrid multi-agent financial advisory framework rather than as another standalone portfolio optimizer or another generic financial chatbot. The proposed architecture is organized around a controlled pipeline: Investor Profiling → Financial Data Layer → Specialized Financial Agents → ML/Quantitative Engine → Portfolio Optimization → Suitability Validation → Personalized Recommendation → Explainability and Decision Trace.
+
+The Specialized Financial Agents can include Market Analysis, Fundamental Analysis, Sentiment/News Analysis, Portfolio Analysis, and Risk Analysis roles. Their outputs should be structured and passed to quantitative modules. The quantitative engine can contain return forecasting, volatility forecasting, risk metrics, regime detection, and portfolio optimization. The optimization stage should incorporate investor constraints, expected risk/return, diversification, and practical portfolio limits. A suitability layer should verify that the generated allocation is consistent with the investor profile before the recommendation is released.
+
+This positioning follows a key design principle derived from the survey: LLM agents should be used for reasoning, coordination, interpretation, retrieval, and communication, while quantitative models should perform numerical forecasting, risk calculation, optimization, and validation. Explainability should be built into the workflow through feature attribution, model outputs, agent-level summaries, constraint checks, and a final decision trace. This architecture does not claim that multi-agent AI, portfolio optimization, personalization, or explainability is individually novel; its research contribution should instead be evaluated through the quality and effectiveness of their integration.
+
+XV. CONCLUSION
+
+This survey reviewed 100 papers across portfolio optimization, financial forecasting, risk assessment, machine learning and reinforcement learning, robo-advisory, personalization, financial NLP, LLMs, multi-agent financial systems, and explainable AI. The literature demonstrates substantial progress in each component of intelligent investment decision support. Classical optimization remains essential for disciplined allocation; machine learning improves nonlinear prediction; risk-aware methods address downside exposure and dynamic conditions; robo-advisors formalize personalization; financial NLP and LLMs expand access to unstructured information and natural-language reasoning; multi-agent systems provide task specialization and coordination; and XAI supports transparency.
+
+The central finding is that the next research step is not simply a more powerful prediction model. It is reliable integration. A financial advisory system must connect investor objectives with heterogeneous evidence, specialized analysis, quantitative risk and optimization, suitability constraints, and understandable explanations. The proposed system is therefore positioned as a research framework for this integration problem. Its future validation should focus not only on portfolio performance but also on risk control, personalization, explainability, robustness, reproducibility, and human oversight.
+
+REFERENCES
+
+[1] H. Markowitz, "Portfolio selection," J. Finance, vol. 7, no. 1, pp. 77–91, 1952.
+
+[2] W. F. Sharpe, "Capital asset prices: A theory of market equilibrium under conditions of risk," J. Finance, vol. 19, no. 3, pp. 425–442, 1964.
+
+[3] R. C. Merton, "Lifetime portfolio selection under uncertainty: The continuous-time case," Rev. Econ. Stat., vol. 51, no. 3, pp. 247–257, 1969.
+
+[4] F. Black and R. Litterman, "Global portfolio optimization," Financial Analysts J., vol. 48, no. 5, pp. 28–43, 1992.
+
+[5] R. C. Michaud, "The Markowitz optimization enigma: Is 'optimized' optimal?" Financial Analysts J., vol. 45, no. 1, pp. 31–42, 1989.
+
+[6] V. DeMiguel, L. Garlappi, and R. Uppal, "Optimal versus naive diversification: How inefficient is the 1/N portfolio strategy?" Rev. Financial Studies, vol. 22, no. 5, pp. 1915–1953, 2009.
+
+[7] R. Jagannathan and T. Ma, "Risk reduction in large portfolios: Why imposing the wrong constraints helps," J. Finance, vol. 58, no. 4, pp. 1651–1684, 2003.
+
+[8] O. Ledoit and M. Wolf, "Honey, I shrunk the sample covariance matrix," J. Portfolio Manage., vol. 30, no. 4, pp. 110–119, 2004.
+
+[9] P. Garlappi, R. Uppal, and T. Wang, "Portfolio selection with parameter and model uncertainty: A multi-prior approach," Rev. Financial Studies, vol. 20, no. 1, pp. 41–81, 2007.
+
+[10] D. B. Brodie, I. Daubechies, C. De Mol, D. Giannone, and I. Loris, "Sparse and stable Markowitz portfolios," Proc. Natl. Acad. Sci., vol. 106, no. 30, pp. 12267–12272, 2009.
+
+[11] R. T. Rockafellar and S. Uryasev, "Optimization of conditional value-at-risk," J. Risk, vol. 2, no. 3, pp. 21–41, 2000.
+
+[12] R. T. Rockafellar and S. Uryasev, "Conditional value-at-risk for general loss distributions," J. Banking Finance, vol. 26, no. 7, pp. 1443–1471, 2002.
+
+[13] P. Krokhmal, J. Palmquist, and S. Uryasev, "Portfolio optimization with conditional value-at-risk objective and constraints," J. Risk, vol. 4, no. 2, pp. 11–27, 2002.
+
+[14] A. Gunjan and S. Bhattacharyya, "A brief review of portfolio optimization techniques," Artif. Intell. Rev., vol. 56, no. 5, pp. 3847–3883, 2023.
+
+[15] R. F. Engle, "Autoregressive conditional heteroscedasticity with estimates of the variance of United Kingdom inflation," Econometrica, vol. 50, no. 4, pp. 987–1007, 1982.
+
+[16] T. Bollerslev, "Generalized autoregressive conditional heteroskedasticity," J. Econometrics, vol. 31, no. 3, pp. 307–327, 1986.
+
+[17] S. Gu, B. Kelly, and D. Xiu, "Empirical asset pricing via machine learning," Rev. Financial Studies, vol. 33, no. 5, pp. 2223–2273, 2020.
+
+[18] C. Krauss, X. A. Do, and N. Huck, "Deep neural networks, gradient-boosted trees, random forests: Statistical arbitrage on the S&P 500," Eur. J. Oper. Res., vol. 259, no. 2, pp. 689–702, 2017.
+
+[19] T. Fischer and C. Krauss, "Deep learning with long short-term memory networks for financial market predictions," Eur. J. Oper. Res., vol. 270, no. 2, pp. 654–669, 2018.
+
+[20] Y. Ye, H. Pei, B. Wang, P.-Y. Chen, Y. Zhu, J. Xiao, and B. Li, "Reinforcement-learning based portfolio management with augmented asset movement prediction states," Proc. AAAI Conf. Artif. Intell., vol. 34, no. 1, pp. 1112–1119, 2020.
+
+[21] Z. Wang, B. Huang, S. Tu, K. Zhang, and L. Xu, "DeepTrader: A deep reinforcement learning approach to risk-return balanced portfolio management with market conditions embedding," Proc. AAAI Conf. Artif. Intell., vol. 35, no. 1, pp. 643–650, 2021.
+
+[22] R. Wang, H. Wei, B. An, Z. Feng, and J. Yao, "Commission fee is not enough: A hierarchical reinforced framework for portfolio management," Proc. AAAI Conf. Artif. Intell., vol. 35, no. 1, pp. 626–633, 2021.
+
+[23] D. Boreiko and F. Massarotti, "How risk profiles of investors affect robo-advised portfolios," Frontiers Artif. Intell., vol. 3, Art. no. 60, 2020.
+
+[24] A. Capponi, S. Ólafsson, and T. Zariphopoulou, "Personalized robo-advising: Enhancing investment through client interaction," Manage. Sci., vol. 68, no. 4, pp. 2485–2512, 2022.
+
+[25] D. Cardillo and G. Chiappini, "Robo-advisors: A systematic literature review," Finance Res. Lett., vol. 62A, Art. no. 105119, 2024.
+
+[26] M. D'Acunto, N. Prabhala, and A. G. Rossi, "The promises and pitfalls of robo-advising," Rev. Financial Studies, vol. 32, no. 5, pp. 1983–2020, 2019.
+
+[27] N. A. Sezer, M. U. Gudelek, and A. Ozbayoglu, "Financial time series forecasting with deep learning: A systematic literature review: 2005–2019," Appl. Soft Comput., vol. 90, Art. no. 106181, 2020.
+
+[28] J. Zhao, F. Chu, L. Xie, Y. Che, Y. Wu, and A. F. Burke, "A survey of transformer networks for time series forecasting," Complex & Intelligent Systems, 2025.
+
+[29] V. M. Ngo, H. H. Nguyen, and P. V. Nguyen, "Does reinforcement learning outperform deep learning and traditional portfolio optimization models in frontier and developed financial markets?" Res. Int. Business Finance, vol. 65, Art. no. 101936, 2023.
+
+[30] Y. Jiang, J. Olmo, and M. Atwi, "Deep reinforcement learning for portfolio selection," Global Finance J., vol. 62, Art. no. 101016, 2024.
+
+[31] A. Agal, J. Raulji, and N. D. Odedra, "A machine learning approach to risk based asset allocation in portfolio optimization," Scientific Reports, vol. 15, Art. no. 42263, 2025.
+
+[32] M. D. Nguyen, "Advanced investing with deep learning for risk-aligned portfolio optimization," PLOS ONE, vol. 20, no. 8, Art. no. e0330547, 2025.
+
+[33] Y. S. Ha, J. Kang, J. Kim, and D. Chun, "Machine learning-based portfolio optimization: Comparative analysis with the all-weather portfolio strategy," Financial Innovation, vol. 12, Art. no. 112, 2026.
+
+[34] S. Sheng, Y. Chen, J. Chen, and X. An, "CVaR-based risk parity model with machine learning," Pacific-Basin Finance J., vol. 93, Art. no. 102857, 2025.
+
+[35] S. Biswas, S. Dey, S. Mandal et al., "Intelligent system for portfolio optimization for novel volatility forecasting using machine learning," Scientific Reports, vol. 16, Art. no. 14670, 2026.
+
+[36] J. Chen, J. Li, and G. Wang, "MARS: A meta-adaptive reinforcement learning framework for risk-aware multi-agent portfolio management," Proc. AAAI Conf. Artif. Intell., vol. 40, no. 24, pp. 20092–20099, 2026.
+
+[37] T. Loughran and B. McDonald, "When is a liability not a liability? Textual analysis, dictionaries, and 10-Ks," J. Finance, vol. 66, no. 1, pp. 35–65, 2011.
+
+[38] D. Araci, "FinBERT: Financial sentiment analysis with pretrained language models," arXiv preprint arXiv:1908.10063, 2019.
+
+[39] H. Huang et al., "FinBERT: A large language model for extracting information from financial text," Contemporary Accounting Research, 2023.
+
+[40] Z. Chen, W. Chen, C. Smiley, S. Shah, I. Borova, D. Langdon, R. Moussa, M. Beane, T.-H. Huang, B. Routledge, and W. Y. Wang, "FinQA: A dataset of numerical reasoning over financial data," in Proc. EMNLP, 2021, pp. 3697–3711.
+
+[41] Y. Li, S. Wang, H. Ding, and H. Chen, "Large language models in finance: A survey," in Proc. ACM Int. Conf. AI in Finance, 2023, pp. 374–382.
+
+[42] J. Lee, N. Stevens, S. C. Han, and M. Song, "A survey of large language models in finance (FinLLMs)," arXiv preprint arXiv:2402.02315, 2024.
+
+[43] Y. Nie, Y. Kong, X. Dong, J. M. Mulvey, H. V. Poor, Q. Wen, and S. Zohren, "A survey of large language models for financial applications: Progress, prospects and challenges," arXiv preprint arXiv:2406.11903, 2024.
+
+[44] A. T. Khan, S. Li, and X. Cao, "Bridging finance and AI: A comprehensive survey of large language models in financial system," Digital Finance, vol. 7, pp. 679–701, 2025.
+
+[45] Y. Dong, F. Wu, K. Zhang, Y. Dai, S. Zhang, W. Ye, S. Chen, and Z.-Q. Cheng, "Large language model agents in finance: A survey bridging research, practice, and real-world deployment," in Findings of EMNLP, 2025, pp. 17889–17907.
+
+[46] A. Saha et al., "Large language model agents for investment management: Foundations, benchmarks, and research frontiers," in Proc. ACM Int. Conf. AI in Finance, 2025, pp. 736–744.
+
+[47] Y. Yu et al., "FinCon: A synthesized LLM multi-agent system with conceptual verbal reinforcement for enhanced financial decision making," in NeurIPS, 2024, arXiv:2407.06567.
+
+[48] Z. Xiao, S. Sun, Y. Luo, and J. Wang, "TradingAgents: Multi-agents LLM financial trading framework," arXiv preprint arXiv:2412.20138, 2024.
+
+[49] Y. Yu et al., "FinMem: A performance-enhanced LLM trading agent with layered memory and character design," in AAAI Symp. Ser., vol. 3, pp. 595–597, 2024.
+
+[50] H. Yang et al., "FinRobot: An open-source AI agent platform for financial applications using large language models," arXiv preprint arXiv:2405.14767, 2024.
+
+[51] T. Zhou, P. Wang, Y. Wu, and H. Yang, "FinRobot: AI agent for equity research and valuation with large language models," arXiv preprint arXiv:2411.08804, 2024.
+
+[52] K. Miyazaki et al., "Toward expert investment teams: A multi-agent LLM system with fine-grained trading tasks," arXiv preprint arXiv:2602.23330, 2026.
+
+[53] B. Li, B. Gu, and Z. Ding, "LLM-based personalized portfolio recommender: Integrating large language models and reinforcement learning for intelligent investment strategy optimization," arXiv preprint arXiv:2512.12922, 2025.
+
+[54] G. Wu et al., "BloombergGPT: A large language model for finance," arXiv preprint arXiv:2303.17564, 2023.
+
+[55] H. Yang et al., "InvestLM: A large language model for investment using financial domain instruction tuning," arXiv preprint arXiv:2309.13064, 2023.
+
+[56] H. Yang et al., "FinGPT: Open-source financial large language models," arXiv preprint arXiv:2306.06031, 2023.
+
+[57] A. Jadhav and V. Mirza, "Large language models in equity markets: Applications, techniques, and insights," Frontiers Artif. Intell., vol. 8, 2025.
+
+[58] J. Mahdavi et al., "Integrating large language models in financial investments and market analysis: A survey," arXiv preprint arXiv:2507.01990, 2025.
+
+[59] A. Fatouros et al., "A comparative analysis of fine-tuned LLMs and few-shot learning of LLMs for financial sentiment analysis," 2023.
+
+[60] B. Zhang et al., "Enhancing financial sentiment analysis via retrieval augmented generation," 2024.
+
+[61] K. Du et al., "Incorporating multiple knowledge sources for targeted aspect-based financial sentiment analysis," ACM Trans. Manage. Inf. Syst., 2023.
+
+[62] Z. Liu et al., "FinSenticNet: A concept-level lexicon for financial sentiment analysis," 2023.
+
+[63] S. Tetlock, "Giving content to investor sentiment: The role of media in the stock market," J. Finance, vol. 62, no. 3, pp. 1139–1168, 2007.
+
+[64] S. R. Das and M. Y. Chen, "Yahoo! for Amazon: Sentiment extraction from small talk on the web," Manage. Sci., vol. 53, no. 9, pp. 1375–1388, 2007.
+
+[65] M. Feldman, "Techniques and applications for sentiment analysis," Commun. ACM, vol. 56, no. 4, pp. 82–89, 2013.
+
+[66] B. Liu, "Sentiment analysis and opinion mining," Synthesis Lectures on Human Language Technologies, vol. 5, no. 1, pp. 1–167, 2012.
+
+[67] R. Guidotti et al., "A survey of methods for explaining black box models," ACM Comput. Surveys, vol. 51, no. 5, Art. no. 93, 2018.
+
+[68] M. T. Ribeiro, S. Singh, and C. Guestrin, "'Why should I trust you?': Explaining the predictions of any classifier," in Proc. ACM SIGKDD, 2016, pp. 1135–1144.
+
+[69] S. M. Lundberg and S.-I. Lee, "A unified approach to interpreting model predictions," in Proc. NeurIPS, 2017, pp. 4765–4774.
+
+[70] M. T. Ribeiro, S. Singh, and C. Guestrin, "Anchors: High-precision model-agnostic explanations," in Proc. AAAI, 2018.
+
+[71] F. Doshi-Velez and B. Kim, "Towards a rigorous science of interpretable machine learning," arXiv preprint arXiv:1702.08608, 2017.
+
+[72] A. B. Arrieta et al., "Explainable artificial intelligence (XAI): Concepts, taxonomies, opportunities and challenges toward responsible AI," Inf. Fusion, vol. 58, pp. 82–115, 2020.
+
+[73] C. Molnar, Interpretable Machine Learning, 2nd ed., 2022.
+
+[74] M. Černevičienė and G. Kabašinskas, "Explainable artificial intelligence (XAI) in finance: A systematic literature review," Artif. Intell. Rev., vol. 57, Art. no. 216, 2024.
+
+[75] S. Weber et al., "Applications of explainable artificial intelligence in finance—A systematic review of finance, information systems, and computer science literature," Manage. Rev. Quart., vol. 74, pp. 867–907, 2024.
+
+[76] R. Yeo et al., "A comprehensive review on financial explainable AI," Artif. Intell. Rev., vol. 58, Art. no. 189, 2025.
+
+[77] M. Cortés et al., "Portfolio construction using explainable reinforcement learning," Expert Syst., vol. 41, no. 11, Art. no. e13667, 2024.
+
+[78] M. de la Rica Escudero, P. Garrido-Merchán, and J. Coronado-Vaca, "Explainable post hoc portfolio management financial policy of a deep reinforcement learning agent," PLOS ONE, 2024.
+
+[79] V. Kovvuri, X. Fu, Y. Fan, and M. Seisenberger, "Fund performance evaluation with explainable artificial intelligence," Finance Res. Lett., vol. 58B, Art. no. 104419, 2023.
+
+[80] Y. Li, S. Jiang, Y. Wei, and S. Wang, "Take Bitcoin into your portfolio: A novel ensemble portfolio optimization framework for broad commodity assets," Financial Innovation, vol. 7, 2021.
+
+[81] M. Moody and M. Saffell, "Learning to trade via direct reinforcement," IEEE Trans. Neural Netw., vol. 12, no. 4, pp. 875–889, 2001.
+
+[82] J. Moody, L. Wu, Y. Liao, and M. Saffell, "Performance functions and reinforcement learning for trading systems and portfolios," J. Forecasting, vol. 17, no. 7–8, pp. 451–470, 1998.
+
+[83] J. Aboussalah and C.-Y. Lee, "Continuous control with deep reinforcement learning for portfolio allocation," Expert Syst. Appl., vol. 140, Art. no. 112889, 2020.
+
+[84] T. Bühler et al., "Deep hedging," Quantitative Finance, vol. 19, no. 8, pp. 1271–1291, 2019.
+
+[85] A. Kolm, R. Tütüncü, and F. Fabozzi, "60 years of portfolio optimization: Practical challenges and current trends," Eur. J. Oper. Res., vol. 234, no. 2, pp. 356–371, 2014.
+
+[86] F. Fabozzi, S. Focardi, P. Rachev, and G. M. C. Bagheri, "Robust portfolio management," J. Portfolio Manage., vol. 33, no. 1, pp. 12–28, 2007.
+
+[87] H. Markowitz, "The early history of portfolio theory: 1600–1960," Financial Analysts J., vol. 55, no. 4, pp. 5–16, 1999.
+
+[88] P. Artzner, F. Delbaen, J.-M. Eber, and D. Heath, "Coherent measures of risk," Math. Finance, vol. 9, no. 3, pp. 203–228, 1999.
+
+[89] C. Acerbi and D. Tasche, "On the coherence of expected shortfall," J. Banking Finance, vol. 26, no. 7, pp. 1487–1503, 2002.
+
+[90] R. S. Tsay, Analysis of Financial Time Series, 3rd ed. Wiley, 2010.
+
+[91] C. Brooks, Introductory Econometrics for Finance, 4th ed. Cambridge Univ. Press, 2019.
+
+[92] A. G. Rossi and M. Utkus, "Who benefits from robo-advising?" working paper, 2021.
+
+[93] F. F. D. D. A. S. B. and collaborators, "Financial advice behaviour: Humans versus AI," J. Corporate Finance, vol. 101, Art. no. 103044, 2026.
+
+[94] N. Nazareth and Y. V. R. Reddy, "Financial applications of machine learning: A literature review," Expert Syst. Appl., vol. 219, Art. no. 119640, 2023.
+
+[95] S. Li, H. Wang, and related authors, "Large language models in financial systems: A survey of applications and challenges," 2024.
+
+[96] P. S. Dong et al., "Large language model agents in finance: A survey bridging research, practice, and real-world deployment," Findings EMNLP, 2025.
+
+[97] Y. Fieberg et al., "Using large language models for financial advice," CESifo Working Paper No. 11666, 2025.
+
+[98] Z. Yang, Z. Ke, and others, "FinBERT: A pre-trained financial language representation model for financial text mining," in Proc. IJCNLP-AACL, 2020, pp. 33–43.
+
+[99] A. Vaswani et al., "Attention is all you need," in Proc. NeurIPS, 2017, pp. 5998–6008.
+
+[100] T. B. Brown et al., "Language models are few-shot learners," in Proc. NeurIPS, vol. 33, pp. 1877–1901, 2020.
+
+Research stream | Portfolio | Risk | Personalization | LLM | MAS | XAI | Main limitation
+Classical/robust optimization | High | High | Low | No | No | Low | Parameter/estimation sensitivity
+ML/DL forecasting | Medium | High | Low | No | Low | Partial | Non-stationarity and leakage
+RL portfolio management | High | High | Low | No | Low/Medium | Partial | Backtest and execution assumptions
+Robo-advisory | High | High | High | Low | Low | Partial | Limited reasoning/data integration
+Financial NLP | Low/Medium | Medium | Low | Medium | Low | Partial | Text-to-decision linkage
+Financial LLMs | Medium | Partial | Medium | High | Medium | Partial | Numerical reliability/hallucination
+Multi-agent finance | High | Medium/High | Partial | High | High | Partial | Coordination and validation
+Explainable financial AI | Medium | High | Medium | Medium | Low/Medium | High | End-to-end decision trace
+

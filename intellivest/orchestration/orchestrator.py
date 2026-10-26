@@ -23,6 +23,7 @@ from intellivest.contracts import (
     DecisionTrace,
     Explanation,
     InvestorProfile,
+    MLForecastSection,
     OptimizationResult,
     RiskMetrics,
     SuitabilityReport,
@@ -50,15 +51,17 @@ class AdvisoryEngine:
         settings: Settings | None = None,
         provider: MarketDataProvider | None = None,
         agents: list[AnalystAgent] | None = None,
+        use_ml: bool = False,
     ) -> None:
         self.settings = settings or load_settings()
         self.provider = provider or build_provider(self.settings)
-        self.quant = QuantEngine(self.settings)
+        self.quant = QuantEngine(self.settings, use_ml=use_ml)
         self.agents = agents or default_agents()
         self.coordinator = Coordinator(self.agents)
         self.suitability = SuitabilityEngine(self.settings)
         self.recommender = RecommendationAgent(self.settings)
         self.audit = AuditChain(self.settings.audits_dir)
+        self.use_ml = use_ml
 
     # -- public -----------------------------------------------------------
     def advise(self, profile: InvestorProfile) -> DecisionTrace:
@@ -214,6 +217,37 @@ class AdvisoryEngine:
             step["inputs"] = {"agreement": decision.agreement, "suitability_passed": suitability.passed}
             step["outputs"] = recommendation.model_dump(mode="json")
 
+        ml_section = None
+        try:
+            ml_res = getattr(self.quant, "last_ml_forecast", None)
+            if ml_res is not None:
+                er = getattr(ml_res, "expected_returns", pd.Series())
+                try:
+                    fv = {k: float(v) for k, v in er.to_dict().items()} if hasattr(er, "to_dict") else {}
+                except Exception:
+                    fv = {}
+                attr = getattr(ml_res, "attribution", []) or []
+                ml_section = MLForecastSection(
+                    forecast_timestamp=created_at,
+                    data_cutoff=profile.as_of,
+                    model_identifiers=list(getattr(ml_res, "model_identifiers", []) or []),
+                    model_versions={},
+                    model_weights=getattr(ml_res, "weights", {}) or {},
+                    validation_metrics=getattr(ml_res, "validation_metrics", {}) or {},
+                    forecast_values=fv,
+                    forecast_units="annualized_return",
+                    top_factors=attr,
+                    attribution_method="ridge_coefficients" if attr else "none",
+                    regime_prediction=getattr(ml_res, "regime", None),
+                    regime_confidence=float(getattr(ml_res, "regime_confidence")) if getattr(ml_res, "regime_confidence", None) is not None else None,
+                    fallbacks=[],
+                    rejected_models=getattr(ml_res, "rejected", []) or [],
+                    disagreement=float(getattr(ml_res, "disagreement")) if getattr(ml_res, "disagreement", None) is not None else None,
+                    uncertainty=float(getattr(ml_res, "uncertainty")) if getattr(ml_res, "uncertainty", None) is not None else None,
+                )
+        except Exception:
+            ml_section = None
+
         body = {
             "trace_id": trace_id,
             "created_at": created_at.isoformat(),
@@ -228,6 +262,8 @@ class AdvisoryEngine:
             "explanation": explanation.model_dump(mode="json"),
             "recommendation": recommendation.model_dump(mode="json"),
         }
+        if ml_section is not None:
+            body["ml_forecast"] = ml_section.model_dump(mode="json")
         previous_hash, final_hash = self.audit.seal(body)
         return DecisionTrace(**body, previous_hash=previous_hash, hash=final_hash)
 

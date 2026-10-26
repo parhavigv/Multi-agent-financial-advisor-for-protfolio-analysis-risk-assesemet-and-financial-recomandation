@@ -22,6 +22,16 @@ from intellivest.data.universe import sector_of
 from intellivest.quant import forecast, risk
 from intellivest.quant.covariance import estimate_covariance
 
+try:
+    from intellivest.ml.service import MLForecastService
+except Exception:  # pragma: no cover
+    MLForecastService = None  # type: ignore
+
+try:
+    from intellivest.ml.service import MLForecastService
+except Exception:  # pragma: no cover
+    MLForecastService = None  # type: ignore
+
 
 @dataclass(frozen=True)
 class QuantFeatures:
@@ -52,9 +62,12 @@ class QuantFeatures:
 
 
 class QuantEngine:
-    def __init__(self, settings: Settings, covariance_method: str = "ledoit_wolf") -> None:
+    def __init__(self, settings: Settings, covariance_method: str = "ledoit_wolf", use_ml: bool = False) -> None:
         self.settings = settings
         self.covariance_method = covariance_method
+        self.use_ml = use_ml
+        self._ml_service = MLForecastService(settings.seed) if (use_ml and MLForecastService is not None) else None
+        self.last_ml_forecast = None
 
     def build(self, snapshot: MarketSnapshot) -> QuantFeatures:
         returns = snapshot.returns.dropna(how="all").fillna(0.0)

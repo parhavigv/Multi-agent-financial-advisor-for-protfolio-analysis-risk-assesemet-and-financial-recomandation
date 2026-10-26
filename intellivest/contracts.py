@@ -263,7 +263,28 @@ class Explanation(StrictModel):
     counterfactual: dict[str, Any] | None = None
 
 
+class MLForecastSection(StrictModel):
+    model_config = ConfigDict(extra="forbid", validate_assignment=True, protected_namespaces=())
+    forecast_timestamp: datetime | None = None
+    data_cutoff: date | None = None
+    model_identifiers: list[str] = Field(default_factory=list)
+    model_versions: dict[str, str] = Field(default_factory=dict)
+    model_weights: dict[str, float] = Field(default_factory=dict)
+    validation_metrics: dict[str, dict[str, float]] = Field(default_factory=dict)
+    forecast_values: dict[str, float] = Field(default_factory=dict)
+    forecast_units: str = "annualized_return"
+    top_factors: list[dict[str, Any]] = Field(default_factory=list)
+    attribution_method: str = "none"
+    regime_prediction: str | None = None
+    regime_confidence: float | None = None
+    fallbacks: list[str] = Field(default_factory=list)
+    rejected_models: list[dict[str, str]] = Field(default_factory=list)
+    disagreement: float | None = None
+    uncertainty: float | None = None
+
+
 class DecisionTrace(StrictModel):
+    model_config = ConfigDict(extra="forbid", validate_assignment=True, protected_namespaces=())
     trace_id: str
     created_at: datetime
     as_of: date
@@ -278,6 +299,7 @@ class DecisionTrace(StrictModel):
     recommendation: Recommendation
     previous_hash: str
     hash: str
+    ml_forecast: MLForecastSection | None = None
 
 
 class AdviceResponse(StrictModel):
