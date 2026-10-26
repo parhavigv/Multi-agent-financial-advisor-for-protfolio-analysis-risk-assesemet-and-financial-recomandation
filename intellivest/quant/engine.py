@@ -27,11 +27,6 @@ try:
 except Exception:  # pragma: no cover
     MLForecastService = None  # type: ignore
 
-try:
-    from intellivest.ml.service import MLForecastService
-except Exception:  # pragma: no cover
-    MLForecastService = None  # type: ignore
-
 
 @dataclass(frozen=True)
 class QuantFeatures:
@@ -50,13 +45,21 @@ class QuantFeatures:
     regime_confidence: float
     benchmark_metrics: RiskMetrics
     covariance_method: str
+    risk_free: float = 0.065
 
-    def metrics_for(self, weights: Mapping[str, float], returns: pd.DataFrame, settings: Settings) -> RiskMetrics:
+    def metrics_for(
+        self,
+        weights: Mapping[str, float],
+        returns: pd.DataFrame,
+        settings: Settings,
+        risk_free: float | None = None,
+    ) -> RiskMetrics:
+        rf = float(risk_free) if risk_free is not None else float(self.risk_free)
         return risk.risk_metrics(
             weights,
             returns,
             returns["SPX"] if "SPX" in returns else returns.iloc[:, 0],
-            risk_free=settings.risk_free_rate,
+            risk_free=rf,
             periods=settings.trading_days,
         )
 
@@ -69,7 +72,10 @@ class QuantEngine:
         self._ml_service = MLForecastService(settings.seed) if (use_ml and MLForecastService is not None) else None
         self.last_ml_forecast = None
 
-    def build(self, snapshot: MarketSnapshot) -> QuantFeatures:
+    def build(self, snapshot: MarketSnapshot, risk_free: float | None = None) -> QuantFeatures:
+        rf = float(risk_free) if risk_free is not None else float(
+            getattr(self.settings, "risk_free_rate", 0.065)
+        )
         returns = snapshot.returns.dropna(how="all").fillna(0.0)
         tickers = list(returns.columns)
         cov = estimate_covariance(
@@ -94,7 +100,7 @@ class QuantEngine:
             equal.to_dict(),
             returns,
             bench,
-            risk_free=self.settings.risk_free_rate,
+            risk_free=rf,
             periods=self.settings.trading_days,
         )
 
@@ -115,6 +121,7 @@ class QuantEngine:
             regime_confidence=regime_confidence,
             benchmark_metrics=benchmark_metrics,
             covariance_method=self.covariance_method,
+            risk_free=rf,
         )
 
     def sector_exposure(self, weights: Mapping[str, float]) -> dict[str, float]:

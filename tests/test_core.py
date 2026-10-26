@@ -9,7 +9,7 @@ import pandas as pd
 
 from intellivest.config import load_settings
 from intellivest.contracts import InvestorProfile, Signal
-from intellivest.data.market import SyntheticMarket, build_provider
+from intellivest.data.market import SyntheticMarket
 from intellivest.data.universe import TICKERS
 from intellivest.orchestration.orchestrator import AdvisoryEngine
 from intellivest.personalization.suitability import SuitabilityEngine
@@ -18,7 +18,7 @@ from intellivest.quant import risk
 
 def test_snapshot_has_no_future_rows() -> None:
     settings = load_settings()
-    provider = build_provider(settings)
+    provider = SyntheticMarket(settings)
     snap = provider.snapshot(date.fromisoformat("2022-06-30"))
     assert snap.as_of == date.fromisoformat("2022-06-30")
     assert snap.prices.index[-1].date() <= snap.as_of
@@ -50,7 +50,7 @@ def test_signal_neutral_band() -> None:
 
 def test_advice_produces_trace_and_audit_passes() -> None:
     settings = load_settings()
-    engine = AdvisoryEngine(settings)
+    engine = AdvisoryEngine(settings, provider=SyntheticMarket(settings))
     profile = InvestorProfile(
         investor_id="TEST-001",
         as_of=date.fromisoformat(settings.data_end),
@@ -71,7 +71,7 @@ def test_advice_produces_trace_and_audit_passes() -> None:
 
 def test_suitability_blocks_aggressive_for_conservative() -> None:
     settings = load_settings()
-    engine = AdvisoryEngine(settings)
+    engine = AdvisoryEngine(settings, provider=SyntheticMarket(settings))
     profile = InvestorProfile(
         investor_id="TEST-002",
         as_of=date.fromisoformat(settings.data_end),
@@ -103,9 +103,9 @@ def test_agent_evidence_must_be_dated_or_before() -> None:
             return self._report(ctx, summary="s", evidence=[future, past])
 
     settings = load_settings()
-    provider = build_provider(settings)
+    provider = SyntheticMarket(settings)
     snap = provider.snapshot(date.fromisoformat(settings.data_end))
-    engine = AdvisoryEngine(settings)
+    engine = AdvisoryEngine(settings, provider=provider)
     # build features
     from intellivest.quant.engine import QuantEngine
 

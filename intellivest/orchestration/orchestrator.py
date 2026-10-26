@@ -68,12 +68,17 @@ class AdvisoryEngine:
         recorder = TraceRecorder()
         trace_id = uuid.uuid4().hex[:16]
         created_at = datetime.now(timezone.utc)
+        try:
+            rf = self._risk_free(profile)
+        except Exception:
+            rf = self.settings.risk_free_rate
+        self._last_rf = rf
         config_digest = digest(
             {
                 "seed": self.settings.seed,
                 "max_weight": self.settings.max_weight,
                 "max_sector_weight": self.settings.max_sector_weight,
-                "risk_free": self.settings.risk_free_rate,
+                "risk_free": rf,
                 "turnover_penalty": self.settings.turnover_penalty,
                 "transaction_cost_bps": self.settings.transaction_cost_bps,
                 "llm_provider": self.settings.llm_provider,
@@ -111,13 +116,15 @@ class AdvisoryEngine:
             step["notes"] = "Prices truncated at as_of; no future row can enter the pipeline."
 
         with recorder.step("quant.features") as step:
-            features = self.quant.build(snapshot)
+            features = self.quant.build(snapshot, risk_free=rf)
             step["inputs"] = {"returns_rows": len(snapshot.returns)}
             step["outputs"] = {
                 "covariance_method": features.covariance_method,
                 "expected_returns": features.expected_returns.round(4).to_dict(),
                 "volatility": features.volatility_forecast.round(4).to_dict(),
                 "regime": features.regime,
+                "risk_free": rf,
+                "risk_free_source": getattr(self.provider, "risk_free_source", "settings"),
             }
 
         with recorder.step("agents.analyse") as step:
@@ -262,6 +269,10 @@ class AdvisoryEngine:
             "explanation": explanation.model_dump(mode="json"),
             "recommendation": recommendation.model_dump(mode="json"),
         }
+        body["risk_free_rate"] = float(rf)
+        body["risk_free_source"] = str(
+            getattr(self.provider, "risk_free_source", "settings")
+        )
         if ml_section is not None:
             body["ml_forecast"] = ml_section.model_dump(mode="json")
         previous_hash, final_hash = self.audit.seal(body)
@@ -315,7 +326,7 @@ class AdvisoryEngine:
                 sector_of=sector_of,
                 exclude=exclude,
             )
-        result = annotate(result, adjusted_expected, returns, self.settings.risk_free_rate)
+        result = annotate(result, adjusted_expected, returns, self._risk_free(profile))
         return result, adjusted_expected
 
     def apply_suitability(
@@ -346,8 +357,12 @@ class AdvisoryEngine:
                     "method": f"{optimization.method}+suitability_repair",
                 }
             )
+            try:
+                rf = self._risk_free(profile)
+            except Exception:
+                rf = self.settings.risk_free_rate
             optimization = annotate(
-                optimization, adjusted_expected, returns, self.settings.risk_free_rate
+                optimization, adjusted_expected, returns, rf
             )
         return optimization, suitability
 
@@ -428,6 +443,21 @@ class AdvisoryEngine:
         }
 
     # -- utilities --------------------------------------------------------
+    def _risk_free(self, profile: InvestorProfile) -> float:
+        """Point-in-time risk-free rate for ``profile.as_of``.
+
+        Real data providers return the latest FRED DGS3MO observation on or
+        before the decision date; the synthetic provider returns the configured
+        constant. The rate is never taken from a later date.
+        """
+        try:
+            getter = getattr(self.provider, "get_risk_free", None)
+            if callable(getter):
+                return float(getter(profile.as_of))
+        except Exception:
+            pass
+        return float(self.settings.risk_free_rate)
+
     def verify_audit_chain(self) -> tuple[bool, str]:
         return self.audit.verify()
 

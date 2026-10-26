@@ -86,7 +86,7 @@ class Backtester:
         for index in indices:
             as_of = history.index[index].date()
             snapshot = self.provider.snapshot(as_of)
-            features = self.quant.build(snapshot)
+            features = self.quant.build(snapshot, risk_free=self._risk_free_at(as_of))
             ctx = AgentContext(
                 profile=profile,
                 snapshot=snapshot,
@@ -169,6 +169,38 @@ class Backtester:
         return weights, None, not report.passed
 
     # -- execution --------------------------------------------------------
+    def _risk_free_at(self, as_of: date) -> float:
+        """Point-in-time risk-free rate for a single rebalance date."""
+        getter = getattr(self.provider, "get_risk_free", None)
+        if not callable(getter):
+            return float(self.settings.risk_free_rate)
+        try:
+            return float(getter(as_of))
+        except Exception:
+            return float(self.settings.risk_free_rate)
+
+    def _risk_free_for(self, returns: pd.Series) -> float:
+        """Average point-in-time risk-free rate over the backtest sample.
+
+        Uses the FRED DGS3MO series (via the provider) so the rate matches the
+        period actually traded instead of a hard-coded constant. Falls back to
+        the configured value when no real series is available.
+        """
+        if returns.empty:
+            return float(self.settings.risk_free_rate)
+        getter = getattr(self.provider, "get_risk_free", None)
+        if not callable(getter):
+            return float(self.settings.risk_free_rate)
+        rates = []
+        for stamp in (returns.index[0], returns.index[len(returns) // 2], returns.index[-1]):
+            try:
+                rates.append(float(getter(pd.Timestamp(stamp).date())))
+            except Exception:
+                continue
+        if not rates:
+            return float(self.settings.risk_free_rate)
+        return float(sum(rates) / len(rates))
+
     def run(self, profile: InvestorProfile, configs: Iterable[str] = CONFIGS) -> list[BacktestResult]:
         history = self.provider.history()
         daily_returns = history.pct_change().fillna(0.0)
@@ -208,9 +240,10 @@ class Backtester:
                     notes.append(f"{period['as_of']}: suitability breach recorded")
 
             combined = pd.concat(pieces) if pieces else pd.Series(dtype=float)
+            rf = self._risk_free_for(combined)
             summary = summarise(
                 combined,
-                risk_free=self.settings.risk_free_rate,
+                risk_free=rf,
                 periods=self.settings.trading_days,
                 turnovers=turnovers,
                 equity_weights=equity_weights,

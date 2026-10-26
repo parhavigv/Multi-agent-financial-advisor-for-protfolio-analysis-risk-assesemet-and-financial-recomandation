@@ -24,3 +24,16 @@
 
 ## Baseline artifacts
 - `results/baseline_synthetic/evaluation.json`, `evaluation.md`, `equity_curves.csv`, `diversification_check.json`
+
+## Phase 1 resolution (real data)
+- Added `RealMarket` (`intellivest/data/real.py`): 14 US ETFs mapped onto the
+  project tickers, cached to `data/prices.csv`; FRED `DGS3MO` cached to
+  `data/risk_free.csv`.
+- The risk-free rate is now **point-in-time** (latest observation on or before
+  each decision date) and is recorded in the decision trace. The 6.5%
+  constant remains only as an explicit fallback when FRED is unreachable.
+- Real news is not wired in, so the sentiment agent abstains
+  (`confidence=0`, no signals) rather than inventing a textual view.
+- No-lookahead tests cover the real-shaped path, including a truncation test
+  that mutates all future rows and asserts an identical snapshot.
+- Details: `docs/REAL_DATA.md`.

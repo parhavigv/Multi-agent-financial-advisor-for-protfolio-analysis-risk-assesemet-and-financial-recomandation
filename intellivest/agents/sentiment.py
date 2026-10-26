@@ -36,8 +36,11 @@ class SentimentAnalysisAgent(AnalystAgent):
         if not items:
             return self._report(
                 ctx,
-                summary="No news items inside the sentiment window; no textual view is asserted.",
+                summary="No real news items inside the sentiment window; no textual view is asserted.",
                 confidence=0.0,
+                signals=[],
+                evidence=[],
+                metrics={"items_scored": 0.0, "news_available": 0.0},
             )
 
         weighted: dict[str, float] = defaultdict(float)

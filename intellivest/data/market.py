@@ -134,6 +134,10 @@ class MarketDataProvider:
         """Full price history (used only by the evaluation harness)."""
         raise NotImplementedError
 
+    def get_risk_free(self, as_of: date | None = None) -> float:
+        """Point-in-time rate on or before ``as_of`` (synthetic: constant)."""
+        return float(self.settings.risk_free_rate)
+
 
 class SyntheticMarket(MarketDataProvider):
     def __init__(self, settings: Settings) -> None:
@@ -329,8 +333,28 @@ class CsvMarket(MarketDataProvider):
 
 def build_provider(settings: Settings) -> MarketDataProvider:
     """Use real prices when present, otherwise the synthetic provider."""
-    if (settings.data_dir / "prices.csv").exists():
-        return CsvMarket(settings)
+    prices_path = settings.data_dir / "prices.csv"
+    if prices_path.exists():
+        # Prefer RealMarket if available (uses cached CSV; can also fetch)
+        try:
+            from intellivest.data.real import RealMarket
+
+            return RealMarket(settings, cache_path=prices_path)
+        except Exception:
+            try:
+                return CsvMarket(settings)
+            except Exception:
+                pass
+    # Also allow opt-in via env
+    import os
+
+    if os.getenv("INTELLIVEST_USE_REAL", "0").strip() in {"1", "true", "True"}:
+        try:
+            from intellivest.data.real import RealMarket
+
+            return RealMarket(settings)
+        except Exception:
+            pass
     return SyntheticMarket(settings)
 
 

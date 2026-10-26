@@ -23,6 +23,9 @@ results/*
 audits/*
 !audits/.gitkeep
 data/cache/
+data/prices.csv
+data/prices.csv.*
+data/risk_free.csv
 *.sqlite
 *.db
 *.log

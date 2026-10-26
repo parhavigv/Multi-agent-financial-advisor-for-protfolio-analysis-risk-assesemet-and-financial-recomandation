@@ -300,6 +300,8 @@ class DecisionTrace(StrictModel):
     previous_hash: str
     hash: str
     ml_forecast: MLForecastSection | None = None
+    risk_free_rate: float | None = None
+    risk_free_source: str | None = None
 
 
 class AdviceResponse(StrictModel):

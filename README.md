@@ -76,6 +76,27 @@ intellivest-evaluate
 intellivest-evaluate --rebalance-every 21 --seeds 20261023,7,101
 ```
 
+### Real Market Data
+
+By default the system runs on a deterministic synthetic market so it works
+offline. To use real prices and a real risk-free rate:
+
+```bash
+# Downloads 14 US ETFs (SPY, XLK, ... VNQ) and FRED DGS3MO
+python scripts/fetch_real_data.py
+
+# then everything else is unchanged
+intellivest-evaluate
+```
+
+Prices are cached to `data/prices.csv` and the rate series to
+`data/risk_free.csv` (both gitignored). The risk-free rate is the FRED
+3-month T-bill as of each decision date — never a hard-coded number. News is
+not wired in for real data, so the sentiment agent abstains
+(`confidence=0`) instead of inventing a signal. See
+[docs/REAL_DATA.md](docs/REAL_DATA.md) for the ticker mapping and no-lookahead
+guarantees.
+
 ### Run Tests
 
 ```bash
@@ -126,6 +147,7 @@ Configure via environment variables or use defaults:
 | `INTELLIVEST_MAX_WEIGHT` | `0.30` | Maximum single position weight |
 | `INTELLIVEST_MAX_SECTOR_WEIGHT` | `0.45` | Maximum sector weight |
 | `INTELLIVEST_TRANSACTION_COST_BPS` | `12.0` | Transaction costs in basis points |
+| `INTELLIVEST_RISK_FREE_RATE` | `0.065` | Fallback rate only; real mode uses FRED DGS3MO |
 | `INTELLIVEST_LLM_PROVIDER` | `deterministic` | LLM provider (deterministic/mock or real) |
 
 ## 📊 Evaluation Results
@@ -135,13 +157,28 @@ The system supports three configurations for comparison:
 - **`agents_only`** - Direct agent consensus, bypassing quantitative guardrails
 - **`hybrid`** - Agent tilts bounded within optimizer, followed by suitability gate (recommended)
 
-Results are saved to `results/evaluation.json` and `results/evaluation.md` with metrics including Sharpe ratio, Sortino ratio, max drawdown, CVaR, turnover, and suitability breach rates.
+### Evaluation protocol
+
+Splits are fixed **by time** (`intellivest/evaluation/splits.py`):
+
+| Split | Window | Use |
+|-------|--------|-----|
+| dev | start .. 2021-12-31 | design and feature/agent tuning |
+| validation | 2022-01-01 .. 2023-12-31 | model and parameter selection |
+| test | 2024-01-01 .. latest | touched once, at the end |
+
+Results are saved to `results/evaluation.json` and `results/evaluation.md` with
+metrics including Sharpe ratio, Sortino ratio, max drawdown, CVaR, turnover,
+and suitability breach rates. Synthetic and real-data runs are reported
+separately; synthetic results are never presented as real-world performance.
 
 ## 🧪 Testing
 
 The test suite ensures:
-- No-lookahead in data snapshots
+- No-lookahead in data snapshots (synthetic **and** real-shaped data)
 - Deterministic synthetic data generation
+- Point-in-time risk-free rate from the FRED series
+- Sentiment abstention (`confidence=0`) when no real news exists
 - Risk metric conventions (VaR/CVaR non-negative, drawdown non-positive)
 - Suitability enforcement and repair
 - Evidence dating constraints
@@ -163,7 +200,7 @@ pytest --cov=intellivest --cov-report=html
 - **Validation**: Pydantic v2
 - **API**: FastAPI, Uvicorn
 - **Testing**: pytest
-- **Data**: Synthetic market data with realistic regimes
+- **Data**: Synthetic regime-switching market by default; optional real ETF prices + FRED risk-free rate
 
 ## 🤝 Contributing
 

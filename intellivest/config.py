@@ -50,7 +50,7 @@ class Settings:
     data_start: str = "2018-01-01"
     data_end: str = "2026-06-30"
     lookback_days: int = 756
-    risk_free_rate: float = 0.065
+    risk_free_rate: float = 0.065  # fallback only; prefer provider.get_risk_free()
     trading_days: int = 252
 
     # Portfolio construction
