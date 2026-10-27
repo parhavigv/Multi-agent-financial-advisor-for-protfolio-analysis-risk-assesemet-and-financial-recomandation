@@ -149,24 +149,5 @@ class QuantEngine:
             totals[sector] = totals.get(sector, 0.0) + weight
         return totals
 
-    def apply_tilts(
-        self,
-        features: QuantFeatures,
-        tilts: Mapping[str, float],
-        *,
-        max_adjustment: float = 0.02,
-    ) -> pd.Series:
-        """Blend agent conviction into expected returns with a hard bound.
-
-        ``max_adjustment`` caps the total annualised return adjustment so that
-        narrative conviction can never dominate the quantitative estimate.
-        """
-        base = features.expected_returns.copy()
-        for ticker, tilt in tilts.items():
-            if ticker in base.index:
-                bounded = float(np.clip(tilt, -1.0, 1.0)) * max_adjustment
-                base.loc[ticker] = float(base.loc[ticker] + bounded)
-        return base
-
 
 __all__ = ["QuantFeatures", "QuantEngine"]

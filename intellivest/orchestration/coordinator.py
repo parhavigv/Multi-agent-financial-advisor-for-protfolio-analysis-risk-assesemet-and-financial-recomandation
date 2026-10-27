@@ -31,6 +31,12 @@ class CoordinatorDecision:
     dispersion: float
     conflicts: list[str] = field(default_factory=list)
     per_agent_contribution: dict[str, float] = field(default_factory=dict)
+    # Per-asset confidence and disagreement are consumed by the
+    # Black-Litterman layer: confidence sets Omega, dispersion lowers it.
+    view_confidence: dict[str, float] = field(default_factory=dict)
+    view_dispersion: dict[str, float] = field(default_factory=dict)
+    market_confidence: float = 0.5
+    portfolio_confidence: float = 0.5
 
     @property
     def degraded(self) -> bool:
@@ -43,8 +49,13 @@ class Coordinator:
 
     def coordinate(self, reports: list[AgentReport], tickers: list[str]) -> CoordinatorDecision:
         per_asset_scores: dict[str, dict[str, float]] = {ticker: {} for ticker in tickers}
+        per_asset_confidence: dict[str, dict[str, float]] = {
+            ticker: {} for ticker in tickers
+        }
         market_num = market_den = 0.0
+        market_conf_num = market_conf_den = 0.0
         portfolio_num = portfolio_den = 0.0
+        portfolio_conf_num = portfolio_conf_den = 0.0
         contributions: dict[str, float] = {}
 
         for report in reports:
@@ -53,21 +64,28 @@ class Coordinator:
                 credibility = agent_weight * (0.35 + 0.65 * signal.confidence)
                 if signal.subject in per_asset_scores:
                     per_asset_scores[signal.subject][report.agent] = signal.strength
+                    per_asset_confidence[signal.subject][report.agent] = signal.confidence
                     contributions[report.agent] = contributions.get(report.agent, 0.0) + abs(
                         credibility * signal.strength
                     )
                 elif signal.subject == "MARKET":
                     market_num += credibility * signal.strength
                     market_den += credibility
+                    market_conf_num += credibility * signal.confidence
+                    market_conf_den += credibility
                 elif signal.subject == "PORTFOLIO":
                     portfolio_num += credibility * signal.strength
                     portfolio_den += credibility
+                    portfolio_conf_num += credibility * signal.confidence
+                    portfolio_conf_den += credibility
                 else:
                     contributions[report.agent] = contributions.get(report.agent, 0.0) + abs(
                         credibility * signal.strength
                     )
 
         tilts: dict[str, float] = {}
+        view_confidence: dict[str, float] = {}
+        view_dispersion: dict[str, float] = {}
         dispersions: list[float] = []
         conflicts: list[str] = []
         agreement_pairs: list[tuple[float, bool]] = []
@@ -97,6 +115,25 @@ class Coordinator:
             tilt = float(np.clip(mean * damping, -1.0, 1.0))
             tilts[ticker] = round(tilt, 4)
 
+            # Confidence is averaged by credibility weight, then reduced by
+            # disagreement. BL turns this into view uncertainty (Omega).
+            confidence_weights = np.array(
+                [self.weights.get(agent, 1.0) for agent in scores], dtype=float
+            )
+            confidences = np.array(
+                [per_asset_confidence[ticker][agent] for agent in scores], dtype=float
+            )
+            confidence_total = float(confidence_weights.sum())
+            base_confidence = (
+                float((confidence_weights * confidences).sum() / confidence_total)
+                if confidence_total > 0
+                else 0.5
+            )
+            view_confidence[ticker] = round(
+                float(np.clip(base_confidence * damping, 0.05, 0.99)), 4
+            )
+            view_dispersion[ticker] = round(dispersion, 4)
+
             for agent, value in scores.items():
                 if abs(value) > 0.12:
                     agreement_pairs.append(
@@ -121,6 +158,14 @@ class Coordinator:
             dispersion=round(float(np.mean(dispersions)) if dispersions else 0.0, 4),
             conflicts=conflicts,
             per_agent_contribution=contribution_share,
+            view_confidence=view_confidence,
+            view_dispersion=view_dispersion,
+            market_confidence=round(market_conf_num / market_conf_den, 4)
+            if market_conf_den > 0
+            else 0.5,
+            portfolio_confidence=round(portfolio_conf_num / portfolio_conf_den, 4)
+            if portfolio_conf_den > 0
+            else 0.5,
         )
 
 

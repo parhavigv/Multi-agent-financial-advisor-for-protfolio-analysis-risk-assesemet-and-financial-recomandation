@@ -1,13 +1,19 @@
-"""Walk-forward comparison of three advisory configurations.
+"""Walk-forward comparison of four advisory configurations.
 
-A — **quant_only**: constrained mean-variance/CVaR optimization, no agent tilts,
+A — **quant_only**: constrained mean-variance optimization, no agent views and
     no suitability remediation. Isolates the numerical engine.
 B — **agents_only**: allocation taken directly from agent consensus (top
     positive convictions, equal-weighted), bypassing the optimizer, position
     caps, exclusions and suitability. This is the "let the agents decide"
     failure mode the survey warns about.
-C — **hybrid**: agent tilts feed a bounded quantitative optimizer, then a
-    blocking suitability gate remediates the result. The proposed design.
+C — **hybrid**: coordinated agent views enter the Black-Litterman posterior,
+    the optimizer chooses weights, then a blocking suitability gate remediates
+    the result. The proposed design.
+D — **hybrid_shuffled**: the same pipeline as C, but the asset-to-tilt mapping
+    is permuted with a seeded RNG. This placebo keeps the distribution of
+    agent views and the market view while destroying asset-level information.
+    If C does not beat D, the apparent value of the agents is not attributable
+    to their asset mapping.
 
 All configurations share the same seeded market, rebalance dates, lookback and
 transaction-cost assumption. Only the decision logic differs.
@@ -15,7 +21,7 @@ transaction-cost assumption. Only the decision logic differs.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
 from typing import Iterable, Mapping
 
@@ -35,7 +41,7 @@ from intellivest.personalization.suitability import SuitabilityEngine, policy_fo
 from intellivest.quant.engine import QuantEngine, QuantFeatures
 from intellivest.quant.risk import portfolio_returns
 
-CONFIGS: tuple[str, ...] = ("quant_only", "agents_only", "hybrid")
+CONFIGS: tuple[str, ...] = ("quant_only", "agents_only", "hybrid", "hybrid_shuffled")
 
 
 @dataclass
@@ -128,8 +134,15 @@ class Backtester:
             settings=self.settings,
         )
 
-        if config == "hybrid":
-            optimization, suitability, _ = self.engine.construct(profile, ctx, decision)
+        if config in {"hybrid", "hybrid_shuffled"}:
+            effective = decision
+            if config == "hybrid_shuffled":
+                effective = shuffle_decision(
+                    decision,
+                    features.tickers,
+                    seed=self.settings.seed + int(period["index"]),
+                )
+            optimization, suitability, _ = self.engine.construct(profile, ctx, effective)
             return optimization.weights, optimization, not suitability.passed
 
         if config == "quant_only":
@@ -140,7 +153,7 @@ class Backtester:
                 agreement=1.0,
                 dispersion=0.0,
             )
-            optimization, _ = self.engine.optimise(
+            optimization, _, _ = self.engine.optimise(
                 profile, features, ctx.snapshot.returns, neutral, dict(previous)
             )
             report = self.suitability.evaluate(
@@ -263,6 +276,50 @@ class Backtester:
         return results
 
 
+def shuffle_decision(
+    decision: CoordinatorDecision,
+    tickers: Iterable[str],
+    *,
+    seed: int,
+) -> CoordinatorDecision:
+    """Permute asset-level views while preserving their distribution.
+
+    The market and portfolio scores are left unchanged: this is a placebo for
+    the *asset mapping*, not for the existence of a macro view. Confidence and
+    dispersion travel with their tilt so the Black-Litterman uncertainty is
+    shuffled consistently rather than accidentally reset.
+    """
+    order = [ticker for ticker in tickers if ticker in decision.tilts]
+    if len(order) < 2:
+        return decision
+    rng = np.random.default_rng(int(seed))
+    permutation = rng.permutation(len(order))
+    if np.array_equal(permutation, np.arange(len(order))):
+        permutation = np.roll(permutation, 1)
+    shuffled_tilts = {
+        order[index]: decision.tilts[order[int(source)]]
+        for index, source in enumerate(permutation)
+    }
+    shuffled_confidence = {
+        order[index]: decision.view_confidence.get(
+            order[int(source)], decision.view_confidence.get(order[index], 0.5)
+        )
+        for index, source in enumerate(permutation)
+    }
+    shuffled_dispersion = {
+        order[index]: decision.view_dispersion.get(
+            order[int(source)], decision.view_dispersion.get(order[index], 0.0)
+        )
+        for index, source in enumerate(permutation)
+    }
+    return replace(
+        decision,
+        tilts=shuffled_tilts,
+        view_confidence=shuffled_confidence,
+        view_dispersion=shuffled_dispersion,
+    )
+
+
 def _turnover(weights: Mapping[str, float], previous: Mapping[str, float]) -> float:
     keys = set(weights) | set(previous)
     return float(sum(abs(weights.get(k, 0.0) - previous.get(k, 0.0)) for k in keys) / 2.0)
@@ -283,4 +340,10 @@ def default_profile(as_of: date) -> InvestorProfile:
     )
 
 
-__all__ = ["Backtester", "BacktestResult", "CONFIGS", "default_profile"]
+__all__ = [
+    "Backtester",
+    "BacktestResult",
+    "CONFIGS",
+    "default_profile",
+    "shuffle_decision",
+]

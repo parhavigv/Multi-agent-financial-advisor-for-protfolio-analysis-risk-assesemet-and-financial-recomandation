@@ -18,10 +18,9 @@ class RiskAnalysisAgent(AnalystAgent):
     coordination_weight = 1.2
 
     def analyze(self, ctx: AgentContext) -> AgentReport:
-        llm_report = self._llm_report(ctx)
-        if llm_report is not None:
-            return llm_report
+        return self._with_llm(ctx, lambda: self._deterministic(ctx))
 
+    def _deterministic(self, ctx: AgentContext) -> AgentReport:
         policy = policy_for(ctx.profile)
         weights = {t: w for t, w in ctx.current_weights.items() if w > 1e-9}
         if not weights:

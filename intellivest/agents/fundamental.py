@@ -16,10 +16,9 @@ class FundamentalAnalysisAgent(AnalystAgent):
     coordination_weight = 0.9
 
     def analyze(self, ctx: AgentContext) -> AgentReport:
-        llm_report = self._llm_report(ctx)
-        if llm_report is not None:
-            return llm_report
+        return self._with_llm(ctx, lambda: self._deterministic(ctx))
 
+    def _deterministic(self, ctx: AgentContext) -> AgentReport:
         fundamentals = ctx.snapshot.fundamentals
         if fundamentals is None or fundamentals.empty:
             return self._report(

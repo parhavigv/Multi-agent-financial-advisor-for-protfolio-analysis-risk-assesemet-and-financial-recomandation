@@ -1,0 +1,800 @@
+{
+  "generated_with": {
+    "seed": 20261023,
+    "data_start": "2018-01-01",
+    "data_end": "2026-06-30",
+    "lookback_days": 756,
+    "transaction_cost_bps": 12.0,
+    "rebalance_every": 21,
+    "universe_size": 14,
+    "regime_seed": 60,
+    "market_source": "RealMarket"
+  },
+  "primary": {
+    "results": [
+      {
+        "config": "quant_only",
+        "metrics": {
+          "annual_return": 0.116353,
+          "annual_volatility": 0.123233,
+          "sharpe": 0.685,
+          "sortino": 0.9736,
+          "max_drawdown": -0.159113,
+          "cvar_95": 0.017771,
+          "calmar": 0.7313,
+          "turnover_per_rebalance": 0.0683,
+          "annual_cost_bps": 9.95,
+          "hit_rate": 0.5456,
+          "rebalances": 66,
+          "average_equity_weight": 0.7447,
+          "suitability_breach_rate": 0.4091
+        },
+        "final_equity": 1.819967,
+        "periods": 66
+      },
+      {
+        "config": "agents_only",
+        "metrics": {
+          "annual_return": 0.133144,
+          "annual_volatility": 0.16432,
+          "sharpe": 0.6159,
+          "sortino": 0.8695,
+          "max_drawdown": -0.179204,
+          "cvar_95": 0.023998,
+          "calmar": 0.743,
+          "turnover_per_rebalance": 0.2025,
+          "annual_cost_bps": 29.48,
+          "hit_rate": 0.539,
+          "rebalances": 66,
+          "average_equity_weight": 0.8528,
+          "suitability_breach_rate": 0.697
+        },
+        "final_equity": 1.973953,
+        "periods": 66
+      },
+      {
+        "config": "hybrid",
+        "metrics": {
+          "annual_return": 0.09871,
+          "annual_volatility": 0.108072,
+          "sharpe": 0.6179,
+          "sortino": 0.8825,
+          "max_drawdown": -0.160057,
+          "cvar_95": 0.015195,
+          "calmar": 0.6167,
+          "turnover_per_rebalance": 0.0656,
+          "annual_cost_bps": 9.56,
+          "hit_rate": 0.5463,
+          "rebalances": 66,
+          "average_equity_weight": 0.606,
+          "suitability_breach_rate": 0.0
+        },
+        "final_equity": 1.66887,
+        "periods": 66
+      },
+      {
+        "config": "hybrid_shuffled",
+        "metrics": {
+          "annual_return": 0.098593,
+          "annual_volatility": 0.107721,
+          "sharpe": 0.6188,
+          "sortino": 0.8841,
+          "max_drawdown": -0.160439,
+          "cvar_95": 0.015136,
+          "calmar": 0.6145,
+          "turnover_per_rebalance": 0.0641,
+          "annual_cost_bps": 9.34,
+          "hit_rate": 0.5449,
+          "rebalances": 66,
+          "average_equity_weight": 0.6032,
+          "suitability_breach_rate": 0.0
+        },
+        "final_equity": 1.667908,
+        "periods": 66
+      }
+    ],
+    "period_notes": {
+      "quant_only": [
+        "2021-01-11: suitability breach recorded",
+        "2021-02-10: suitability breach recorded",
+        "2021-03-12: suitability breach recorded",
+        "2021-04-13: suitability breach recorded",
+        "2021-05-12: suitability breach recorded",
+        "2021-06-11: suitability breach recorded",
+        "2021-07-13: suitability breach recorded",
+        "2021-08-11: suitability breach recorded",
+        "2021-09-10: suitability breach recorded",
+        "2021-10-11: suitability breach recorded",
+        "2021-11-09: suitability breach recorded",
+        "2021-12-09: suitability breach recorded",
+        "2022-01-10: suitability breach recorded",
+        "2022-02-09: suitability breach recorded",
+        "2022-03-11: suitability breach recorded",
+        "2022-04-11: suitability breach recorded",
+        "2022-05-11: suitability breach recorded",
+        "2022-06-10: suitability breach recorded",
+        "2022-07-13: suitability breach recorded",
+        "2022-08-11: suitability breach recorded",
+        "2022-09-12: suitability breach recorded",
+        "2022-10-11: suitability breach recorded",
+        "2022-11-09: suitability breach recorded",
+        "2022-12-09: suitability breach recorded",
+        "2023-01-11: suitability breach recorded",
+        "2023-02-10: suitability breach recorded",
+        "2023-03-14: suitability breach recorded"
+      ],
+      "agents_only": [
+        "2021-02-10: suitability breach recorded",
+        "2021-03-12: suitability breach recorded",
+        "2021-04-13: suitability breach recorded",
+        "2021-05-12: suitability breach recorded",
+        "2021-06-11: suitability breach recorded",
+        "2021-07-13: suitability breach recorded",
+        "2021-08-11: suitability breach recorded",
+        "2021-09-10: suitability breach recorded",
+        "2021-10-11: suitability breach recorded",
+        "2021-11-09: suitability breach recorded",
+        "2021-12-09: suitability breach recorded",
+        "2022-01-10: suitability breach recorded",
+        "2022-02-09: suitability breach recorded",
+        "2022-03-11: suitability breach recorded",
+        "2022-04-11: suitability breach recorded",
+        "2022-05-11: suitability breach recorded",
+        "2022-06-10: suitability breach recorded",
+        "2022-07-13: suitability breach recorded",
+        "2022-08-11: suitability breach recorded",
+        "2022-09-12: suitability breach recorded",
+        "2022-10-11: suitability breach recorded",
+        "2022-11-09: suitability breach recorded",
+        "2022-12-09: suitability breach recorded",
+        "2023-01-11: suitability breach recorded",
+        "2023-02-10: suitability breach recorded",
+        "2023-03-14: suitability breach recorded",
+        "2023-04-13: suitability breach recorded",
+        "2023-05-12: suitability breach recorded",
+        "2023-06-13: suitability breach recorded",
+        "2023-07-14: suitability breach recorded",
+        "2023-08-14: suitability breach recorded",
+        "2023-09-13: suitability breach recorded",
+        "2023-10-12: suitability breach recorded",
+        "2023-11-10: suitability breach recorded",
+        "2023-12-12: suitability breach recorded",
+        "2024-01-12: suitability breach recorded",
+        "2024-02-13: suitability breach recorded",
+        "2024-03-14: suitability breach recorded",
+        "2024-04-15: suitability breach recorded",
+        "2024-05-14: suitability breach recorded",
+        "2024-06-13: suitability breach recorded",
+        "2024-07-16: suitability breach recorded",
+        "2024-08-14: suitability breach recorded",
+        "2024-09-13: suitability breach recorded",
+        "2024-10-14: suitability breach recorded",
+        "2025-01-15: suitability breach recorded"
+      ],
+      "hybrid": [],
+      "hybrid_shuffled": []
+    }
+  },
+  "robustness": {
+    "seeds": [
+      20261023,
+      7,
+      101,
+      2718,
+      31337
+    ],
+    "per_seed": [
+      {
+        "seed": 20261023,
+        "results": [
+          {
+            "config": "quant_only",
+            "metrics": {
+              "annual_return": 0.116353,
+              "annual_volatility": 0.123233,
+              "sharpe": 0.685,
+              "sortino": 0.9736,
+              "max_drawdown": -0.159113,
+              "cvar_95": 0.017771,
+              "calmar": 0.7313,
+              "turnover_per_rebalance": 0.0683,
+              "annual_cost_bps": 9.95,
+              "hit_rate": 0.5456,
+              "rebalances": 66,
+              "average_equity_weight": 0.7447,
+              "suitability_breach_rate": 0.4091
+            },
+            "final_equity": 1.819967,
+            "periods": 66
+          },
+          {
+            "config": "agents_only",
+            "metrics": {
+              "annual_return": 0.133144,
+              "annual_volatility": 0.16432,
+              "sharpe": 0.6159,
+              "sortino": 0.8695,
+              "max_drawdown": -0.179204,
+              "cvar_95": 0.023998,
+              "calmar": 0.743,
+              "turnover_per_rebalance": 0.2025,
+              "annual_cost_bps": 29.48,
+              "hit_rate": 0.539,
+              "rebalances": 66,
+              "average_equity_weight": 0.8528,
+              "suitability_breach_rate": 0.697
+            },
+            "final_equity": 1.973953,
+            "periods": 66
+          },
+          {
+            "config": "hybrid",
+            "metrics": {
+              "annual_return": 0.09871,
+              "annual_volatility": 0.108072,
+              "sharpe": 0.6179,
+              "sortino": 0.8825,
+              "max_drawdown": -0.160057,
+              "cvar_95": 0.015195,
+              "calmar": 0.6167,
+              "turnover_per_rebalance": 0.0656,
+              "annual_cost_bps": 9.56,
+              "hit_rate": 0.5463,
+              "rebalances": 66,
+              "average_equity_weight": 0.606,
+              "suitability_breach_rate": 0.0
+            },
+            "final_equity": 1.66887,
+            "periods": 66
+          },
+          {
+            "config": "hybrid_shuffled",
+            "metrics": {
+              "annual_return": 0.098593,
+              "annual_volatility": 0.107721,
+              "sharpe": 0.6188,
+              "sortino": 0.8841,
+              "max_drawdown": -0.160439,
+              "cvar_95": 0.015136,
+              "calmar": 0.6145,
+              "turnover_per_rebalance": 0.0641,
+              "annual_cost_bps": 9.34,
+              "hit_rate": 0.5449,
+              "rebalances": 66,
+              "average_equity_weight": 0.6032,
+              "suitability_breach_rate": 0.0
+            },
+            "final_equity": 1.667908,
+            "periods": 66
+          }
+        ]
+      },
+      {
+        "seed": 7,
+        "results": [
+          {
+            "config": "quant_only",
+            "metrics": {
+              "annual_return": 0.116353,
+              "annual_volatility": 0.123233,
+              "sharpe": 0.685,
+              "sortino": 0.9736,
+              "max_drawdown": -0.159113,
+              "cvar_95": 0.017771,
+              "calmar": 0.7313,
+              "turnover_per_rebalance": 0.0683,
+              "annual_cost_bps": 9.95,
+              "hit_rate": 0.5456,
+              "rebalances": 66,
+              "average_equity_weight": 0.7447,
+              "suitability_breach_rate": 0.4091
+            },
+            "final_equity": 1.819967,
+            "periods": 66
+          },
+          {
+            "config": "agents_only",
+            "metrics": {
+              "annual_return": 0.133144,
+              "annual_volatility": 0.16432,
+              "sharpe": 0.6159,
+              "sortino": 0.8695,
+              "max_drawdown": -0.179204,
+              "cvar_95": 0.023998,
+              "calmar": 0.743,
+              "turnover_per_rebalance": 0.2025,
+              "annual_cost_bps": 29.48,
+              "hit_rate": 0.539,
+              "rebalances": 66,
+              "average_equity_weight": 0.8528,
+              "suitability_breach_rate": 0.697
+            },
+            "final_equity": 1.973953,
+            "periods": 66
+          },
+          {
+            "config": "hybrid",
+            "metrics": {
+              "annual_return": 0.09871,
+              "annual_volatility": 0.108072,
+              "sharpe": 0.6179,
+              "sortino": 0.8825,
+              "max_drawdown": -0.160057,
+              "cvar_95": 0.015195,
+              "calmar": 0.6167,
+              "turnover_per_rebalance": 0.0656,
+              "annual_cost_bps": 9.56,
+              "hit_rate": 0.5463,
+              "rebalances": 66,
+              "average_equity_weight": 0.606,
+              "suitability_breach_rate": 0.0
+            },
+            "final_equity": 1.66887,
+            "periods": 66
+          },
+          {
+            "config": "hybrid_shuffled",
+            "metrics": {
+              "annual_return": 0.098427,
+              "annual_volatility": 0.107718,
+              "sharpe": 0.6173,
+              "sortino": 0.8819,
+              "max_drawdown": -0.1607,
+              "cvar_95": 0.015133,
+              "calmar": 0.6125,
+              "turnover_per_rebalance": 0.0648,
+              "annual_cost_bps": 9.44,
+              "hit_rate": 0.5463,
+              "rebalances": 66,
+              "average_equity_weight": 0.603,
+              "suitability_breach_rate": 0.0
+            },
+            "final_equity": 1.666538,
+            "periods": 66
+          }
+        ]
+      },
+      {
+        "seed": 101,
+        "results": [
+          {
+            "config": "quant_only",
+            "metrics": {
+              "annual_return": 0.116353,
+              "annual_volatility": 0.123233,
+              "sharpe": 0.685,
+              "sortino": 0.9736,
+              "max_drawdown": -0.159113,
+              "cvar_95": 0.017771,
+              "calmar": 0.7313,
+              "turnover_per_rebalance": 0.0683,
+              "annual_cost_bps": 9.95,
+              "hit_rate": 0.5456,
+              "rebalances": 66,
+              "average_equity_weight": 0.7447,
+              "suitability_breach_rate": 0.4091
+            },
+            "final_equity": 1.819967,
+            "periods": 66
+          },
+          {
+            "config": "agents_only",
+            "metrics": {
+              "annual_return": 0.133144,
+              "annual_volatility": 0.16432,
+              "sharpe": 0.6159,
+              "sortino": 0.8695,
+              "max_drawdown": -0.179204,
+              "cvar_95": 0.023998,
+              "calmar": 0.743,
+              "turnover_per_rebalance": 0.2025,
+              "annual_cost_bps": 29.48,
+              "hit_rate": 0.539,
+              "rebalances": 66,
+              "average_equity_weight": 0.8528,
+              "suitability_breach_rate": 0.697
+            },
+            "final_equity": 1.973953,
+            "periods": 66
+          },
+          {
+            "config": "hybrid",
+            "metrics": {
+              "annual_return": 0.09871,
+              "annual_volatility": 0.108072,
+              "sharpe": 0.6179,
+              "sortino": 0.8825,
+              "max_drawdown": -0.160057,
+              "cvar_95": 0.015195,
+              "calmar": 0.6167,
+              "turnover_per_rebalance": 0.0656,
+              "annual_cost_bps": 9.56,
+              "hit_rate": 0.5463,
+              "rebalances": 66,
+              "average_equity_weight": 0.606,
+              "suitability_breach_rate": 0.0
+            },
+            "final_equity": 1.66887,
+            "periods": 66
+          },
+          {
+            "config": "hybrid_shuffled",
+            "metrics": {
+              "annual_return": 0.09808,
+              "annual_volatility": 0.107696,
+              "sharpe": 0.6142,
+              "sortino": 0.8773,
+              "max_drawdown": -0.160826,
+              "cvar_95": 0.015136,
+              "calmar": 0.6099,
+              "turnover_per_rebalance": 0.0642,
+              "annual_cost_bps": 9.35,
+              "hit_rate": 0.5449,
+              "rebalances": 66,
+              "average_equity_weight": 0.6036,
+              "suitability_breach_rate": 0.0
+            },
+            "final_equity": 1.663674,
+            "periods": 66
+          }
+        ]
+      },
+      {
+        "seed": 2718,
+        "results": [
+          {
+            "config": "quant_only",
+            "metrics": {
+              "annual_return": 0.116353,
+              "annual_volatility": 0.123233,
+              "sharpe": 0.685,
+              "sortino": 0.9736,
+              "max_drawdown": -0.159113,
+              "cvar_95": 0.017771,
+              "calmar": 0.7313,
+              "turnover_per_rebalance": 0.0683,
+              "annual_cost_bps": 9.95,
+              "hit_rate": 0.5456,
+              "rebalances": 66,
+              "average_equity_weight": 0.7447,
+              "suitability_breach_rate": 0.4091
+            },
+            "final_equity": 1.819967,
+            "periods": 66
+          },
+          {
+            "config": "agents_only",
+            "metrics": {
+              "annual_return": 0.133144,
+              "annual_volatility": 0.16432,
+              "sharpe": 0.6159,
+              "sortino": 0.8695,
+              "max_drawdown": -0.179204,
+              "cvar_95": 0.023998,
+              "calmar": 0.743,
+              "turnover_per_rebalance": 0.2025,
+              "annual_cost_bps": 29.48,
+              "hit_rate": 0.539,
+              "rebalances": 66,
+              "average_equity_weight": 0.8528,
+              "suitability_breach_rate": 0.697
+            },
+            "final_equity": 1.973953,
+            "periods": 66
+          },
+          {
+            "config": "hybrid",
+            "metrics": {
+              "annual_return": 0.09871,
+              "annual_volatility": 0.108072,
+              "sharpe": 0.6179,
+              "sortino": 0.8825,
+              "max_drawdown": -0.160057,
+              "cvar_95": 0.015195,
+              "calmar": 0.6167,
+              "turnover_per_rebalance": 0.0656,
+              "annual_cost_bps": 9.56,
+              "hit_rate": 0.5463,
+              "rebalances": 66,
+              "average_equity_weight": 0.606,
+              "suitability_breach_rate": 0.0
+            },
+            "final_equity": 1.66887,
+            "periods": 66
+          },
+          {
+            "config": "hybrid_shuffled",
+            "metrics": {
+              "annual_return": 0.098334,
+              "annual_volatility": 0.107616,
+              "sharpe": 0.617,
+              "sortino": 0.8816,
+              "max_drawdown": -0.160767,
+              "cvar_95": 0.01512,
+              "calmar": 0.6117,
+              "turnover_per_rebalance": 0.0643,
+              "annual_cost_bps": 9.36,
+              "hit_rate": 0.5441,
+              "rebalances": 66,
+              "average_equity_weight": 0.6032,
+              "suitability_breach_rate": 0.0
+            },
+            "final_equity": 1.665768,
+            "periods": 66
+          }
+        ]
+      },
+      {
+        "seed": 31337,
+        "results": [
+          {
+            "config": "quant_only",
+            "metrics": {
+              "annual_return": 0.116353,
+              "annual_volatility": 0.123233,
+              "sharpe": 0.685,
+              "sortino": 0.9736,
+              "max_drawdown": -0.159113,
+              "cvar_95": 0.017771,
+              "calmar": 0.7313,
+              "turnover_per_rebalance": 0.0683,
+              "annual_cost_bps": 9.95,
+              "hit_rate": 0.5456,
+              "rebalances": 66,
+              "average_equity_weight": 0.7447,
+              "suitability_breach_rate": 0.4091
+            },
+            "final_equity": 1.819967,
+            "periods": 66
+          },
+          {
+            "config": "agents_only",
+            "metrics": {
+              "annual_return": 0.133144,
+              "annual_volatility": 0.16432,
+              "sharpe": 0.6159,
+              "sortino": 0.8695,
+              "max_drawdown": -0.179204,
+              "cvar_95": 0.023998,
+              "calmar": 0.743,
+              "turnover_per_rebalance": 0.2025,
+              "annual_cost_bps": 29.48,
+              "hit_rate": 0.539,
+              "rebalances": 66,
+              "average_equity_weight": 0.8528,
+              "suitability_breach_rate": 0.697
+            },
+            "final_equity": 1.973953,
+            "periods": 66
+          },
+          {
+            "config": "hybrid",
+            "metrics": {
+              "annual_return": 0.09871,
+              "annual_volatility": 0.108072,
+              "sharpe": 0.6179,
+              "sortino": 0.8825,
+              "max_drawdown": -0.160057,
+              "cvar_95": 0.015195,
+              "calmar": 0.6167,
+              "turnover_per_rebalance": 0.0656,
+              "annual_cost_bps": 9.56,
+              "hit_rate": 0.5463,
+              "rebalances": 66,
+              "average_equity_weight": 0.606,
+              "suitability_breach_rate": 0.0
+            },
+            "final_equity": 1.66887,
+            "periods": 66
+          },
+          {
+            "config": "hybrid_shuffled",
+            "metrics": {
+              "annual_return": 0.098667,
+              "annual_volatility": 0.107675,
+              "sharpe": 0.6198,
+              "sortino": 0.8854,
+              "max_drawdown": -0.160693,
+              "cvar_95": 0.015133,
+              "calmar": 0.614,
+              "turnover_per_rebalance": 0.0641,
+              "annual_cost_bps": 9.33,
+              "hit_rate": 0.5449,
+              "rebalances": 66,
+              "average_equity_weight": 0.6034,
+              "suitability_breach_rate": 0.0
+            },
+            "final_equity": 1.66852,
+            "periods": 66
+          }
+        ]
+      }
+    ],
+    "aggregate": {
+      "quant_only": {
+        "annual_return": {
+          "mean": 0.116353,
+          "std": 0.0
+        },
+        "annual_volatility": {
+          "mean": 0.123233,
+          "std": 0.0
+        },
+        "sharpe": {
+          "mean": 0.685,
+          "std": 0.0
+        },
+        "sortino": {
+          "mean": 0.9736,
+          "std": 0.0
+        },
+        "max_drawdown": {
+          "mean": -0.159113,
+          "std": 0.0
+        },
+        "cvar_95": {
+          "mean": 0.017771,
+          "std": 0.0
+        },
+        "calmar": {
+          "mean": 0.7313,
+          "std": 0.0
+        },
+        "turnover_per_rebalance": {
+          "mean": 0.0683,
+          "std": 0.0
+        },
+        "annual_cost_bps": {
+          "mean": 9.95,
+          "std": 0.0
+        },
+        "suitability_breach_rate": {
+          "mean": 0.4091,
+          "std": 0.0
+        },
+        "average_equity_weight": {
+          "mean": 0.7447,
+          "std": 0.0
+        }
+      },
+      "agents_only": {
+        "annual_return": {
+          "mean": 0.133144,
+          "std": 0.0
+        },
+        "annual_volatility": {
+          "mean": 0.16432,
+          "std": 0.0
+        },
+        "sharpe": {
+          "mean": 0.6159,
+          "std": 0.0
+        },
+        "sortino": {
+          "mean": 0.8695,
+          "std": 0.0
+        },
+        "max_drawdown": {
+          "mean": -0.179204,
+          "std": 0.0
+        },
+        "cvar_95": {
+          "mean": 0.023998,
+          "std": 0.0
+        },
+        "calmar": {
+          "mean": 0.743,
+          "std": 0.0
+        },
+        "turnover_per_rebalance": {
+          "mean": 0.2025,
+          "std": 0.0
+        },
+        "annual_cost_bps": {
+          "mean": 29.48,
+          "std": 0.0
+        },
+        "suitability_breach_rate": {
+          "mean": 0.697,
+          "std": 0.0
+        },
+        "average_equity_weight": {
+          "mean": 0.8528,
+          "std": 0.0
+        }
+      },
+      "hybrid": {
+        "annual_return": {
+          "mean": 0.09871,
+          "std": 0.0
+        },
+        "annual_volatility": {
+          "mean": 0.108072,
+          "std": 0.0
+        },
+        "sharpe": {
+          "mean": 0.6179,
+          "std": 0.0
+        },
+        "sortino": {
+          "mean": 0.8825,
+          "std": 0.0
+        },
+        "max_drawdown": {
+          "mean": -0.160057,
+          "std": 0.0
+        },
+        "cvar_95": {
+          "mean": 0.015195,
+          "std": 0.0
+        },
+        "calmar": {
+          "mean": 0.6167,
+          "std": 0.0
+        },
+        "turnover_per_rebalance": {
+          "mean": 0.0656,
+          "std": 0.0
+        },
+        "annual_cost_bps": {
+          "mean": 9.56,
+          "std": 0.0
+        },
+        "suitability_breach_rate": {
+          "mean": 0.0,
+          "std": 0.0
+        },
+        "average_equity_weight": {
+          "mean": 0.606,
+          "std": 0.0
+        }
+      },
+      "hybrid_shuffled": {
+        "annual_return": {
+          "mean": 0.09842,
+          "std": 0.000231
+        },
+        "annual_volatility": {
+          "mean": 0.107685,
+          "std": 4.3e-05
+        },
+        "sharpe": {
+          "mean": 0.61742,
+          "std": 0.002129
+        },
+        "sortino": {
+          "mean": 0.88206,
+          "std": 0.003091
+        },
+        "max_drawdown": {
+          "mean": -0.160685,
+          "std": 0.000148
+        },
+        "cvar_95": {
+          "mean": 0.015132,
+          "std": 7e-06
+        },
+        "calmar": {
+          "mean": 0.61252,
+          "std": 0.001847
+        },
+        "turnover_per_rebalance": {
+          "mean": 0.0643,
+          "std": 0.000292
+        },
+        "annual_cost_bps": {
+          "mean": 9.364,
+          "std": 0.043932
+        },
+        "suitability_breach_rate": {
+          "mean": 0.0,
+          "std": 0.0
+        },
+        "average_equity_weight": {
+          "mean": 0.60328,
+          "std": 0.000228
+        }
+      }
+    }
+  }
+}

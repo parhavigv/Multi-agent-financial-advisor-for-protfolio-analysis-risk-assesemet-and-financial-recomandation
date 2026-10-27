@@ -20,6 +20,7 @@ from intellivest.agents import AgentContext, AnalystAgent, RecommendationAgent, 
 from intellivest.config import Settings, load_settings
 from intellivest.contracts import (
     AgentReport,
+    BlackLittermanSection,
     DecisionTrace,
     Explanation,
     InvestorProfile,
@@ -41,8 +42,9 @@ from intellivest.personalization.suitability import (
     policy_for,
     suitability_summary,
 )
+from intellivest.quant.black_litterman import BlackLittermanResult, posterior_expected_returns
 from intellivest.quant.engine import QuantEngine, QuantFeatures
-from intellivest.quant.optimize import Constraints, annotate, mean_variance, min_cvar, portfolio_volatility
+from intellivest.quant.optimize import Constraints, annotate, mean_variance, portfolio_volatility
 
 
 class AdvisoryEngine:
@@ -81,6 +83,9 @@ class AdvisoryEngine:
                 "risk_free": rf,
                 "turnover_penalty": self.settings.turnover_penalty,
                 "transaction_cost_bps": self.settings.transaction_cost_bps,
+                "bl_tau": self.settings.bl_tau,
+                "bl_view_shift": self.settings.bl_view_shift,
+                "bl_max_total_influence": self.settings.bl_max_total_influence,
                 "llm_provider": self.settings.llm_provider,
                 "llm_model": self.settings.llm_model if self.settings.llm_enabled else "none",
                 "covariance": self.quant.covariance_method,
@@ -156,6 +161,10 @@ class AdvisoryEngine:
                 "tilts": decision.tilts,
                 "agreement": decision.agreement,
                 "dispersion": decision.dispersion,
+                "view_confidence": decision.view_confidence,
+                "view_dispersion": decision.view_dispersion,
+                "market_confidence": decision.market_confidence,
+                "portfolio_confidence": decision.portfolio_confidence,
                 "conflicts": decision.conflicts,
                 "contribution": decision.per_agent_contribution,
             }
@@ -164,16 +173,21 @@ class AdvisoryEngine:
                 step["notes"] = "; ".join(decision.conflicts)
 
         with recorder.step("portfolio.optimise") as step:
-            optimization, adjusted_expected = self.optimise(
+            optimization, adjusted_expected, bl_result = self.optimise(
                 profile, features, snapshot.returns, decision, current_weights
             )
             step["inputs"] = {
                 "method": optimization.method,
                 "exclusions": sorted(excluded_tickers(profile.exclusions)),
                 "previous_weights": current_weights,
+                "bl_views": bl_result.n_views,
             }
             step["outputs"] = optimization.model_dump(mode="json")
-            step["notes"] = f"Solver status: {optimization.solver_status}"
+            step["notes"] = (
+                f"Solver status: {optimization.solver_status}; "
+                f"Black-Litterman views {bl_result.n_views}, total influence "
+                f"{bl_result.total_influence:.4f} (cap {self.settings.bl_max_total_influence:.4f})"
+            )
 
         with recorder.step("suitability.validate") as step:
             optimization, suitability = self.apply_suitability(
@@ -255,6 +269,32 @@ class AdvisoryEngine:
         except Exception:
             ml_section = None
 
+        bl_section = BlackLittermanSection(
+            tau=float(self.settings.bl_tau),
+            view_shift=float(self.settings.bl_view_shift),
+            max_total_influence=float(self.settings.bl_max_total_influence),
+            prior_expected_returns={
+                str(k): float(v) for k, v in bl_result.prior.to_dict().items()
+            },
+            posterior_expected_returns={
+                str(k): float(v) for k, v in bl_result.posterior.to_dict().items()
+            },
+            views={str(k): float(v) for k, v in bl_result.views.to_dict().items()},
+            view_confidence={
+                str(k): float(v) for k, v in bl_result.confidence.to_dict().items()
+            },
+            view_dispersion={
+                str(k): float(v) for k, v in decision.view_dispersion.items()
+            },
+            view_returns={
+                str(k): float(v) for k, v in bl_result.view_returns.to_dict().items()
+            },
+            omega={str(k): float(v) for k, v in bl_result.omega.to_dict().items()},
+            total_influence=float(bl_result.total_influence),
+            influence_capped=bool(bl_result.influence_capped),
+            n_views=int(bl_result.n_views),
+        )
+
         body = {
             "trace_id": trace_id,
             "created_at": created_at.isoformat(),
@@ -268,6 +308,7 @@ class AdvisoryEngine:
             "suitability": suitability.model_dump(mode="json"),
             "explanation": explanation.model_dump(mode="json"),
             "recommendation": recommendation.model_dump(mode="json"),
+            "black_litterman": bl_section.model_dump(mode="json"),
         }
         body["risk_free_rate"] = float(rf)
         body["risk_free_source"] = str(
@@ -279,6 +320,27 @@ class AdvisoryEngine:
         return DecisionTrace(**body, previous_hash=previous_hash, hash=final_hash)
 
     # -- internals --------------------------------------------------------
+    def _black_litterman(
+        self, features: QuantFeatures, decision: CoordinatorDecision
+    ) -> BlackLittermanResult:
+        """Blend coordinated agent views with the quantitative prior.
+
+        A single implementation is used by both the advisory path and the
+        counterfactual, so the two cannot drift apart.
+        """
+        return posterior_expected_returns(
+            features.expected_returns,
+            features.covariance,
+            decision.tilts,
+            confidence=decision.view_confidence,
+            market_score=decision.market_score,
+            market_confidence=decision.market_confidence,
+            portfolio_score=decision.portfolio_score,
+            tau=self.settings.bl_tau,
+            view_shift=self.settings.bl_view_shift,
+            max_total_influence=self.settings.bl_max_total_influence,
+        )
+
     def optimise(
         self,
         profile: InvestorProfile,
@@ -286,7 +348,16 @@ class AdvisoryEngine:
         returns: pd.DataFrame,
         decision: CoordinatorDecision,
         current_weights: Mapping[str, float],
-    ) -> tuple[OptimizationResult, pd.Series]:
+    ) -> tuple[OptimizationResult, pd.Series, BlackLittermanResult]:
+        """Optimize using the BL posterior for every risk class.
+
+        The advisory path uses mean-variance for all classes because minimum
+        CVaR has no expected-return term and would silently ignore every agent
+        view. Risk class still enters through risk aversion, position/sector
+        caps and the blocking suitability gate. Minimum-CVaR remains available
+        in ``quant.optimize`` as a tail-risk alternative for callers that want
+        it.
+        """
         policy = policy_for(profile)
         risk_class = profile.suitability_class
         constraints = Constraints(
@@ -298,36 +369,18 @@ class AdvisoryEngine:
         )
         exclude = excluded_tickers(profile.exclusions)
 
-        # Risk agents' net portfolio view scales conviction; market view tilts equity.
-        conviction = float(max(0.70, min(1.10, 1.0 + 0.35 * decision.portfolio_score)))
-        tilts = {ticker: value * conviction for ticker, value in decision.tilts.items()}
-        equity_overlay = 0.25 * decision.market_score
-        for ticker in features.tickers:
-            if asset_class_of(ticker) == "equity":
-                tilts[ticker] = tilts.get(ticker, 0.0) + equity_overlay
-
-        adjusted_expected = self.quant.apply_tilts(features, tilts, max_adjustment=0.03)
-
-        if risk_class <= 2:
-            result = min_cvar(
-                returns,
-                features.covariance,
-                previous_weights=dict(current_weights),
-                constraints=constraints,
-                sector_of=sector_of,
-                exclude=exclude,
-            )
-        else:
-            result = mean_variance(
-                adjusted_expected,
-                features.covariance,
-                previous_weights=dict(current_weights),
-                constraints=constraints,
-                sector_of=sector_of,
-                exclude=exclude,
-            )
+        bl_result = self._black_litterman(features, decision)
+        adjusted_expected = bl_result.posterior
+        result = mean_variance(
+            adjusted_expected,
+            features.covariance,
+            previous_weights=dict(current_weights),
+            constraints=constraints,
+            sector_of=sector_of,
+            exclude=exclude,
+        )
         result = annotate(result, adjusted_expected, returns, self._risk_free(profile))
-        return result, adjusted_expected
+        return result, adjusted_expected, bl_result
 
     def apply_suitability(
         self,
@@ -373,7 +426,7 @@ class AdvisoryEngine:
         decision: CoordinatorDecision,
     ) -> tuple[OptimizationResult, "SuitabilityReport", "RiskMetrics"]:
         """Optimize, validate and measure in one call (used by the backtester)."""
-        optimization, adjusted = self.optimise(
+        optimization, adjusted, _ = self.optimise(
             profile, ctx.features, ctx.snapshot.returns, decision, ctx.current_weights
         )
         optimization, suitability = self.apply_suitability(
@@ -417,7 +470,7 @@ class AdvisoryEngine:
             turnover_penalty=self.settings.turnover_penalty,
             risk_aversion=max(1.0, {1: 6.0, 2: 4.5, 3: 3.0, 4: 2.0, 5: 1.4}[relaxed.suitability_class] - 1.0),
         )
-        adjusted = self.quant.apply_tilts(features, decision.tilts)
+        adjusted = self._black_litterman(features, decision).posterior
         alternative = mean_variance(
             adjusted,
             features.covariance,

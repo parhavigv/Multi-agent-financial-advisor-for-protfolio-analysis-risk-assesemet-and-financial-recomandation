@@ -16,17 +16,17 @@ contradict the numerical engine.
 
 from __future__ import annotations
 
-import json
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 from intellivest.config import Settings
 from intellivest.contracts import AgentReport, Evidence, InvestorProfile, Signal
 from intellivest.data.market import MarketSnapshot
-from intellivest.data.universe import TICKERS
+from intellivest.data.universe import TICKERS, asset_class_of
+from intellivest.personalization.suitability import policy_for
 from intellivest.quant.engine import QuantFeatures
 
 
@@ -39,7 +39,13 @@ class AgentContext:
     settings: Settings
 
     def fact_sheet(self, extra: dict[str, Any] | None = None) -> dict[str, Any]:
-        """Compact, numeric-only view handed to an LLM, when enabled."""
+        """Compact, numeric view handed to an LLM, when enabled.
+
+        The sheet includes portfolio-level and policy facts so a risk or
+        portfolio analyst can cite the quantities it actually reasoned about.
+        When there are no current holdings the portfolio block uses an equal
+        weight assumption and says so explicitly.
+        """
         features = self.features
         per_asset = {}
         for ticker in features.tickers:
@@ -51,6 +57,22 @@ class AgentContext:
                 "max_drawdown": round(float(features.per_asset_drawdown.get(ticker, 0.0)), 4),
                 "beta": round(float(features.betas.get(ticker, 0.0)), 3),
             }
+
+        current = {
+            ticker: float(weight)
+            for ticker, weight in self.current_weights.items()
+            if weight > 1e-9
+        }
+        assumed_equal = not current
+        weights = (
+            current
+            if current
+            else {ticker: 1.0 / len(features.tickers) for ticker in features.tickers}
+        )
+        metrics = features.metrics_for(weights, self.snapshot.returns, self.settings)
+        policy = policy_for(self.profile)
+        benchmark = features.benchmark_metrics
+
         payload: dict[str, Any] = {
             "as_of": self.snapshot.as_of.isoformat(),
             "regime": features.regime,
@@ -59,8 +81,53 @@ class AgentContext:
             "goal": self.profile.goal,
             "horizon_years": self.profile.horizon_years,
             "loss_tolerance_pct": self.profile.loss_tolerance_pct,
+            "risk_free": round(float(features.risk_free), 4),
+            "n_assets": len(features.tickers),
             "exclusions": self.profile.exclusions,
             "assets": per_asset,
+            "portfolio": {
+                "assumed_equal_weight": assumed_equal,
+                "current_positions": len(current),
+                "current_weights": {
+                    ticker: round(weight, 4)
+                    for ticker, weight in sorted(current.items())
+                },
+                "equity_weight": round(
+                    sum(
+                        weight
+                        for ticker, weight in current.items()
+                        if asset_class_of(ticker) == "equity"
+                    ),
+                    4,
+                ),
+                "annual_return": round(metrics.annual_return, 4),
+                "annual_volatility": round(metrics.annual_volatility, 4),
+                "sharpe": round(metrics.sharpe, 4),
+                "cvar_95_daily": round(metrics.cvar_95, 6),
+                "max_drawdown": round(metrics.max_drawdown, 4),
+                "beta": round(metrics.beta, 4),
+                "effective_n": round(metrics.effective_n, 4),
+                "herfindahl": round(metrics.herfindahl, 4),
+            },
+            "policy": {
+                "risk_class": policy.risk_class,
+                "max_equity": round(policy.max_equity, 4),
+                "max_volatility": round(policy.max_volatility, 4),
+                "max_cvar": round(policy.max_cvar, 6),
+                "min_defensive": round(policy.min_defensive, 4),
+                "max_single": round(policy.max_single, 4),
+                "min_effective_n": round(policy.min_effective_n, 2),
+            },
+            "benchmark": {
+                "annual_return": round(benchmark.annual_return, 4),
+                "annual_volatility": round(benchmark.annual_volatility, 4),
+                "sharpe": round(benchmark.sharpe, 4),
+                "sortino": round(benchmark.sortino, 4),
+                "cvar_95_daily": round(benchmark.cvar_95, 6),
+                "max_drawdown": round(benchmark.max_drawdown, 4),
+                "beta": round(benchmark.beta, 4),
+                "effective_n": round(benchmark.effective_n, 4),
+            },
         }
         if extra:
             payload.update(extra)
@@ -109,45 +176,50 @@ class AnalystAgent(ABC):
             degraded=degraded,
         )
 
+    def _with_llm(
+        self, ctx: AgentContext, deterministic: Callable[[], AgentReport]
+    ) -> AgentReport:
+        """Use a validated LLM report, otherwise the deterministic analyst.
+
+        A deterministic fallback is marked ``degraded`` when an LLM was
+        configured, so the decision trace distinguishes a normal deterministic
+        run from a failed model call.
+        """
+        report = self._llm_report(ctx)
+        if report is not None:
+            return report
+        result = deterministic()
+        from intellivest.agents.llm import llm_config
+
+        if llm_config(ctx.settings) is not None and not result.degraded:
+            result = result.model_copy(update={"degraded": True})
+        return result
+
     def _llm_report(self, ctx: AgentContext, extra: dict[str, Any] | None = None) -> AgentReport | None:
-        """Optional LLM reasoning path. Returns ``None`` on any failure."""
-        from intellivest.agents.llm import LLMUnavailable, complete_json, llm_config
+        """Optional structured LLM path. Returns ``None`` on any failure."""
+        from intellivest.agents.llm import complete_json, llm_config
+        from intellivest.agents.schema import build_prompt, validate_llm_report
 
         config = llm_config(ctx.settings)
         if config is None:
             return None
-        system = (
-            f"You are the {self.role} in a regulated investment-advisory pipeline. "
-            "Use ONLY the numbers in the fact sheet. Do not invent data, prices, or dates. "
-            "Return JSON with keys: summary (string), confidence (0-1), "
-            "signals (list of {name, subject, direction, strength, rationale, confidence}), "
-            "evidence (list of {source, as_of, claim, value}). "
-            "direction must be bullish|bearish|neutral; strength in [-1,1] and must match direction. "
-            f"Valid subjects: {', '.join(TICKERS)} or MARKET or PORTFOLIO. "
-            "Evidence as_of must be on or before the fact-sheet as_of."
-        )
-        user = json.dumps(ctx.fact_sheet(extra), default=str)
         try:
+            facts = ctx.fact_sheet(extra)
+            system, user = build_prompt(self.role, self.name, facts)
             payload = complete_json(config, system, user)
-        except LLMUnavailable:
-            return None
-        except Exception:
-            return None
-
-        try:
-            signals = [Signal(**item) for item in payload.get("signals", [])]
-            evidence = [Evidence(**item) for item in payload.get("evidence", [])]
-            return self._report(
-                ctx,
-                summary=str(payload.get("summary") or "LLM analysis unavailable."),
-                signals=signals,
-                evidence=evidence,
-                metrics=payload.get("metrics", {}),
-                confidence=float(payload.get("confidence", 0.5)),
-                degraded=False,
+            report = validate_llm_report(
+                payload,
+                agent=self.name,
+                role=self.role,
+                as_of=ctx.snapshot.as_of,
+                fact_sheet=facts,
             )
         except Exception:
+            # Any schema, citation, grounding or transport failure falls back
+            # to the deterministic analyst. The wrapper marks the report
+            # degraded when an LLM was actually configured.
             return None
+        return report if report.signals else None
 
 
 def _valid_subject(subject: str) -> bool:

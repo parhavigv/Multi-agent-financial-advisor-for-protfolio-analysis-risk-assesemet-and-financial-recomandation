@@ -20,10 +20,9 @@ class PortfolioAnalysisAgent(AnalystAgent):
     coordination_weight = 0.8
 
     def analyze(self, ctx: AgentContext) -> AgentReport:
-        llm_report = self._llm_report(ctx)
-        if llm_report is not None:
-            return llm_report
+        return self._with_llm(ctx, lambda: self._deterministic(ctx))
 
+    def _deterministic(self, ctx: AgentContext) -> AgentReport:
         current = {t: w for t, w in ctx.current_weights.items() if w > 1e-9}
         reference = reference_allocation(ctx.profile, ctx.features.tickers)
         policy = policy_for(ctx.profile)

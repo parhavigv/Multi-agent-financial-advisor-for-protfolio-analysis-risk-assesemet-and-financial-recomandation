@@ -152,9 +152,9 @@ def evaluate_main(argv: list[str] | None = None) -> int:
 
     def _run(run_settings):
         backtester = Backtester(run_settings, rebalance_every=args.rebalance_every)
-        return backtester.run(profile, CONFIGS)
+        return backtester.run(profile, CONFIGS), type(backtester.provider).__name__
 
-    primary = _run(settings)
+    primary, market_source = _run(settings)
 
     robustness: list[dict[str, object]] = []
     if not args.skip_robustness:
@@ -162,10 +162,11 @@ def evaluate_main(argv: list[str] | None = None) -> int:
         for seed in dict.fromkeys(seeds):
             print(f"robustness seed {seed} ...", flush=True)
             run_settings = settings if seed == settings.seed else replace(settings, seed=seed)
+            results, _ = _run(run_settings)
             robustness.append(
                 {
                     "seed": seed,
-                    "results": [result.to_dict() for result in _run(run_settings)],
+                    "results": [result.to_dict() for result in results],
                 }
             )
 
@@ -182,6 +183,7 @@ def evaluate_main(argv: list[str] | None = None) -> int:
             "rebalance_every": args.rebalance_every,
             "universe_size": len(TICKERS),
             "regime_seed": 60,
+            "market_source": market_source,
         },
         "primary": {
             "results": [result.to_dict() for result in primary],
@@ -228,6 +230,8 @@ def _aggregate(robustness: list[dict[str, object]], configs) -> dict[str, object
     """Mean and standard deviation of each metric across seeds."""
     import numpy as np
 
+    if not robustness:
+        return {}
     aggregate: dict[str, object] = {}
     for config in configs:
         rows = []
@@ -253,12 +257,15 @@ def _markdown(results, payload) -> str:
         "# Walk-forward evaluation\n\n"
         f"Primary seed {generated['seed']}, window {generated['data_start']} → "
         f"{generated['data_end']}, rebalance every {generated['rebalance_every']} trading days, "
-        f"{generated['transaction_cost_bps']} bps transaction cost. The macro regime path is "
-        "fixed across seeds; the seed controls only cross-sectional asset draws.\n\n"
-        "**Configurations.** `quant_only` = constrained optimizer, no agent tilts and no "
-        "suitability gate. `agents_only` = direct agent-consensus allocation, bypassing every "
-        "quantitative guardrail. `hybrid` = bounded agent tilts inside the optimizer, followed "
-        "by the blocking suitability gate.\n\n"
+        f"{generated['transaction_cost_bps']} bps transaction cost. Market source: "
+        f"{generated.get('market_source', 'unknown')}. The macro regime path is fixed across "
+        "seeds; the seed controls only cross-sectional asset draws.\n\n"
+        "**Configurations.** `quant_only` = constrained mean-variance optimizer with a neutral "
+        "view set and no suitability gate. `agents_only` = direct agent-consensus allocation, "
+        "bypassing every quantitative guardrail. `hybrid` = agent views enter the Black-Litterman "
+        "posterior, the optimizer chooses weights, and the blocking suitability gate remediates "
+        "the result. `hybrid_shuffled` = the same pipeline with the asset-to-tilt mapping permuted "
+        "by a seeded RNG (placebo).\n\n"
     )
     columns = [
         ("Annual return", "annual_return", "{:.2%}"),
@@ -336,10 +343,55 @@ def _reading(payload) -> str:
             f"{a['max_drawdown']['mean']:.1%}."
         )
         lines.append(
-            "* **Return is not the objective function.** The configurations land close on "
-            "annual return, which is expected: the gate is a risk-control layer, not a "
-            "return-prediction layer. Its value is measured in breaches avoided, tail risk "
-            "and turnover, not in alpha."
+            "* **Return is not the objective function.** "
+            f"Hybrid annual return is {h['annual_return']['mean']:.2%} versus "
+            f"{a['annual_return']['mean']:.2%} for unconstrained agents; "
+            f"volatility is {h['annual_volatility']['mean']:.2%} versus "
+            f"{a['annual_volatility']['mean']:.2%}, and CVaR95 is "
+            f"{h['cvar_95']['mean']:.2%} versus {a['cvar_95']['mean']:.2%}. "
+            "The design optimises for suitability and risk control, not alpha."
+        )
+    if "hybrid" in aggregate and "quant_only" in aggregate:
+        h = aggregate["hybrid"]
+        q = aggregate["quant_only"]
+        lines.append(
+            f"* **Versus the numerical engine.** Hybrid annual return is "
+            f"{h['annual_return']['mean']:.2%} versus {q['annual_return']['mean']:.2%} "
+            f"for quant_only, with volatility {h['annual_volatility']['mean']:.2%} "
+            f"versus {q['annual_volatility']['mean']:.2%}, CVaR95 "
+            f"{h['cvar_95']['mean']:.2%} versus {q['cvar_95']['mean']:.2%}, and "
+            f"suitability breaches {h['suitability_breach_rate']['mean']:.1%} versus "
+            f"{q['suitability_breach_rate']['mean']:.1%}. The agent layer is a "
+            "risk-and-suitability layer here, not a return-enhancement layer."
+        )
+    if "hybrid" in aggregate and "hybrid_shuffled" in aggregate:
+        h = aggregate["hybrid"]
+        s = aggregate["hybrid_shuffled"]
+        gap_sharpe = h["sharpe"]["mean"] - s["sharpe"]["mean"]
+        gap_return = h["annual_return"]["mean"] - s["annual_return"]["mean"]
+        if abs(gap_sharpe) < 0.05 and abs(gap_return) < 0.005:
+            conclusion = (
+                "The gap is negligible in this run, so the placebo does not "
+                "support a claim that the asset-level mapping adds value."
+            )
+        elif gap_sharpe > 0 and gap_return > 0:
+            conclusion = (
+                "The true mapping is ahead on both metrics, which is consistent "
+                "with asset-level agent information adding value."
+            )
+        else:
+            conclusion = (
+                "The placebo is not worse, so this run does not support a claim "
+                "that the asset-level mapping adds value."
+            )
+        lines.append(
+            f"* **Placebo check.** Permuting which asset receives each agent tilt leaves "
+            f"Sharpe at {s['sharpe']['mean']:.2f} ± {s['sharpe']['std']:.2f} versus "
+            f"{h['sharpe']['mean']:.2f} ± {h['sharpe']['std']:.2f} for the true mapping, "
+            f"and annual return at {s['annual_return']['mean']:.2%} versus "
+            f"{h['annual_return']['mean']:.2%}. {conclusion} With "
+            f"{len(payload.get('robustness', {}).get('seeds', []))} seeds this is "
+            "descriptive, not a formal significance test."
         )
     return "\n".join(lines) + "\n"
 

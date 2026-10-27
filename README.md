@@ -9,6 +9,8 @@ A production-grade, multi-agent financial advisory system that combines quantita
 ## 🎯 Key Features
 
 - **Multi-Agent Architecture** - Specialized agents (Market, Fundamental, Sentiment, Risk, Portfolio, Recommendation) collaborate through an orchestrated workflow
+- **Grounded Optional LLM Analysts** - Strict-schema LLM path with per-signal fact-sheet citations, numeric grounding and automatic deterministic fallback
+- **Black-Litterman View Blending** - Coordinated agent signals become absolute views with confidence-scaled uncertainty and a hard cap on total influence
 - **Suitability-Aware Recommendations** - Enforces investor profile constraints with automated repair mechanisms and hard blocking gates
 - **Quantitative Portfolio Optimization** - Mean-variance optimization with constraints (position limits, sector caps, turnover penalties, transaction costs)
 - **Comprehensive Risk Analytics** - VaR, CVaR, max drawdown, Sharpe/Sortino ratios, risk decomposition, and scenario analysis
@@ -16,7 +18,7 @@ A production-grade, multi-agent financial advisory system that combines quantita
 - **Tamper-Evident Audit Trail** - Cryptographic hash chaining ensures complete auditability of every recommendation
 - **Deterministic & Reproducible** - Seeded synthetic market data for testing and backtesting with full reproducibility
 - **No-Lookahead Guarantee** - All data access respects point-in-time constraints to prevent information leakage
-- **Walk-Forward Backtesting** - Compare quant-only, agents-only, and hybrid strategies with robustness across multiple seeds
+- **Walk-Forward Ablation** - Compare quant-only, agents-only, hybrid and a shuffled-view placebo across seeds
 
 ## 🏗️ Architecture
 
@@ -132,6 +134,36 @@ recording the rejection in `DecisionTrace.ml_forecast`. Market snapshots use the
 causal HMM regime with a threshold fallback if the optional dependency is
 missing.
 
+### Optional LLM Analysts (Phase 3)
+
+Deterministic agents are the default and the offline fallback. To enable the
+optional LLM analyst path, set `INTELLIVEST_LLM_PROVIDER` (for example `mock`
+for tests or an OpenAI-compatible provider), `INTELLIVEST_LLM_MODEL`,
+`INTELLIVEST_LLM_BASE_URL` and `INTELLIVEST_LLM_API_KEY`.
+
+The LLM never chooses weights, supplies performance metrics, or writes the
+final evidence. It returns a strict JSON object; every signal must cite exact
+dotted fact-sheet paths, and every number in a summary or rationale must be
+represented by one of its cited fields. Invented Sharpe ratios, percentages,
+dates, ratios and units are rejected. Evidence is rebuilt from the cited
+fields, and any schema, citation, grounding or transport failure falls back to
+the deterministic analyst with `degraded=True`. The full protocol is in
+[docs/AGENTS.md](docs/AGENTS.md).
+
+### Black-Litterman View Blending
+
+Each coordinated agent tilt becomes an absolute view on one asset:
+`Q_i = mu_i + tilt_i * view_shift`. The quantitative expected return is the
+prior; confidence sets the diagonal view uncertainty
+`Omega_i = P_i tau Sigma P_i' (1-c)/c`; a market view is added as an
+equal-weight equity portfolio when the market signal is non-zero. The
+optimizer then chooses weights from the posterior. A per-asset movement cap
+and a global L1 influence cap prevent narrative conviction from dominating the
+quantitative forecast. The advisory path uses mean-variance for every risk
+class, because minimum-CVaR has no expected-return term and would silently
+ignore the views; risk class still enters through risk aversion, position
+limits, sector caps and the blocking suitability gate.
+
 ### Run Tests
 
 ```bash
@@ -186,14 +218,26 @@ Configure via environment variables or use defaults:
 | `INTELLIVEST_MAX_SECTOR_WEIGHT` | `0.45` | Maximum sector weight |
 | `INTELLIVEST_TRANSACTION_COST_BPS` | `12.0` | Transaction costs in basis points |
 | `INTELLIVEST_RISK_FREE_RATE` | `0.065` | Fallback rate only; real mode uses FRED DGS3MO |
-| `INTELLIVEST_LLM_PROVIDER` | `deterministic` | LLM provider (deterministic/mock or real) |
+| `INTELLIVEST_BL_TAU` | `0.05` | Black-Litterman prior uncertainty scale |
+| `INTELLIVEST_BL_VIEW_SHIFT` | `0.03` | Maximum annualised return shift per view |
+| `INTELLIVEST_BL_MAX_TOTAL_INFLUENCE` | `0.12` | Cap on the L1 sum of posterior movements |
+| `INTELLIVEST_LLM_PROVIDER` | `deterministic` | LLM provider (`deterministic`, `mock` or a real endpoint) |
+| `INTELLIVEST_LLM_MODEL` | `gpt-4o-mini` | Model name used when the LLM path is enabled |
+| `INTELLIVEST_LLM_BASE_URL` | `https://api.openai.com/v1` | OpenAI-compatible base URL |
+| `INTELLIVEST_LLM_API_KEY` | unset | API key; the LLM path is disabled without it |
 
 ## 📊 Evaluation Results
 
-The system supports three configurations for comparison:
-- **`quant_only`** - Pure constrained optimization, no agent inputs
+The system supports four configurations for comparison:
+- **`quant_only`** - Constrained mean-variance with a neutral view set and no suitability gate
 - **`agents_only`** - Direct agent consensus, bypassing quantitative guardrails
-- **`hybrid`** - Agent tilts bounded within optimizer, followed by suitability gate (recommended)
+- **`hybrid`** - Black-Litterman agent views, optimizer weights, then the blocking suitability gate (proposed design)
+- **`hybrid_shuffled`** - The same pipeline with the asset-to-tilt mapping permuted by a seeded RNG (placebo)
+
+The placebo is the key ablation: it preserves the distribution of agent views
+and the market view while destroying which asset each view belongs to. If
+`hybrid` does not beat `hybrid_shuffled`, the result does not support a claim
+that the asset-level agent mapping adds value.
 
 ### Evaluation protocol
 
@@ -207,8 +251,9 @@ Splits are fixed **by time** (`intellivest/evaluation/splits.py`):
 
 Results are saved to `results/evaluation.json` and `results/evaluation.md` with
 metrics including Sharpe ratio, Sortino ratio, max drawdown, CVaR, turnover,
-and suitability breach rates. Synthetic and real-data runs are reported
-separately; synthetic results are never presented as real-world performance.
+and suitability breach rates. The report header records the market source
+(`SyntheticMarket` or `RealMarket`), so synthetic and real-data runs cannot be
+confused; synthetic results are never presented as real-world performance.
 
 Forecast-model evaluation is separate and reported in
 `results/forecast_report.md` (see [docs/FORECASTING.md](docs/FORECASTING.md)).
@@ -216,6 +261,33 @@ Its selection is made on validation only; the test window is added by the final
 run and never changes the selected models. The dev/validation metrics, flags,
 shuffled control and selection are verified to be identical with and without
 the test window.
+
+### Phase 3 ablation (real ETF data, five seeds)
+
+The table below is generated by `intellivest-evaluate`; it reports the actual
+five-seed means (only the shuffled row showed non-zero spread). The run uses
+cached real ETF prices and the point-in-time FRED `DGS3MO` risk-free series.
+The five seeds share the same macro regime path, so the seed spread is not an
+independent out-of-sample sample.
+
+| Metric | quant_only | agents_only | hybrid | hybrid_shuffled |
+|---|---:|---:|---:|---:|
+| Annual return | 11.64% | 13.31% | 9.87% | 9.84% ± 0.02% |
+| Volatility | 12.32% | 16.43% | 10.81% | 10.77% |
+| Sharpe | 0.69 | 0.62 | 0.62 | 0.62 |
+| Max drawdown | -15.91% | -17.92% | -16.01% | -16.07% |
+| CVaR95 (1-day) | 1.78% | 2.40% | 1.52% | 1.51% |
+| Turnover / rebalance | 6.8% | 20.2% | 6.6% | 6.4% |
+| Annual cost | 9.9 bps | 29.5 bps | 9.6 bps | 9.4 bps |
+| Suitability breach rate | 41% | 70% | 0% | 0% |
+
+The measurable contribution is the suitability and risk-control layer: the
+hybrid gate eliminates breaches and cuts turnover and tail risk relative to
+unconstrained consensus. The placebo is essentially indistinguishable from the
+true mapping on return and Sharpe, so this run **does not support a claim that
+the asset-level agent views add alpha**. That null result is reported rather
+than tuned away. The full design, equations and limitations are in
+[docs/AGENTS.md](docs/AGENTS.md).
 
 ## 🧪 Testing
 
@@ -233,6 +305,9 @@ The test suite ensures:
 - Selection invariance when the test window is added (no test-driven tuning)
 - Shuffled-label control (no cross-sectional signal after permutation)
 - ML overlay end-to-end: trace fields, fallback on short history, JSON round-trip
+- LLM strict schema, citation existence, numeric grounding and deterministic fallback
+- Black-Litterman posterior, confidence-scaled Omega, per-asset and total influence caps
+- Placebo permutation invariance and end-to-end Black-Litterman trace fields
 
 ```bash
 # Run all tests
