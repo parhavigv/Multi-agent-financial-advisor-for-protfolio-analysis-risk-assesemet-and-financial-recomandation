@@ -173,103 +173,89 @@ risk classes. Risk class still enters through:
 `min_cvar` remains in `quant.optimize` as a tail-risk alternative for callers
 that explicitly want it, but it is not used by `AdvisoryEngine.optimise`.
 
-## Phase 3 ablation
+## Phase 4 evaluation (current)
 
-`intellivest-evaluate` runs four configurations on the same seeded market,
-rebalance dates, lookback and transaction-cost assumption:
+Phase 3 introduced the Black-Litterman view layer and the shuffled-view
+placebo. Phase 4 replaces its seed panel with the evaluation protocol that is
+actually defensible for the claim:
 
-| Config | Agent views | Optimizer | Suitability gate |
-|---|---|---|---|
-| `quant_only` | neutral | mean-variance | no |
-| `agents_only` | direct consensus | none | no |
-| `hybrid` | true coordinated views | mean-variance on BL posterior | yes |
-| `hybrid_shuffled` | permuted asset mapping | mean-variance on BL posterior | yes |
+- five investor profiles spanning binding suitability classes 1-5;
+- 1/N and 60/40 strategic benchmarks;
+- minimum variance and quant-only baselines;
+- a fair `quant_only_gated` baseline that uses the same optimizer and gate as
+  the hybrid but neutral views;
+- 252-day estimation window so the sample covers the 2020 crash and 2022 rate
+  shock;
+- holdings-aware agent decisions for `agents_only` and `hybrid`, recomputed at
+  each rebalance with the arm's actual prior portfolio;
+- transaction costs and turnover;
+- moving-block bootstrap intervals and paired hybrid-vs-baseline tests;
+- realised profile-alignment diagnostics.
 
-`hybrid_shuffled` preserves the distribution of tilts, confidence and
-dispersion and keeps the market view; it only permutes which asset receives
-each tilt. The permutation is seeded by the run seed and rebalance index, so it
-is reproducible.
+`hybrid_shuffled` is retained as an opt-in placebo but is not part of the
+primary seven-arm panel.
 
-### Actual results
+The full protocol, per-profile tables, confidence intervals and limitations are
+in [EVALUATION.md](EVALUATION.md). The versioned evidence is
+`results/phase4_evaluation.md` and `results/phase4_evaluation.json`.
 
-Five seeds, primary seed `20261023`, window `2018-01-01` to `2026-06-30`,
-rebalance every 21 trading days, 12 bps transaction cost. The run uses the
-cached real ETF prices in `data/prices.csv` and the point-in-time FRED
-`DGS3MO` series in `data/risk_free.csv` (`RealMarket`). Values are means
-across seeds; the only non-zero standard deviations were 0.02% for shuffled
-annual return and 0.01% for shuffled max drawdown.
+### What the current run shows
 
-| Metric | quant_only | agents_only | hybrid | hybrid_shuffled |
-|---|---:|---:|---:|---:|
-| Annual return | 11.64% | 13.31% | 9.87% | 9.84% |
-| Volatility | 12.32% | 16.43% | 10.81% | 10.77% |
-| Sharpe | 0.69 | 0.62 | 0.62 | 0.62 |
-| Sortino | 0.97 | 0.87 | 0.88 | 0.88 |
-| Max drawdown | -15.91% | -17.92% | -16.01% | -16.07% |
-| CVaR95 (1-day) | 1.78% | 2.40% | 1.52% | 1.51% |
-| Calmar | 0.73 | 0.74 | 0.62 | 0.61 |
-| Turnover / rebalance | 6.8% | 20.2% | 6.6% | 6.4% |
-| Annual cost | 9.9 bps | 29.5 bps | 9.6 bps | 9.4 bps |
-| Suitability breach rate | 41% | 70% | 0% | 0% |
-| Average equity weight | 74% | 85% | 61% | 60% |
+- Hybrid and `quant_only_gated` are essentially tied: 9.1% versus 9.0% annual
+  return, 11.3% versus 11.2% volatility, and Sharpe 0.46 versus 0.45. The agent
+  views do not establish an alpha advantage over the same numerical pipeline
+  with neutral views.
+- The blocking gate reduces the breach rate from 56% without a gate to 40% with
+  the gate, but it does not eliminate breaches. The most conservative profile's
+  5% loss tolerance was already exceeded by the realised multi-year path.
+- Hybrid returned -6.2% in the fixed 2020 crash window versus -7.8% for 60/40,
+  and -5.8% in the 2022 rate shock versus -9.2% for 60/40. These are
+  risk-reduction observations in two episodes, not general outperformance.
+- `agents_only` is the failure mode the guardrails are meant to contain: 7.4%
+  return, 76.1% turnover per rebalance, 110.5 bps annual cost, and a 74% breach
+  rate. Holdings-aware portfolio views make it churn.
+- Of 30 paired Sharpe comparisons, 4 have p < 0.05 before multiple-testing
+  correction; 2 of 30 max-drawdown comparisons do. The directions are mixed.
+  This is descriptive evidence, not a significant-edge claim.
 
-### Interpretation
+### Phase 3 placebo (historical)
 
-- **The suitability gate is the measurable contribution.** Hybrid eliminates
-  suitability breaches and reduces turnover and tail risk relative to
-  unconstrained consensus. This is a risk-control result, not an alpha result.
-- **The agents-on versus agents-off comparison is not a win on return.** Hybrid
-  gives up annual return versus `quant_only` (9.87% versus 11.64%) while
-  reducing volatility (10.81% versus 12.32%), CVaR (1.52% versus 1.78%) and
-  suitability breaches (0% versus 41%). Sharpe is lower (0.62 versus 0.69).
-- **The placebo is essentially indistinguishable.** Hybrid and
-  `hybrid_shuffled` differ by 0.03 percentage points of annual return and 0.00
-  on Sharpe. The placebo does **not** support a claim that the asset-level
-  mapping of agent views adds value in this real-ETF backtest.
-- **The seed panel is not five independent trials.** The seeds share the same
-  macro regime path and differ only in cross-sectional draws, and the resulting
-  metrics are almost identical. Do not read the standard deviations as
-  confidence intervals.
-- **No test-period tuning.** The evaluation uses the full configured window for
-  this ablation; forecast-model selection remains a separate validation-only
-  protocol documented in `docs/FORECASTING.md`.
+The shuffled-view placebo remains useful: it preserves the distribution of
+agent views and the market view while destroying which asset receives each
+view. The historical Phase 3 result was that the placebo was indistinguishable
+from the true mapping, which argued against an asset-mapping alpha claim. Those
+files remain at `results/phase3_ablation.md` and `results/phase3_ablation.json`.
 
-The honest conclusion is that the system demonstrates a traceable,
-suitability-aware decision process with guarded agent reasoning, not
-outperformance from agent views. Further work would need a larger investor
-panel, real point-in-time news, and an out-of-sample design that can distinguish
-agent skill from noise.
+The old five-seed panel is **not** a robustness result: every seed shared the
+same macro path, so the near-zero spread was not an independent sample. Phase 4
+does not use it as evidence and does not report seed-robustness claims.
 
 ## Reproduction
 
 ```bash
-# Full ablation, five seeds, writes results/evaluation.{json,md}
-intellivest-evaluate
+# Phase 4 panel with bootstrap intervals and paired tests
+python -c "from intellivest.cli import evaluate_main; raise SystemExit(evaluate_main([]))"
 
-# Primary seed only
-intellivest-evaluate --skip-robustness
+# Fast run without bootstrap
+python -c "from intellivest.cli import evaluate_main; raise SystemExit(evaluate_main(['--no-bootstrap']))"
 
 # Tests
-pytest -q
+python -m pytest -q
 ```
-
-The generated evaluation is versioned at `results/phase3_ablation.md` (with
-the raw JSON at `results/phase3_ablation.json`). Other run artifacts and audit
-logs are gitignored.
 
 ## Limitations
 
-- The ablation uses real ETF price history through 2026-06-29 and a single
-  reference investor profile. It is a backtest, not live performance, and it is
-  not a large investor panel. Real news is not wired in, so the sentiment agent
-  abstains rather than inventing a narrative.
-- The LLM path is exercised with a mock provider in tests. A live provider is
-  optional and not part of the reproducible evaluation.
-- The placebo tests the asset mapping only. It does not test whether the market
-  or portfolio-level views add value.
-- The numeric guard is a whitelist of representations of cited values. It
-  prevents invented magnitudes but cannot enforce that a correctly cited number
-  is used in a semantically correct sentence; a human review and the
-  deterministic narrator remain the final controls.
-- The five-seed panel shares one macro path and should not be treated as a
-  statistical significance test.
+- Backtest only; not live performance or investment advice.
+- Five profiles, one reference universe and one ETF proxy mapping.
+- The bootstrap addresses serial dependence in returns, not model-selection or
+  regime uncertainty.
+- No multiple-testing correction across the 30 hybrid-vs-baseline comparisons.
+- Real news is not wired in, so the sentiment agent abstains rather than
+  inventing a narrative.
+- The LLM path is exercised with mock/deterministic providers in the
+  reproducible evaluation. A live provider is optional and not part of the
+  versioned result.
+- The placebo tests the asset mapping only; it does not test whether market or
+  portfolio-level views add value.
+- The numeric guard prevents invented magnitudes but cannot enforce that a
+  correctly cited number is used in a semantically correct sentence.

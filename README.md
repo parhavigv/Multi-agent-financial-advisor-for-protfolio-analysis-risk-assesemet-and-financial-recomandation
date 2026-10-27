@@ -18,7 +18,7 @@ A production-grade, multi-agent financial advisory system that combines quantita
 - **Tamper-Evident Audit Trail** - Cryptographic hash chaining ensures complete auditability of every recommendation
 - **Deterministic & Reproducible** - Seeded synthetic market data for testing and backtesting with full reproducibility
 - **No-Lookahead Guarantee** - All data access respects point-in-time constraints to prevent information leakage
-- **Walk-Forward Ablation** - Compare quant-only, agents-only, hybrid and a shuffled-view placebo across seeds
+- **Multi-Profile Walk-Forward Evaluation** - Compare 1/N, 60/40, min-variance, quant-only, agents-only and hybrid across five suitability classes with block-bootstrap intervals and regime windows
 
 ## 🏗️ Architecture
 
@@ -74,11 +74,14 @@ intellivest-advise --ml
 ### Run Backtesting & Evaluation
 
 ```bash
-# Run walk-forward evaluation across configurations
+# Run the Phase 4 multi-profile evaluation with bootstrap intervals
 intellivest-evaluate
 
 # Custom parameters
-intellivest-evaluate --rebalance-every 21 --seeds 20261023,7,101
+intellivest-evaluate --rebalance-every 21 --lookback-days 252 --bootstrap-samples 1000
+
+# Fast run without bootstrap/paired resampling
+intellivest-evaluate --no-bootstrap
 ```
 
 ### Real Market Data
@@ -228,66 +231,48 @@ Configure via environment variables or use defaults:
 
 ## 📊 Evaluation Results
 
-The system supports four configurations for comparison:
-- **`quant_only`** - Constrained mean-variance with a neutral view set and no suitability gate
-- **`agents_only`** - Direct agent consensus, bypassing quantitative guardrails
-- **`hybrid`** - Black-Litterman agent views, optimizer weights, then the blocking suitability gate (proposed design)
-- **`hybrid_shuffled`** - The same pipeline with the asset-to-tilt mapping permuted by a seeded RNG (placebo)
+Phase 4 evaluates seven strategies on the same cached real ETF prices, point-in-time FRED risk-free rate, rebalance dates and 12 bps transaction-cost assumption:
 
-The placebo is the key ablation: it preserves the distribution of agent views
-and the market view while destroying which asset each view belongs to. If
-`hybrid` does not beat `hybrid_shuffled`, the result does not support a claim
-that the asset-level agent mapping adds value.
+- **`one_over_n`** - equal weight across the allowed universe
+- **`sixty_forty`** - 60% equal-weight equity sleeve / 40% equal-weight fixed-income sleeve
+- **`min_variance`** - constrained long-only minimum variance
+- **`quant_only_no_gate`** - constrained mean-variance with neutral views and no suitability gate
+- **`quant_only_gated`** - the same optimizer and gate as the hybrid, with neutral views (the fair baseline)
+- **`agents_only`** - direct agent consensus, bypassing the optimizer and gate
+- **`hybrid`** - coordinated Black-Litterman views, optimizer weights, then the blocking suitability gate
 
-### Evaluation protocol
+`hybrid_shuffled` remains available as an opt-in placebo but is not part of the primary Phase 4 panel.
 
-Splits are fixed **by time** (`intellivest/evaluation/splits.py`):
+### Phase 4 protocol
 
-| Split | Window | Use |
-|-------|--------|-----|
-| dev | start .. 2021-12-31 | design and feature/agent tuning |
-| validation | 2022-01-01 .. 2023-12-31 | model and parameter selection |
-| test | 2024-01-01 .. latest | touched once, at the end |
+- Five investor profiles spanning binding suitability classes 1-5.
+- Window `2018-01-01` to `2026-06-30`, 252-day estimation window, 21-day rebalance interval.
+- Fixed regime windows: the 2020 COVID crash (`2020-02-19` to `2020-04-30`) and the 2022 rate shock (`2022-01-01` to `2022-12-31`).
+- Moving-block bootstrap with 21-day blocks and 1000 replicates for Sharpe and max-drawdown intervals.
+- Paired bootstrap tests of hybrid versus every baseline, resampling the same block indices.
+- Profile alignment: realised volatility versus policy limit, realised drawdown versus stated loss tolerance, weight stability between rebalances, and coordinator agreement for agent-driven arms.
+- Holdings-aware agent decisions for `agents_only` and `hybrid`, recomputed at each rebalance with that arm's actual prior portfolio.
+- No seed-robustness claim: the real-data path is identical across seeds, so repeated seeds are not independent trials. The five-profile panel and moving-block intervals replace that claim.
 
-Results are saved to `results/evaluation.json` and `results/evaluation.md` with
-metrics including Sharpe ratio, Sortino ratio, max drawdown, CVaR, turnover,
-and suitability breach rates. The report header records the market source
-(`SyntheticMarket` or `RealMarket`), so synthetic and real-data runs cannot be
-confused; synthetic results are never presented as real-world performance.
+### Phase 4 results (real ETF data)
 
-Forecast-model evaluation is separate and reported in
-`results/forecast_report.md` (see [docs/FORECASTING.md](docs/FORECASTING.md)).
-Its selection is made on validation only; the test window is added by the final
-run and never changes the selected models. The dev/validation metrics, flags,
-shuffled control and selection are verified to be identical with and without
-the test window.
+| Config | Return | Vol | Sharpe | MaxDD | Turnover | Cost | Breach |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `one_over_n` | 12.8% | 14.5% | 0.66 | -30.1% | 0.6% | 0.8 bps | 50% |
+| `sixty_forty` | 10.0% | 11.6% | 0.58 | -23.8% | 0.6% | 0.8 bps | 47% |
+| `min_variance` | 5.1% | 8.0% | 0.24 | -18.3% | 5.0% | 7.2 bps | 60% |
+| `quant_only_no_gate` | 13.0% | 13.8% | 0.70 | -26.4% | 10.2% | 14.8 bps | 56% |
+| `quant_only_gated` | 9.0% | 11.2% | 0.45 | -24.9% | 8.2% | 11.9 bps | 41% |
+| `agents_only` | 7.4% | 13.3% | 0.33 | -27.9% | 76.1% | 110.5 bps | 74% |
+| `hybrid` | 9.1% | 11.3% | 0.46 | -24.9% | 8.0% | 11.7 bps | 40% |
 
-### Phase 3 ablation (real ETF data, five seeds)
+The gate reduces the breach rate from 56% without a gate to 40% with the hybrid gate, but it does not eliminate breaches: the conservative profile's 5% loss tolerance was already exceeded by the realised multi-year path. Against the fair `quant_only_gated` baseline, hybrid is essentially tied (9.1% versus 9.0% annual return; Sharpe 0.46 versus 0.45). The agent layer does not establish an alpha advantage, and `agents_only` without the optimizer or gate is the worst risk-adjusted arm: 7.4% return, 76.1% turnover per rebalance, and a 74% breach rate. Of 30 paired Sharpe comparisons, 4 have p < 0.05 before multiple-testing correction, and 2 of 30 max-drawdown comparisons do; the directions are mixed.
 
-The table below is generated by `intellivest-evaluate`; it reports the actual
-five-seed means (only the shuffled row showed non-zero spread). The run uses
-cached real ETF prices and the point-in-time FRED `DGS3MO` risk-free series.
-The five seeds share the same macro regime path, so the seed spread is not an
-independent out-of-sample sample.
+In the 2020 crash window hybrid returned -6.2% versus -7.8% for 60/40; in the 2022 rate shock hybrid returned -5.8% versus -9.2% for 60/40. These are risk-reduction observations in two fixed episodes, not a claim of general outperformance.
 
-| Metric | quant_only | agents_only | hybrid | hybrid_shuffled |
-|---|---:|---:|---:|---:|
-| Annual return | 11.64% | 13.31% | 9.87% | 9.84% ± 0.02% |
-| Volatility | 12.32% | 16.43% | 10.81% | 10.77% |
-| Sharpe | 0.69 | 0.62 | 0.62 | 0.62 |
-| Max drawdown | -15.91% | -17.92% | -16.01% | -16.07% |
-| CVaR95 (1-day) | 1.78% | 2.40% | 1.52% | 1.51% |
-| Turnover / rebalance | 6.8% | 20.2% | 6.6% | 6.4% |
-| Annual cost | 9.9 bps | 29.5 bps | 9.6 bps | 9.4 bps |
-| Suitability breach rate | 41% | 70% | 0% | 0% |
+The versioned report is `results/phase4_evaluation.md` (JSON: `results/phase4_evaluation.json`). The full protocol, per-profile tables, confidence intervals, paired tests and limitations are in [docs/EVALUATION.md](docs/EVALUATION.md). The earlier `results/phase3_ablation.*` files are retained as historical placebo evidence; their five-seed spread is not used as a robustness claim.
 
-The measurable contribution is the suitability and risk-control layer: the
-hybrid gate eliminates breaches and cuts turnover and tail risk relative to
-unconstrained consensus. The placebo is essentially indistinguishable from the
-true mapping on return and Sharpe, so this run **does not support a claim that
-the asset-level agent views add alpha**. That null result is reported rather
-than tuned away. The full design, equations and limitations are in
-[docs/AGENTS.md](docs/AGENTS.md).
+Forecast-model evaluation remains separate in `results/forecast_report.md` (see [docs/FORECASTING.md](docs/FORECASTING.md)). Its selection is made on validation only; the test window is added by the final run and never changes the selected models.
 
 ## 🧪 Testing
 

@@ -24,9 +24,12 @@ results/*
 # report is versioned even though other run artifacts are not.
 !results/forecast_report.md
 !results/forecast_report.json
-# The Phase-3 placebo ablation is the evidence for the agents/BL claim.
+# The Phase-3 placebo ablation is historical evidence for the agents/BL claim.
 !results/phase3_ablation.md
 !results/phase3_ablation.json
+# The Phase-4 multi-profile evaluation is the evidence for the current claim.
+!results/phase4_evaluation.md
+!results/phase4_evaluation.json
 audits/*
 !audits/.gitkeep
 data/cache/

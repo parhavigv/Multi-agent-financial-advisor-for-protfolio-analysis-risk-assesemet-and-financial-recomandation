@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import date
 from pathlib import Path
 
 from intellivest.config import load_settings
@@ -126,85 +125,54 @@ def advise_main(argv: list[str] | None = None) -> int:
 
 
 def evaluate_main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run the walk-forward configuration comparison.")
-    parser.add_argument("--rebalance-every", type=int, default=21, help="Trading days between rebalances.")
-    parser.add_argument("--output", type=Path, default=None, help="Directory for JSON/Markdown results.")
-    parser.add_argument(
-        "--seeds",
-        default=",".join(str(s) for s in DEFAULT_SEEDS),
-        help="Comma-separated cross-sectional seeds for the robustness panel.",
+    parser = argparse.ArgumentParser(
+        description="Run the Phase 4 multi-profile, multi-regime evaluation."
     )
     parser.add_argument(
-        "--skip-robustness", action="store_true", help="Only run the primary seed."
+        "--rebalance-every",
+        type=int,
+        default=21,
+        help="Trading days between rebalances (default: 21).",
+    )
+    parser.add_argument(
+        "--lookback-days",
+        type=int,
+        default=252,
+        help="Estimation window in trading days (default: 252).",
+    )
+    parser.add_argument("--output", type=Path, default=None, help="Directory for JSON/Markdown results.")
+    parser.add_argument(
+        "--bootstrap-samples",
+        type=int,
+        default=1000,
+        help="Moving-block bootstrap replicates (default: 1000).",
+    )
+    parser.add_argument(
+        "--block-length",
+        type=int,
+        default=21,
+        help="Moving-block length in trading days (default: 21).",
+    )
+    parser.add_argument(
+        "--no-bootstrap",
+        action="store_true",
+        help="Skip bootstrap intervals and paired resampling for a fast run.",
     )
     args = parser.parse_args(argv)
     _use_utf8_stdout()
 
-    import pandas as pd
-    from dataclasses import replace
-
-    from intellivest.data.universe import TICKERS
-    from intellivest.evaluation.backtest import CONFIGS, Backtester, default_profile
+    from intellivest.evaluation.phase4 import run_phase4
 
     settings = load_settings()
-    as_of = date.fromisoformat(settings.data_end)
-    profile = default_profile(as_of)
-
-    def _run(run_settings):
-        backtester = Backtester(run_settings, rebalance_every=args.rebalance_every)
-        return backtester.run(profile, CONFIGS), type(backtester.provider).__name__
-
-    primary, market_source = _run(settings)
-
-    robustness: list[dict[str, object]] = []
-    if not args.skip_robustness:
-        seeds = [int(item) for item in args.seeds.split(",") if item.strip()]
-        for seed in dict.fromkeys(seeds):
-            print(f"robustness seed {seed} ...", flush=True)
-            run_settings = settings if seed == settings.seed else replace(settings, seed=seed)
-            results, _ = _run(run_settings)
-            robustness.append(
-                {
-                    "seed": seed,
-                    "results": [result.to_dict() for result in results],
-                }
-            )
-
-    output = args.output or settings.results_dir
-    output.mkdir(parents=True, exist_ok=True)
-
-    payload = {
-        "generated_with": {
-            "seed": settings.seed,
-            "data_start": settings.data_start,
-            "data_end": settings.data_end,
-            "lookback_days": settings.lookback_days,
-            "transaction_cost_bps": settings.transaction_cost_bps,
-            "rebalance_every": args.rebalance_every,
-            "universe_size": len(TICKERS),
-            "regime_seed": 60,
-            "market_source": market_source,
-        },
-        "primary": {
-            "results": [result.to_dict() for result in primary],
-            "period_notes": {result.config: result.period_notes for result in primary},
-        },
-        "robustness": {
-            "seeds": [entry["seed"] for entry in robustness],
-            "per_seed": robustness,
-            "aggregate": _aggregate(robustness, CONFIGS),
-        },
-    }
-    (output / "evaluation.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
-    curves = pd.concat(
-        {result.config: result.equity_curve for result in primary}, axis=1
+    _, markdown = run_phase4(
+        settings,
+        output=args.output,
+        rebalance_every=args.rebalance_every,
+        lookback_days=args.lookback_days,
+        bootstrap=not args.no_bootstrap,
+        n_boot=args.bootstrap_samples,
+        block_length=args.block_length,
     )
-    curves.index.name = "date"
-    curves.to_csv(output / "equity_curves.csv", float_format="%.6f")
-
-    markdown = _markdown(primary, payload)
-    (output / "evaluation.md").write_text(markdown, encoding="utf-8")
     print(markdown)
     return 0
 

@@ -132,27 +132,32 @@ _MONTH_DATE = re.compile(
 # "12-1 momentum" is a label, not a quantity. Mask it before number checks so
 # the guard does not demand that both label components appear in the fact set.
 _LABEL = re.compile(r"(?<![\w.])\d{1,3}-\d{1,3}(?![\w.%])")
+# Numeric forms seen in prose: 1,000, 12.5, .5, -.5, +3, 1e-3, 1E+3.
+_SIGN = r"[+\-−–]?"
+_NUMBER = r"(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+"
+_NUMBER_GROUP = rf"{_SIGN}(?:{_NUMBER})"
 _RATIO = re.compile(
-    r"(?<![\w.])([+-]?\d+(?:\.\d+)?)\s*([/:])\s*([+-]?\d+(?:\.\d+)?)"
+    rf"(?<![\w.])({_NUMBER_GROUP})\s*([/:])\s*({_NUMBER_GROUP})"
     r"(?!\w)(?!\.\d)"
 )
-_PERCENT = re.compile(r"(?<![\w.])([+-]?\d+(?:\.\d+)?)\s*%")
+_PERCENT = re.compile(rf"(?<![\w.])({_NUMBER_GROUP})\s*%")
 _UNIT = re.compile(
-    r"(?<![\w.])([+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)\s*"
+    rf"(?<![\w.])({_NUMBER_GROUP})\s*"
     r"(bps?|basis points?|x|×|yrs?|years?|days?|months?|weeks?|sd|σ)\b",
     re.IGNORECASE,
 )
-_CURRENCY = re.compile(
-    r"[$€£]\s*([+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)"
+_CURRENCY = re.compile(rf"[$€£]\s*({_NUMBER_GROUP})")
+_SCIENTIFIC = re.compile(
+    rf"(?<![\w.])({_SIGN}\d+(?:\.\d+)?[eE][+\-]?\d+)(?!\w)"
 )
 # A sentence-final period is punctuation, not part of a malformed number.
 # Matching the leading decimal in "1.2.3" is intentional: a dotted triple is
 # not a financial quantity, so the first component must still be grounded.
-_DECIMAL = re.compile(r"(?<![\w.])([+-]?\d+\.\d+)(?!\w)")
-_INTEGER = re.compile(r"(?<![\w.+-])([+-]?\d+)(?!\w)(?!\.\d)")
+_DECIMAL = re.compile(rf"(?<![\w.])({_SIGN}(?:\d+\.\d+|\.\d+))(?!\w)")
+_INTEGER = re.compile(rf"(?<![\w.+\-−–])({_SIGN}\d+)(?!\w)(?!\.\d)")
 # A dotted triple is not a financial quantity. Reject it rather than checking
 # only its leading component.
-_DOTTED = re.compile(r"(?<![\w.])\d+(?:\.\d+){2,}(?!\w)")
+_DOTTED = re.compile(r"(?<![\w.])[+\-−–]?\d+(?:\.\d+){2,}(?!\w)")
 
 
 def guard_numbers(text: str, allowed: set[str]) -> None:
@@ -202,6 +207,10 @@ def guard_numbers(text: str, allowed: set[str]) -> None:
     for match in _CURRENCY.finditer(text):
         _check_number(match.group(1), allowed_normalised, "currency amount")
     text = _CURRENCY.sub(" ", text)
+
+    for match in _SCIENTIFIC.finditer(text):
+        _check_number(match.group(1), allowed_normalised, "scientific number")
+    text = _SCIENTIFIC.sub(" ", text)
 
     for match in _DECIMAL.finditer(text):
         _check_number(match.group(1), allowed_normalised, "decimal")

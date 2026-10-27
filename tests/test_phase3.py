@@ -89,6 +89,13 @@ def test_guard_accepts_units_ratios_dates_and_labels() -> None:
     )
 
 
+def test_guard_checks_scientific_notation() -> None:
+    allowed = numeric_tokens(0.001)
+    guard_numbers("A 1e-3 effect is inside the interval.", allowed)
+    with pytest.raises(GroundingError):
+        guard_numbers("A 1e-4 effect is outside the interval.", allowed)
+
+
 @pytest.mark.parametrize(
     "text",
     [
@@ -495,7 +502,8 @@ def test_shuffle_placebo_preserves_distribution_and_is_deterministic() -> None:
         zip(shuffled.tilts.values(), shuffled.view_confidence.values())
     ) == sorted(zip(decision.tilts.values(), decision.view_confidence.values()))
     assert shuffle_decision(decision, ["SPX", "TECH", "GOLD"], seed=3) == shuffled
-    assert "hybrid_shuffled" in CONFIGS
+    assert "hybrid" in CONFIGS
+    assert "hybrid_shuffled" not in CONFIGS
 
 
 # ---------------------------------------------------------------------------

@@ -2,16 +2,16 @@
 
 ## Data
 - The Phase 0 baseline was synthetic-only (seeded regime-switching factor model). Phase 1 added `RealMarket`; when the cached real files exist, subsequent evaluations use real ETF prices and FRED data (see the Phase 1 resolution below).
-- Deterministic with seeds; regime macro path fixed across seeds (cross-section varies).
+- The synthetic provider is deterministic with seeds; the macro regime path is fixed across seeds. This is reproducibility, not an independent-sample robustness design.
 
 ## Agents
 - Rule-based agents by default (deterministic analyst). LLM layer optional via env vars (disabled unless keys provided).
 
 ## Benchmarks
-- Phase 0 lacked explicit 1/N and 60/40 benchmarks. The Phase 3 ablation compares quant_only, agents_only, hybrid and hybrid_shuffled, but still does not report a standalone 1/N or 60/40 benchmark.
+- Phase 0 lacked explicit 1/N and 60/40 benchmarks. Phase 4 adds both, plus constrained minimum variance, quant-only with and without the gate, agents-only, and hybrid. See the Phase 4 resolution below.
 
 ## Investor/profile
-- Single reference investor in evaluation (`EVAL-001`); CLI uses demo profile. No large panel by default.
+- Phase 3 used a single reference investor (`EVAL-001`); Phase 4 adds a five-profile panel spanning binding suitability classes 1-5. The CLI demo profile is separate from the evaluation panel.
 
 ## Risk-free
 - `risk_free_rate` defaults to 0.065 (6.5%) in config.
@@ -86,3 +86,33 @@
   near-zero standard deviations should not be read as confidence intervals.
 - Design and limitations: `docs/AGENTS.md`; versioned evidence:
   `results/phase3_ablation.md` and `results/phase3_ablation.json`.
+
+## Phase 4 resolution (multi-profile evaluation)
+- The evaluation now runs seven primary configurations: `one_over_n`,
+  `sixty_forty`, `min_variance`, `quant_only_no_gate`, `quant_only_gated`,
+  `agents_only`, and `hybrid`. `quant_only_gated` is the fair baseline: same
+  optimizer and gate as the hybrid, neutral views.
+- Five investor profiles cover binding suitability classes 1-5. Every strategy
+  starts from cash, pays the same initial build cost, and honours exclusions.
+- The estimation window is 252 trading days with a 21-day rebalance interval,
+  so the real-data sample covers the 2020 crash and 2022 rate shock. The older
+  756-day default missed the 2020 episode.
+- Transaction costs and turnover are applied at every rebalance. Profile
+  alignment reports realised volatility versus policy limit, realised drawdown
+  versus stated loss tolerance, consecutive-weight stability and coordinator
+  agreement.
+- Uncertainty uses a moving-block bootstrap with 21-day blocks and 1000
+  replicates. Paired tests resample the same block indices for hybrid and each
+  baseline. The p-value is a two-sided percentile bootstrap p-value; no
+  multiple-testing correction is applied.
+- In the versioned real-ETF run, hybrid and `quant_only_gated` are essentially
+  tied (9.1% versus 9.0% annual return; Sharpe 0.46 versus 0.45). The gate
+  reduces the aggregate breach rate from 56% to 40%, but does not eliminate
+  breaches. `agents_only` is the failure mode the guardrails contain: 7.4%
+  return, 76.1% turnover per rebalance, 110.5 bps annual cost, and a 74% breach
+  rate. Of 30 paired Sharpe comparisons, 4 have p < 0.05 before correction;
+  2 of 30 max-drawdown comparisons do. The directions are mixed.
+- The real-data path is identical across seeds, so the old five-seed spread is
+  not an independent-sample robustness result. Phase 4 drops that claim.
+- Protocol and limitations: `docs/EVALUATION.md`; versioned evidence:
+  `results/phase4_evaluation.md` and `results/phase4_evaluation.json`.
