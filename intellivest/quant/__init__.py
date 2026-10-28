@@ -1,5 +1,9 @@
 """Quantitative engine: risk, covariance, forecasting, optimization."""
 
+from intellivest.quant.black_litterman import (
+    BlackLittermanResult,
+    posterior_expected_returns,
+)
 from intellivest.quant.engine import QuantEngine, QuantFeatures
 from intellivest.quant.optimize import (
     Constraints,
@@ -21,6 +25,7 @@ from intellivest.quant.risk import (
 )
 
 __all__ = [
+    "BlackLittermanResult",
     "Constraints",
     "QuantEngine",
     "QuantFeatures",
@@ -34,6 +39,7 @@ __all__ = [
     "min_cvar",
     "min_variance",
     "portfolio_volatility",
+    "posterior_expected_returns",
     "project_to_caps",
     "risk_metrics",
     "risk_parity",

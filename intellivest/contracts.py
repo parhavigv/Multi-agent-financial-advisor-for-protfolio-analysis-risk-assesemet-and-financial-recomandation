@@ -8,10 +8,13 @@ sentence, and the optimizer cannot hand the narrator a number it invented.
 
 from __future__ import annotations
 
+import re
 from datetime import date, datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+_CITATION_PATH = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z0-9_]+)*$")
 
 Direction = Literal["bullish", "bearish", "neutral"]
 Severity = Literal["info", "warning", "breach"]
@@ -118,6 +121,20 @@ class Signal(StrictModel):
     strength: float = Field(ge=-1.0, le=1.0)
     rationale: str = Field(min_length=1, max_length=400)
     confidence: float = Field(ge=0.0, le=1.0, default=0.6)
+    # Dotted fact-sheet paths used by an LLM signal. Deterministic signals have
+    # no citations because their inputs are the local numeric objects.
+    citations: list[str] = Field(default_factory=list, max_length=16)
+
+    @field_validator("citations")
+    @classmethod
+    def _citation_paths(cls, value: list[str]) -> list[str]:
+        cleaned: list[str] = []
+        for path in value:
+            if not _CITATION_PATH.fullmatch(path):
+                raise ValueError(f"invalid citation path: {path!r}")
+            if path not in cleaned:
+                cleaned.append(path)
+        return cleaned
 
     @model_validator(mode="after")
     def _direction_matches_strength(self) -> "Signal":
@@ -263,7 +280,46 @@ class Explanation(StrictModel):
     counterfactual: dict[str, Any] | None = None
 
 
+class BlackLittermanSection(StrictModel):
+    """Audit record of how agent views entered the expected-return estimate."""
+
+    tau: float
+    view_shift: float
+    max_total_influence: float
+    prior_expected_returns: dict[str, float]
+    posterior_expected_returns: dict[str, float]
+    views: dict[str, float]
+    view_confidence: dict[str, float]
+    view_dispersion: dict[str, float] = Field(default_factory=dict)
+    view_returns: dict[str, float] = Field(default_factory=dict)
+    omega: dict[str, float] = Field(default_factory=dict)
+    total_influence: float
+    influence_capped: bool
+    n_views: int
+
+
+class MLForecastSection(StrictModel):
+    model_config = ConfigDict(extra="forbid", validate_assignment=True, protected_namespaces=())
+    forecast_timestamp: datetime | None = None
+    data_cutoff: date | None = None
+    model_identifiers: list[str] = Field(default_factory=list)
+    model_versions: dict[str, str] = Field(default_factory=dict)
+    model_weights: dict[str, float] = Field(default_factory=dict)
+    validation_metrics: dict[str, dict[str, float]] = Field(default_factory=dict)
+    forecast_values: dict[str, float] = Field(default_factory=dict)
+    forecast_units: str = "annualized_return"
+    top_factors: list[dict[str, Any]] = Field(default_factory=list)
+    attribution_method: str = "none"
+    regime_prediction: str | None = None
+    regime_confidence: float | None = None
+    fallbacks: list[str] = Field(default_factory=list)
+    rejected_models: list[dict[str, str]] = Field(default_factory=list)
+    disagreement: float | None = None
+    uncertainty: float | None = None
+
+
 class DecisionTrace(StrictModel):
+    model_config = ConfigDict(extra="forbid", validate_assignment=True, protected_namespaces=())
     trace_id: str
     created_at: datetime
     as_of: date
@@ -278,6 +334,10 @@ class DecisionTrace(StrictModel):
     recommendation: Recommendation
     previous_hash: str
     hash: str
+    ml_forecast: MLForecastSection | None = None
+    black_litterman: BlackLittermanSection | None = None
+    risk_free_rate: float | None = None
+    risk_free_source: str | None = None
 
 
 class AdviceResponse(StrictModel):

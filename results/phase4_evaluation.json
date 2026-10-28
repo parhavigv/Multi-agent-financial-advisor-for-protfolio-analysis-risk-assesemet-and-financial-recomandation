@@ -1,0 +1,4934 @@
+{
+  "generated_with": {
+    "data_start": "2018-01-01",
+    "data_end": "2026-06-30",
+    "lookback_days": 252,
+    "rebalance_every": 21,
+    "transaction_cost_bps": 12.0,
+    "market_source": "RealMarket",
+    "configs": [
+      "one_over_n",
+      "sixty_forty",
+      "min_variance",
+      "quant_only_no_gate",
+      "quant_only_gated",
+      "agents_only",
+      "hybrid"
+    ],
+    "profiles": [
+      "P1-CAPITAL",
+      "P2-INCOME",
+      "P3-BALANCED",
+      "P4-GROWTH",
+      "P5-AGGRESSIVE"
+    ],
+    "data_split": {
+      "dev_end": "2021-12-31",
+      "validation_start": "2022-01-01",
+      "validation_end": "2023-12-31",
+      "test_start": "2024-01-01",
+      "note": "The advisory strategies are not trained; these same fixed boundaries are applied descriptively to their walk-forward returns, and no advisory parameter is estimated from the test window."
+    },
+    "bootstrap": {
+      "method": "moving_block",
+      "block_length": 21,
+      "n_boot": 1000,
+      "confidence": 0.95,
+      "paired": true
+    },
+    "seed_robustness_claim": false,
+    "note": "The real-data market path does not vary with the random seed, so repeated seeds are not independent trials and are not reported as a robustness panel."
+  },
+  "profiles": [
+    {
+      "profile": {
+        "investor_id": "P1-CAPITAL",
+        "as_of": "2026-06-30",
+        "age": 68,
+        "horizon_years": 3.0,
+        "risk_tolerance": 1,
+        "loss_tolerance_pct": 0.05,
+        "goal": "capital_preservation",
+        "liquidity_need": "high",
+        "current_holdings": {},
+        "exclusions": [],
+        "notes": null
+      },
+      "results": [
+        {
+          "config": "one_over_n",
+          "metrics": {
+            "annual_return": 0.128233,
+            "annual_volatility": 0.145481,
+            "sharpe": 0.6608,
+            "sortino": 0.9189,
+            "max_drawdown": -0.300707,
+            "cvar_95": 0.021262,
+            "calmar": 0.4264,
+            "turnover_per_rebalance": 0.0056,
+            "annual_cost_bps": 0.81,
+            "hit_rate": 0.5547,
+            "rebalances": 90,
+            "average_equity_weight": 0.7143,
+            "suitability_breach_rate": 1.0
+          },
+          "final_equity": 2.453984,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P1-CAPITAL",
+            "risk_class": 1,
+            "realised_volatility": 0.145481,
+            "volatility_limit": 0.085,
+            "volatility_ratio": 1.7115,
+            "volatility_ok": false,
+            "realised_drawdown": 0.300707,
+            "drawdown_limit": 0.05,
+            "drawdown_ratio": 6.0141,
+            "drawdown_ok": false,
+            "recommendation_stability": 1.0,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.660795,
+              "low": -0.144278,
+              "high": 1.535195,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.300707,
+              "low": -0.462546,
+              "high": -0.110613,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.169271,
+              "annual_volatility": 0.17633,
+              "sharpe": 0.7779,
+              "max_drawdown": -0.300707
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.017873,
+              "annual_volatility": 0.136961,
+              "sharpe": -0.1039,
+              "max_drawdown": -0.16924
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.17393,
+              "annual_volatility": 0.105739,
+              "sharpe": 1.3413,
+              "max_drawdown": -0.108216
+            }
+          }
+        },
+        {
+          "config": "sixty_forty",
+          "metrics": {
+            "annual_return": 0.099657,
+            "annual_volatility": 0.115777,
+            "sharpe": 0.5835,
+            "sortino": 0.8117,
+            "max_drawdown": -0.238285,
+            "cvar_95": 0.0168,
+            "calmar": 0.4182,
+            "turnover_per_rebalance": 0.0056,
+            "annual_cost_bps": 0.81,
+            "hit_rate": 0.5595,
+            "rebalances": 90,
+            "average_equity_weight": 0.6,
+            "suitability_breach_rate": 1.0
+          },
+          "final_equity": 2.027557,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P1-CAPITAL",
+            "risk_class": 1,
+            "realised_volatility": 0.115777,
+            "volatility_limit": 0.085,
+            "volatility_ratio": 1.3621,
+            "volatility_ok": false,
+            "realised_drawdown": 0.238285,
+            "drawdown_limit": 0.05,
+            "drawdown_ratio": 4.7657,
+            "drawdown_ok": false,
+            "recommendation_stability": 1.0,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.583508,
+              "low": -0.13309,
+              "high": 1.491389,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.238285,
+              "low": -0.401039,
+              "high": -0.092632,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.143585,
+              "annual_volatility": 0.136246,
+              "sharpe": 0.8183,
+              "max_drawdown": -0.238285
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.001288,
+              "annual_volatility": 0.115466,
+              "sharpe": -0.2669,
+              "max_drawdown": -0.167846
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.131063,
+              "annual_volatility": 0.08523,
+              "sharpe": 1.1611,
+              "max_drawdown": -0.08362
+            }
+          }
+        },
+        {
+          "config": "min_variance",
+          "metrics": {
+            "annual_return": 0.051009,
+            "annual_volatility": 0.079646,
+            "sharpe": 0.2374,
+            "sortino": 0.3216,
+            "max_drawdown": -0.182523,
+            "cvar_95": 0.011655,
+            "calmar": 0.2795,
+            "turnover_per_rebalance": 0.0497,
+            "annual_cost_bps": 7.22,
+            "hit_rate": 0.5579,
+            "rebalances": 90,
+            "average_equity_weight": 0.296,
+            "suitability_breach_rate": 1.0
+          },
+          "final_equity": 1.447982,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P1-CAPITAL",
+            "risk_class": 1,
+            "realised_volatility": 0.079646,
+            "volatility_limit": 0.085,
+            "volatility_ratio": 0.937,
+            "volatility_ok": true,
+            "realised_drawdown": 0.182523,
+            "drawdown_limit": 0.05,
+            "drawdown_ratio": 3.6505,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.9941,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.237416,
+              "low": -0.526449,
+              "high": 1.210193,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.182523,
+              "low": -0.351641,
+              "high": -0.084346,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.076584,
+              "annual_volatility": 0.08236,
+              "sharpe": 0.5401,
+              "max_drawdown": -0.18061
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": -0.032842,
+              "annual_volatility": 0.09048,
+              "sharpe": -0.7178,
+              "max_drawdown": -0.179229
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.091562,
+              "annual_volatility": 0.065775,
+              "sharpe": 0.904,
+              "max_drawdown": -0.055962
+            }
+          }
+        },
+        {
+          "config": "quant_only_no_gate",
+          "metrics": {
+            "annual_return": 0.121569,
+            "annual_volatility": 0.130279,
+            "sharpe": 0.6867,
+            "sortino": 0.9477,
+            "max_drawdown": -0.253543,
+            "cvar_95": 0.019442,
+            "calmar": 0.4795,
+            "turnover_per_rebalance": 0.0933,
+            "annual_cost_bps": 13.55,
+            "hit_rate": 0.5547,
+            "rebalances": 90,
+            "average_equity_weight": 0.6734,
+            "suitability_breach_rate": 1.0
+          },
+          "final_equity": 2.348161,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P1-CAPITAL",
+            "risk_class": 1,
+            "realised_volatility": 0.130279,
+            "volatility_limit": 0.085,
+            "volatility_ratio": 1.5327,
+            "volatility_ok": false,
+            "realised_drawdown": 0.253543,
+            "drawdown_limit": 0.05,
+            "drawdown_ratio": 5.0709,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.9767,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.686747,
+              "low": -0.094463,
+              "high": 1.586909,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.253543,
+              "low": -0.418052,
+              "high": -0.101518,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.141762,
+              "annual_volatility": 0.144676,
+              "sharpe": 0.758,
+              "max_drawdown": -0.253543
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.03273,
+              "annual_volatility": 0.127455,
+              "sharpe": 0.0049,
+              "max_drawdown": -0.149228
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.172968,
+              "annual_volatility": 0.113229,
+              "sharpe": 1.2441,
+              "max_drawdown": -0.103401
+            }
+          }
+        },
+        {
+          "config": "quant_only_gated",
+          "metrics": {
+            "annual_return": 0.041244,
+            "annual_volatility": 0.076355,
+            "sharpe": 0.1198,
+            "sortino": 0.1687,
+            "max_drawdown": -0.227914,
+            "cvar_95": 0.010668,
+            "calmar": 0.181,
+            "turnover_per_rebalance": 0.0056,
+            "annual_cost_bps": 0.81,
+            "hit_rate": 0.5296,
+            "rebalances": 90,
+            "average_equity_weight": 0.0,
+            "suitability_breach_rate": 1.0
+          },
+          "final_equity": 1.350827,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P1-CAPITAL",
+            "risk_class": 1,
+            "realised_volatility": 0.076355,
+            "volatility_limit": 0.085,
+            "volatility_ratio": 0.8983,
+            "volatility_ok": true,
+            "realised_drawdown": 0.227914,
+            "drawdown_limit": 0.05,
+            "drawdown_ratio": 4.5583,
+            "drawdown_ok": false,
+            "recommendation_stability": 1.0,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.119758,
+              "low": -0.521721,
+              "high": 0.804929,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.227914,
+              "low": -0.264055,
+              "high": -0.083666,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.072011,
+              "annual_volatility": 0.068184,
+              "sharpe": 0.5853,
+              "max_drawdown": -0.105522
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": -0.041176,
+              "annual_volatility": 0.097098,
+              "sharpe": -0.7547,
+              "max_drawdown": -0.179593
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.074253,
+              "annual_volatility": 0.065976,
+              "sharpe": 0.6389,
+              "max_drawdown": -0.057992
+            }
+          }
+        },
+        {
+          "config": "agents_only",
+          "metrics": {
+            "annual_return": 0.078464,
+            "annual_volatility": 0.097112,
+            "sharpe": 0.4774,
+            "sortino": 0.6684,
+            "max_drawdown": -0.207302,
+            "cvar_95": 0.01432,
+            "calmar": 0.3785,
+            "turnover_per_rebalance": 0.5535,
+            "annual_cost_bps": 80.34,
+            "hit_rate": 0.552,
+            "rebalances": 90,
+            "average_equity_weight": 0.4011,
+            "suitability_breach_rate": 1.0
+          },
+          "final_equity": 1.754243,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P1-CAPITAL",
+            "risk_class": 1,
+            "realised_volatility": 0.097112,
+            "volatility_limit": 0.085,
+            "volatility_ratio": 1.1425,
+            "volatility_ok": false,
+            "realised_drawdown": 0.207302,
+            "drawdown_limit": 0.05,
+            "drawdown_ratio": 4.146,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.5128,
+            "inter_agent_agreement": 0.7865
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.477429,
+              "low": -0.26244,
+              "high": 1.288804,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.207302,
+              "low": -0.295165,
+              "high": -0.092184,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.125476,
+              "annual_volatility": 0.096077,
+              "sharpe": 0.9719,
+              "max_drawdown": -0.143875
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": -0.028916,
+              "annual_volatility": 0.112791,
+              "sharpe": -0.541,
+              "max_drawdown": -0.207302
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.114562,
+              "annual_volatility": 0.083745,
+              "sharpe": 0.9847,
+              "max_drawdown": -0.070945
+            }
+          }
+        },
+        {
+          "config": "hybrid",
+          "metrics": {
+            "annual_return": 0.041244,
+            "annual_volatility": 0.076355,
+            "sharpe": 0.1198,
+            "sortino": 0.1687,
+            "max_drawdown": -0.227914,
+            "cvar_95": 0.010668,
+            "calmar": 0.181,
+            "turnover_per_rebalance": 0.0056,
+            "annual_cost_bps": 0.81,
+            "hit_rate": 0.5296,
+            "rebalances": 90,
+            "average_equity_weight": 0.0,
+            "suitability_breach_rate": 1.0
+          },
+          "final_equity": 1.350827,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P1-CAPITAL",
+            "risk_class": 1,
+            "realised_volatility": 0.076355,
+            "volatility_limit": 0.085,
+            "volatility_ratio": 0.8983,
+            "volatility_ok": true,
+            "realised_drawdown": 0.227914,
+            "drawdown_limit": 0.05,
+            "drawdown_ratio": 4.5583,
+            "drawdown_ok": false,
+            "recommendation_stability": 1.0,
+            "inter_agent_agreement": 0.8195
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.119758,
+              "low": -0.598647,
+              "high": 0.821682,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.227914,
+              "low": -0.283252,
+              "high": -0.089227,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.072011,
+              "annual_volatility": 0.068184,
+              "sharpe": 0.5853,
+              "max_drawdown": -0.105522
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": -0.041176,
+              "annual_volatility": 0.097098,
+              "sharpe": -0.7547,
+              "max_drawdown": -0.179593
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.074253,
+              "annual_volatility": 0.065976,
+              "sharpe": 0.6389,
+              "max_drawdown": -0.057992
+            }
+          }
+        }
+      ],
+      "paired_tests": {
+        "one_over_n": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.541037,
+            "low": -1.441329,
+            "high": 0.268719,
+            "p_value": 0.215784,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.072793,
+            "low": -0.064462,
+            "high": 0.311054,
+            "p_value": 0.255744,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "sixty_forty": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.463749,
+            "low": -1.302685,
+            "high": 0.277144,
+            "p_value": 0.1998,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.010371,
+            "low": -0.076176,
+            "high": 0.242314,
+            "p_value": 0.431568,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "min_variance": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.117658,
+            "low": -0.641006,
+            "high": 0.398356,
+            "p_value": 0.689311,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": -0.045391,
+            "low": -0.059138,
+            "high": 0.156983,
+            "p_value": 0.611389,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "quant_only_no_gate": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.566988,
+            "low": -1.428751,
+            "high": 0.153656,
+            "p_value": 0.137862,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.025629,
+            "low": -0.073826,
+            "high": 0.263939,
+            "p_value": 0.337662,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "quant_only_gated": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": 0.0,
+            "low": 0.0,
+            "high": 0.0,
+            "p_value": 1.0,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.0,
+            "low": 0.0,
+            "high": 0.0,
+            "p_value": 1.0,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "agents_only": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.357671,
+            "low": -0.881348,
+            "high": 0.156862,
+            "p_value": 0.213786,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": -0.020611,
+            "low": -0.071755,
+            "high": 0.109226,
+            "p_value": 0.545455,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        }
+      },
+      "regimes": {
+        "2020_crash": {
+          "one_over_n": {
+            "observations": 51,
+            "cumulative_return": -0.11960495451739317,
+            "max_drawdown": -0.3007070809159066
+          },
+          "sixty_forty": {
+            "observations": 51,
+            "cumulative_return": -0.0778547240409887,
+            "max_drawdown": -0.23828451032230913
+          },
+          "min_variance": {
+            "observations": 51,
+            "cumulative_return": -0.051508433968481815,
+            "max_drawdown": -0.18061039581669236
+          },
+          "quant_only_no_gate": {
+            "observations": 51,
+            "cumulative_return": -0.10883478453168283,
+            "max_drawdown": -0.25354278908847927
+          },
+          "quant_only_gated": {
+            "observations": 51,
+            "cumulative_return": 0.04854966544125294,
+            "max_drawdown": -0.10552220250263866
+          },
+          "agents_only": {
+            "observations": 51,
+            "cumulative_return": -0.008162048190188731,
+            "max_drawdown": -0.14387497584759656
+          },
+          "hybrid": {
+            "observations": 51,
+            "cumulative_return": 0.04854966544125294,
+            "max_drawdown": -0.10552220250263866
+          }
+        },
+        "2022_rates": {
+          "one_over_n": {
+            "observations": 251,
+            "cumulative_return": -0.07576399199058736,
+            "max_drawdown": -0.16924004269773196
+          },
+          "sixty_forty": {
+            "observations": 251,
+            "cumulative_return": -0.09247783678828903,
+            "max_drawdown": -0.16784567087365554
+          },
+          "min_variance": {
+            "observations": 251,
+            "cumulative_return": -0.11646188403390212,
+            "max_drawdown": -0.1792292329081896
+          },
+          "quant_only_no_gate": {
+            "observations": 251,
+            "cumulative_return": -0.031657051300379435,
+            "max_drawdown": -0.1492276258979871
+          },
+          "quant_only_gated": {
+            "observations": 251,
+            "cumulative_return": -0.13859110261314045,
+            "max_drawdown": -0.17959253275264753
+          },
+          "agents_only": {
+            "observations": 251,
+            "cumulative_return": -0.13757516952091098,
+            "max_drawdown": -0.20730230527353533
+          },
+          "hybrid": {
+            "observations": 251,
+            "cumulative_return": -0.13859110261314045,
+            "max_drawdown": -0.17959253275264753
+          }
+        }
+      }
+    },
+    {
+      "profile": {
+        "investor_id": "P2-INCOME",
+        "as_of": "2026-06-30",
+        "age": 58,
+        "horizon_years": 5.0,
+        "risk_tolerance": 2,
+        "loss_tolerance_pct": 0.1,
+        "goal": "income",
+        "liquidity_need": "medium",
+        "current_holdings": {},
+        "exclusions": [],
+        "notes": null
+      },
+      "results": [
+        {
+          "config": "one_over_n",
+          "metrics": {
+            "annual_return": 0.128233,
+            "annual_volatility": 0.145481,
+            "sharpe": 0.6608,
+            "sortino": 0.9189,
+            "max_drawdown": -0.300707,
+            "cvar_95": 0.021262,
+            "calmar": 0.4264,
+            "turnover_per_rebalance": 0.0056,
+            "annual_cost_bps": 0.81,
+            "hit_rate": 0.5547,
+            "rebalances": 90,
+            "average_equity_weight": 0.7143,
+            "suitability_breach_rate": 1.0
+          },
+          "final_equity": 2.453984,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P2-INCOME",
+            "risk_class": 2,
+            "realised_volatility": 0.145481,
+            "volatility_limit": 0.11,
+            "volatility_ratio": 1.3226,
+            "volatility_ok": false,
+            "realised_drawdown": 0.300707,
+            "drawdown_limit": 0.1,
+            "drawdown_ratio": 3.0071,
+            "drawdown_ok": false,
+            "recommendation_stability": 1.0,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.660795,
+              "low": -0.081731,
+              "high": 1.618666,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.300707,
+              "low": -0.472041,
+              "high": -0.108029,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.169271,
+              "annual_volatility": 0.17633,
+              "sharpe": 0.7779,
+              "max_drawdown": -0.300707
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.017873,
+              "annual_volatility": 0.136961,
+              "sharpe": -0.1039,
+              "max_drawdown": -0.16924
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.17393,
+              "annual_volatility": 0.105739,
+              "sharpe": 1.3413,
+              "max_drawdown": -0.108216
+            }
+          }
+        },
+        {
+          "config": "sixty_forty",
+          "metrics": {
+            "annual_return": 0.099657,
+            "annual_volatility": 0.115777,
+            "sharpe": 0.5835,
+            "sortino": 0.8117,
+            "max_drawdown": -0.238285,
+            "cvar_95": 0.0168,
+            "calmar": 0.4182,
+            "turnover_per_rebalance": 0.0056,
+            "annual_cost_bps": 0.81,
+            "hit_rate": 0.5595,
+            "rebalances": 90,
+            "average_equity_weight": 0.6,
+            "suitability_breach_rate": 1.0
+          },
+          "final_equity": 2.027557,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P2-INCOME",
+            "risk_class": 2,
+            "realised_volatility": 0.115777,
+            "volatility_limit": 0.11,
+            "volatility_ratio": 1.0525,
+            "volatility_ok": false,
+            "realised_drawdown": 0.238285,
+            "drawdown_limit": 0.1,
+            "drawdown_ratio": 2.3828,
+            "drawdown_ok": false,
+            "recommendation_stability": 1.0,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.583508,
+              "low": -0.243281,
+              "high": 1.447989,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.238285,
+              "low": -0.399249,
+              "high": -0.092469,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.143585,
+              "annual_volatility": 0.136246,
+              "sharpe": 0.8183,
+              "max_drawdown": -0.238285
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.001288,
+              "annual_volatility": 0.115466,
+              "sharpe": -0.2669,
+              "max_drawdown": -0.167846
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.131063,
+              "annual_volatility": 0.08523,
+              "sharpe": 1.1611,
+              "max_drawdown": -0.08362
+            }
+          }
+        },
+        {
+          "config": "min_variance",
+          "metrics": {
+            "annual_return": 0.051009,
+            "annual_volatility": 0.079646,
+            "sharpe": 0.2374,
+            "sortino": 0.3216,
+            "max_drawdown": -0.182523,
+            "cvar_95": 0.011655,
+            "calmar": 0.2795,
+            "turnover_per_rebalance": 0.0497,
+            "annual_cost_bps": 7.22,
+            "hit_rate": 0.5579,
+            "rebalances": 90,
+            "average_equity_weight": 0.296,
+            "suitability_breach_rate": 1.0
+          },
+          "final_equity": 1.447982,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P2-INCOME",
+            "risk_class": 2,
+            "realised_volatility": 0.079646,
+            "volatility_limit": 0.11,
+            "volatility_ratio": 0.7241,
+            "volatility_ok": true,
+            "realised_drawdown": 0.182523,
+            "drawdown_limit": 0.1,
+            "drawdown_ratio": 1.8252,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.9941,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.237416,
+              "low": -0.560044,
+              "high": 1.125379,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.182523,
+              "low": -0.357903,
+              "high": -0.083632,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.076584,
+              "annual_volatility": 0.08236,
+              "sharpe": 0.5401,
+              "max_drawdown": -0.18061
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": -0.032842,
+              "annual_volatility": 0.09048,
+              "sharpe": -0.7178,
+              "max_drawdown": -0.179229
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.091562,
+              "annual_volatility": 0.065775,
+              "sharpe": 0.904,
+              "max_drawdown": -0.055962
+            }
+          }
+        },
+        {
+          "config": "quant_only_no_gate",
+          "metrics": {
+            "annual_return": 0.123466,
+            "annual_volatility": 0.133078,
+            "sharpe": 0.6866,
+            "sortino": 0.9463,
+            "max_drawdown": -0.257763,
+            "cvar_95": 0.019988,
+            "calmar": 0.479,
+            "turnover_per_rebalance": 0.0997,
+            "annual_cost_bps": 14.47,
+            "hit_rate": 0.5589,
+            "rebalances": 90,
+            "average_equity_weight": 0.6771,
+            "suitability_breach_rate": 0.9667
+          },
+          "final_equity": 2.377875,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P2-INCOME",
+            "risk_class": 2,
+            "realised_volatility": 0.133078,
+            "volatility_limit": 0.11,
+            "volatility_ratio": 1.2098,
+            "volatility_ok": false,
+            "realised_drawdown": 0.257763,
+            "drawdown_limit": 0.1,
+            "drawdown_ratio": 2.5776,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.9746,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.686558,
+              "low": -0.092653,
+              "high": 1.626296,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.257763,
+              "low": -0.428757,
+              "high": -0.108806,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.130556,
+              "annual_volatility": 0.1445,
+              "sharpe": 0.6814,
+              "max_drawdown": -0.257763
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.043251,
+              "annual_volatility": 0.133849,
+              "sharpe": 0.0833,
+              "max_drawdown": -0.1474
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.183329,
+              "annual_volatility": 0.117311,
+              "sharpe": 1.2891,
+              "max_drawdown": -0.101881
+            }
+          }
+        },
+        {
+          "config": "quant_only_gated",
+          "metrics": {
+            "annual_return": 0.053224,
+            "annual_volatility": 0.082082,
+            "sharpe": 0.2574,
+            "sortino": 0.366,
+            "max_drawdown": -0.227056,
+            "cvar_95": 0.011513,
+            "calmar": 0.2344,
+            "turnover_per_rebalance": 0.0864,
+            "annual_cost_bps": 12.54,
+            "hit_rate": 0.536,
+            "rebalances": 90,
+            "average_equity_weight": 0.0534,
+            "suitability_breach_rate": 0.8889
+          },
+          "final_equity": 1.470842,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P2-INCOME",
+            "risk_class": 2,
+            "realised_volatility": 0.082082,
+            "volatility_limit": 0.11,
+            "volatility_ratio": 0.7462,
+            "volatility_ok": true,
+            "realised_drawdown": 0.227056,
+            "drawdown_limit": 0.1,
+            "drawdown_ratio": 2.2706,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.9673,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.257355,
+              "low": -0.437118,
+              "high": 0.933369,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.227056,
+              "low": -0.271884,
+              "high": -0.08627,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.098331,
+              "annual_volatility": 0.070441,
+              "sharpe": 0.9402,
+              "max_drawdown": -0.109786
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": -0.035107,
+              "annual_volatility": 0.09718,
+              "sharpe": -0.6916,
+              "max_drawdown": -0.176196
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.07442,
+              "annual_volatility": 0.081783,
+              "sharpe": 0.5175,
+              "max_drawdown": -0.070094
+            }
+          }
+        },
+        {
+          "config": "agents_only",
+          "metrics": {
+            "annual_return": 0.068722,
+            "annual_volatility": 0.104663,
+            "sharpe": 0.3499,
+            "sortino": 0.4831,
+            "max_drawdown": -0.290324,
+            "cvar_95": 0.015971,
+            "calmar": 0.2367,
+            "turnover_per_rebalance": 0.6692,
+            "annual_cost_bps": 97.13,
+            "hit_rate": 0.5472,
+            "rebalances": 90,
+            "average_equity_weight": 0.4734,
+            "suitability_breach_rate": 1.0
+          },
+          "final_equity": 1.639716,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P2-INCOME",
+            "risk_class": 2,
+            "realised_volatility": 0.104663,
+            "volatility_limit": 0.11,
+            "volatility_ratio": 0.9515,
+            "volatility_ok": true,
+            "realised_drawdown": 0.290324,
+            "drawdown_limit": 0.1,
+            "drawdown_ratio": 2.9032,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.38,
+            "inter_agent_agreement": 0.7808
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.349909,
+              "low": -0.474036,
+              "high": 1.182535,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.290324,
+              "low": -0.371569,
+              "high": -0.11244,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.130044,
+              "annual_volatility": 0.10005,
+              "sharpe": 0.979,
+              "max_drawdown": -0.150279
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": -0.060375,
+              "annual_volatility": 0.123197,
+              "sharpe": -0.7506,
+              "max_drawdown": -0.289154
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.108233,
+              "annual_volatility": 0.093083,
+              "sharpe": 0.8179,
+              "max_drawdown": -0.071563
+            }
+          }
+        },
+        {
+          "config": "hybrid",
+          "metrics": {
+            "annual_return": 0.055644,
+            "annual_volatility": 0.082101,
+            "sharpe": 0.2868,
+            "sortino": 0.4084,
+            "max_drawdown": -0.227056,
+            "cvar_95": 0.01151,
+            "calmar": 0.2451,
+            "turnover_per_rebalance": 0.0749,
+            "annual_cost_bps": 10.87,
+            "hit_rate": 0.536,
+            "rebalances": 90,
+            "average_equity_weight": 0.0582,
+            "suitability_breach_rate": 0.8778
+          },
+          "final_equity": 1.496167,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P2-INCOME",
+            "risk_class": 2,
+            "realised_volatility": 0.082101,
+            "volatility_limit": 0.11,
+            "volatility_ratio": 0.7464,
+            "volatility_ok": true,
+            "realised_drawdown": 0.227056,
+            "drawdown_limit": 0.1,
+            "drawdown_ratio": 2.2706,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.9729,
+            "inter_agent_agreement": 0.785
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.286765,
+              "low": -0.405505,
+              "high": 1.040173,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.227056,
+              "low": -0.258353,
+              "high": -0.084964,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.104645,
+              "annual_volatility": 0.070453,
+              "sharpe": 1.0297,
+              "max_drawdown": -0.109786
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": -0.035107,
+              "annual_volatility": 0.09718,
+              "sharpe": -0.6916,
+              "max_drawdown": -0.176196
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.074424,
+              "annual_volatility": 0.081812,
+              "sharpe": 0.5173,
+              "max_drawdown": -0.070078
+            }
+          }
+        }
+      ],
+      "paired_tests": {
+        "one_over_n": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.37403,
+            "low": -1.233131,
+            "high": 0.402095,
+            "p_value": 0.345654,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.073651,
+            "low": -0.044916,
+            "high": 0.298314,
+            "p_value": 0.223776,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "sixty_forty": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.296743,
+            "low": -1.077162,
+            "high": 0.383659,
+            "p_value": 0.375624,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.011228,
+            "low": -0.068028,
+            "high": 0.232277,
+            "p_value": 0.38961,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "min_variance": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": 0.049348,
+            "low": -0.432229,
+            "high": 0.511074,
+            "p_value": 0.881119,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": -0.044533,
+            "low": -0.050786,
+            "high": 0.158016,
+            "p_value": 0.569431,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "quant_only_no_gate": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.399793,
+            "low": -1.223747,
+            "high": 0.308195,
+            "p_value": 0.231768,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.030706,
+            "low": -0.058568,
+            "high": 0.265527,
+            "p_value": 0.301698,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "quant_only_gated": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": 0.02941,
+            "low": -0.005678,
+            "high": 0.086879,
+            "p_value": 0.281718,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.0,
+            "low": -0.001165,
+            "high": 0.012138,
+            "p_value": 0.981019,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "agents_only": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.063144,
+            "low": -0.627239,
+            "high": 0.498912,
+            "p_value": 0.871129,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.063267,
+            "low": -0.051759,
+            "high": 0.180651,
+            "p_value": 0.257742,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        }
+      },
+      "regimes": {
+        "2020_crash": {
+          "one_over_n": {
+            "observations": 51,
+            "cumulative_return": -0.11960495451739317,
+            "max_drawdown": -0.3007070809159066
+          },
+          "sixty_forty": {
+            "observations": 51,
+            "cumulative_return": -0.0778547240409887,
+            "max_drawdown": -0.23828451032230913
+          },
+          "min_variance": {
+            "observations": 51,
+            "cumulative_return": -0.051508433968481815,
+            "max_drawdown": -0.18061039581669236
+          },
+          "quant_only_no_gate": {
+            "observations": 51,
+            "cumulative_return": -0.11961567913472748,
+            "max_drawdown": -0.2577628886782214
+          },
+          "quant_only_gated": {
+            "observations": 51,
+            "cumulative_return": 0.04764615416540763,
+            "max_drawdown": -0.10978632664883758
+          },
+          "agents_only": {
+            "observations": 51,
+            "cumulative_return": -0.02479225782688932,
+            "max_drawdown": -0.1502790563405506
+          },
+          "hybrid": {
+            "observations": 51,
+            "cumulative_return": 0.04764615416540763,
+            "max_drawdown": -0.10978632664883758
+          }
+        },
+        "2022_rates": {
+          "one_over_n": {
+            "observations": 251,
+            "cumulative_return": -0.07576399199058736,
+            "max_drawdown": -0.16924004269773196
+          },
+          "sixty_forty": {
+            "observations": 251,
+            "cumulative_return": -0.09247783678828903,
+            "max_drawdown": -0.16784567087365554
+          },
+          "min_variance": {
+            "observations": 251,
+            "cumulative_return": -0.11646188403390212,
+            "max_drawdown": -0.1792292329081896
+          },
+          "quant_only_no_gate": {
+            "observations": 251,
+            "cumulative_return": -0.014870772629830276,
+            "max_drawdown": -0.14739987195542914
+          },
+          "quant_only_gated": {
+            "observations": 251,
+            "cumulative_return": -0.13154528560997059,
+            "max_drawdown": -0.1761963658725727
+          },
+          "agents_only": {
+            "observations": 251,
+            "cumulative_return": -0.2201383896151926,
+            "max_drawdown": -0.2891541199201053
+          },
+          "hybrid": {
+            "observations": 251,
+            "cumulative_return": -0.13154528560997059,
+            "max_drawdown": -0.1761963658725727
+          }
+        }
+      }
+    },
+    {
+      "profile": {
+        "investor_id": "P3-BALANCED",
+        "as_of": "2026-06-30",
+        "age": 45,
+        "horizon_years": 10.0,
+        "risk_tolerance": 3,
+        "loss_tolerance_pct": 0.15,
+        "goal": "balanced_growth",
+        "liquidity_need": "low",
+        "current_holdings": {},
+        "exclusions": [],
+        "notes": null
+      },
+      "results": [
+        {
+          "config": "one_over_n",
+          "metrics": {
+            "annual_return": 0.128233,
+            "annual_volatility": 0.145481,
+            "sharpe": 0.6608,
+            "sortino": 0.9189,
+            "max_drawdown": -0.300707,
+            "cvar_95": 0.021262,
+            "calmar": 0.4264,
+            "turnover_per_rebalance": 0.0056,
+            "annual_cost_bps": 0.81,
+            "hit_rate": 0.5547,
+            "rebalances": 90,
+            "average_equity_weight": 0.7143,
+            "suitability_breach_rate": 0.2556
+          },
+          "final_equity": 2.453984,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P3-BALANCED",
+            "risk_class": 3,
+            "realised_volatility": 0.145481,
+            "volatility_limit": 0.145,
+            "volatility_ratio": 1.0033,
+            "volatility_ok": false,
+            "realised_drawdown": 0.300707,
+            "drawdown_limit": 0.15,
+            "drawdown_ratio": 2.0047,
+            "drawdown_ok": false,
+            "recommendation_stability": 1.0,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.660795,
+              "low": -0.132117,
+              "high": 1.608053,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.300707,
+              "low": -0.491168,
+              "high": -0.10543,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.169271,
+              "annual_volatility": 0.17633,
+              "sharpe": 0.7779,
+              "max_drawdown": -0.300707
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.017873,
+              "annual_volatility": 0.136961,
+              "sharpe": -0.1039,
+              "max_drawdown": -0.16924
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.17393,
+              "annual_volatility": 0.105739,
+              "sharpe": 1.3413,
+              "max_drawdown": -0.108216
+            }
+          }
+        },
+        {
+          "config": "sixty_forty",
+          "metrics": {
+            "annual_return": 0.099657,
+            "annual_volatility": 0.115777,
+            "sharpe": 0.5835,
+            "sortino": 0.8117,
+            "max_drawdown": -0.238285,
+            "cvar_95": 0.0168,
+            "calmar": 0.4182,
+            "turnover_per_rebalance": 0.0056,
+            "annual_cost_bps": 0.81,
+            "hit_rate": 0.5595,
+            "rebalances": 90,
+            "average_equity_weight": 0.6,
+            "suitability_breach_rate": 0.2111
+          },
+          "final_equity": 2.027557,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P3-BALANCED",
+            "risk_class": 3,
+            "realised_volatility": 0.115777,
+            "volatility_limit": 0.145,
+            "volatility_ratio": 0.7985,
+            "volatility_ok": true,
+            "realised_drawdown": 0.238285,
+            "drawdown_limit": 0.15,
+            "drawdown_ratio": 1.5886,
+            "drawdown_ok": false,
+            "recommendation_stability": 1.0,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.583508,
+              "low": -0.199102,
+              "high": 1.494439,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.238285,
+              "low": -0.39816,
+              "high": -0.090849,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.143585,
+              "annual_volatility": 0.136246,
+              "sharpe": 0.8183,
+              "max_drawdown": -0.238285
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.001288,
+              "annual_volatility": 0.115466,
+              "sharpe": -0.2669,
+              "max_drawdown": -0.167846
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.131063,
+              "annual_volatility": 0.08523,
+              "sharpe": 1.1611,
+              "max_drawdown": -0.08362
+            }
+          }
+        },
+        {
+          "config": "min_variance",
+          "metrics": {
+            "annual_return": 0.051009,
+            "annual_volatility": 0.079646,
+            "sharpe": 0.2374,
+            "sortino": 0.3216,
+            "max_drawdown": -0.182523,
+            "cvar_95": 0.011655,
+            "calmar": 0.2795,
+            "turnover_per_rebalance": 0.0497,
+            "annual_cost_bps": 7.22,
+            "hit_rate": 0.5579,
+            "rebalances": 90,
+            "average_equity_weight": 0.296,
+            "suitability_breach_rate": 1.0
+          },
+          "final_equity": 1.447982,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P3-BALANCED",
+            "risk_class": 3,
+            "realised_volatility": 0.079646,
+            "volatility_limit": 0.145,
+            "volatility_ratio": 0.5493,
+            "volatility_ok": true,
+            "realised_drawdown": 0.182523,
+            "drawdown_limit": 0.15,
+            "drawdown_ratio": 1.2168,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.9941,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.237416,
+              "low": -0.52283,
+              "high": 1.130027,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.182523,
+              "low": -0.357632,
+              "high": -0.081924,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.076584,
+              "annual_volatility": 0.08236,
+              "sharpe": 0.5401,
+              "max_drawdown": -0.18061
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": -0.032842,
+              "annual_volatility": 0.09048,
+              "sharpe": -0.7178,
+              "max_drawdown": -0.179229
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.091562,
+              "annual_volatility": 0.065775,
+              "sharpe": 0.904,
+              "max_drawdown": -0.055962
+            }
+          }
+        },
+        {
+          "config": "quant_only_no_gate",
+          "metrics": {
+            "annual_return": 0.130205,
+            "annual_volatility": 0.139225,
+            "sharpe": 0.7047,
+            "sortino": 0.9722,
+            "max_drawdown": -0.264324,
+            "cvar_95": 0.02098,
+            "calmar": 0.4926,
+            "turnover_per_rebalance": 0.1044,
+            "annual_cost_bps": 15.15,
+            "hit_rate": 0.5643,
+            "rebalances": 90,
+            "average_equity_weight": 0.702,
+            "suitability_breach_rate": 0.7222
+          },
+          "final_equity": 2.486083,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P3-BALANCED",
+            "risk_class": 3,
+            "realised_volatility": 0.139225,
+            "volatility_limit": 0.145,
+            "volatility_ratio": 0.9602,
+            "volatility_ok": true,
+            "realised_drawdown": 0.264324,
+            "drawdown_limit": 0.15,
+            "drawdown_ratio": 1.7622,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.9733,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.704654,
+              "low": -0.036785,
+              "high": 1.631691,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.264324,
+              "low": -0.425154,
+              "high": -0.113188,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.136477,
+              "annual_volatility": 0.150841,
+              "sharpe": 0.692,
+              "max_drawdown": -0.264324
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.052636,
+              "annual_volatility": 0.141324,
+              "sharpe": 0.1453,
+              "max_drawdown": -0.148947
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.188668,
+              "annual_volatility": 0.122051,
+              "sharpe": 1.2828,
+              "max_drawdown": -0.10466
+            }
+          }
+        },
+        {
+          "config": "quant_only_gated",
+          "metrics": {
+            "annual_return": 0.090677,
+            "annual_volatility": 0.116231,
+            "sharpe": 0.504,
+            "sortino": 0.6812,
+            "max_drawdown": -0.247696,
+            "cvar_95": 0.017819,
+            "calmar": 0.3661,
+            "turnover_per_rebalance": 0.0946,
+            "annual_cost_bps": 13.72,
+            "hit_rate": 0.5557,
+            "rebalances": 90,
+            "average_equity_weight": 0.5613,
+            "suitability_breach_rate": 0.1444
+          },
+          "final_equity": 1.907561,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P3-BALANCED",
+            "risk_class": 3,
+            "realised_volatility": 0.116231,
+            "volatility_limit": 0.145,
+            "volatility_ratio": 0.8016,
+            "volatility_ok": true,
+            "realised_drawdown": 0.247696,
+            "drawdown_limit": 0.15,
+            "drawdown_ratio": 1.6513,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.9712,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.503974,
+              "low": -0.29497,
+              "high": 1.395141,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.247696,
+              "low": -0.446836,
+              "high": -0.100743,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.056425,
+              "annual_volatility": 0.11024,
+              "sharpe": 0.2207,
+              "max_drawdown": -0.247696
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.038209,
+              "annual_volatility": 0.127473,
+              "sharpe": 0.0479,
+              "max_drawdown": -0.13885
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.179079,
+              "annual_volatility": 0.113794,
+              "sharpe": 1.2916,
+              "max_drawdown": -0.099909
+            }
+          }
+        },
+        {
+          "config": "agents_only",
+          "metrics": {
+            "annual_return": 0.087221,
+            "annual_volatility": 0.130366,
+            "sharpe": 0.4228,
+            "sortino": 0.5821,
+            "max_drawdown": -0.225649,
+            "cvar_95": 0.019738,
+            "calmar": 0.3865,
+            "turnover_per_rebalance": 0.7837,
+            "annual_cost_bps": 113.75,
+            "hit_rate": 0.5509,
+            "rebalances": 90,
+            "average_equity_weight": 0.5472,
+            "suitability_breach_rate": 0.9333
+          },
+          "final_equity": 1.863045,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P3-BALANCED",
+            "risk_class": 3,
+            "realised_volatility": 0.130366,
+            "volatility_limit": 0.145,
+            "volatility_ratio": 0.8991,
+            "volatility_ok": true,
+            "realised_drawdown": 0.225649,
+            "drawdown_limit": 0.15,
+            "drawdown_ratio": 1.5043,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.231,
+            "inter_agent_agreement": 0.7699
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.422821,
+              "low": -0.330885,
+              "high": 1.335571,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.225649,
+              "low": -0.457409,
+              "high": -0.116544,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.126651,
+              "annual_volatility": 0.131474,
+              "sharpe": 0.7192,
+              "max_drawdown": -0.219073
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.012905,
+              "annual_volatility": 0.154007,
+              "sharpe": -0.1246,
+              "max_drawdown": -0.225649
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.102582,
+              "annual_volatility": 0.106229,
+              "sharpe": 0.6635,
+              "max_drawdown": -0.103834
+            }
+          }
+        },
+        {
+          "config": "hybrid",
+          "metrics": {
+            "annual_return": 0.092192,
+            "annual_volatility": 0.116277,
+            "sharpe": 0.5168,
+            "sortino": 0.699,
+            "max_drawdown": -0.247,
+            "cvar_95": 0.01784,
+            "calmar": 0.3732,
+            "turnover_per_rebalance": 0.0951,
+            "annual_cost_bps": 13.81,
+            "hit_rate": 0.5536,
+            "rebalances": 90,
+            "average_equity_weight": 0.5608,
+            "suitability_breach_rate": 0.1444
+          },
+          "final_equity": 1.927361,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P3-BALANCED",
+            "risk_class": 3,
+            "realised_volatility": 0.116277,
+            "volatility_limit": 0.145,
+            "volatility_ratio": 0.8019,
+            "volatility_ok": true,
+            "realised_drawdown": 0.247,
+            "drawdown_limit": 0.15,
+            "drawdown_ratio": 1.6467,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.971,
+            "inter_agent_agreement": 0.8154
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.516804,
+              "low": -0.27935,
+              "high": 1.385303,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.247,
+              "low": -0.438502,
+              "high": -0.10616,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.056478,
+              "annual_volatility": 0.110024,
+              "sharpe": 0.2216,
+              "max_drawdown": -0.247
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.041283,
+              "annual_volatility": 0.127544,
+              "sharpe": 0.072,
+              "max_drawdown": -0.133104
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.181129,
+              "annual_volatility": 0.11412,
+              "sharpe": 1.3059,
+              "max_drawdown": -0.099902
+            }
+          }
+        }
+      ],
+      "paired_tests": {
+        "one_over_n": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.143991,
+            "low": -0.555307,
+            "high": 0.19473,
+            "p_value": 0.403596,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.053707,
+            "low": -0.047042,
+            "high": 0.097726,
+            "p_value": 0.397602,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "sixty_forty": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.066704,
+            "low": -0.442401,
+            "high": 0.297855,
+            "p_value": 0.707293,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": -0.008716,
+            "low": -0.077908,
+            "high": 0.040737,
+            "p_value": 0.523477,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "min_variance": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": 0.279387,
+            "low": -0.13457,
+            "high": 0.763123,
+            "p_value": 0.171828,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": -0.064477,
+            "low": -0.116682,
+            "high": 0.031246,
+            "p_value": 0.207792,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "quant_only_no_gate": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.187851,
+            "low": -0.410093,
+            "high": -0.027116,
+            "p_value": 0.031968,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.017324,
+            "low": -0.04075,
+            "high": 0.043098,
+            "p_value": 0.603397,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "quant_only_gated": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": 0.01283,
+            "low": -0.002393,
+            "high": 0.032527,
+            "p_value": 0.08991,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.000696,
+            "low": -0.000649,
+            "high": 0.006437,
+            "p_value": 0.243756,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "agents_only": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": 0.093983,
+            "low": -0.26657,
+            "high": 0.53994,
+            "p_value": 0.597403,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": -0.021351,
+            "low": -0.066465,
+            "high": 0.143106,
+            "p_value": 0.809191,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        }
+      },
+      "regimes": {
+        "2020_crash": {
+          "one_over_n": {
+            "observations": 51,
+            "cumulative_return": -0.11960495451739317,
+            "max_drawdown": -0.3007070809159066
+          },
+          "sixty_forty": {
+            "observations": 51,
+            "cumulative_return": -0.0778547240409887,
+            "max_drawdown": -0.23828451032230913
+          },
+          "min_variance": {
+            "observations": 51,
+            "cumulative_return": -0.051508433968481815,
+            "max_drawdown": -0.18061039581669236
+          },
+          "quant_only_no_gate": {
+            "observations": 51,
+            "cumulative_return": -0.12493927996821952,
+            "max_drawdown": -0.264323779567992
+          },
+          "quant_only_gated": {
+            "observations": 51,
+            "cumulative_return": -0.14908201993868864,
+            "max_drawdown": -0.24769645706868038
+          },
+          "agents_only": {
+            "observations": 51,
+            "cumulative_return": -0.08664014247302232,
+            "max_drawdown": -0.21907253484183464
+          },
+          "hybrid": {
+            "observations": 51,
+            "cumulative_return": -0.14831570785509085,
+            "max_drawdown": -0.24700022484732276
+          }
+        },
+        "2022_rates": {
+          "one_over_n": {
+            "observations": 251,
+            "cumulative_return": -0.07576399199058736,
+            "max_drawdown": -0.16924004269773196
+          },
+          "sixty_forty": {
+            "observations": 251,
+            "cumulative_return": -0.09247783678828903,
+            "max_drawdown": -0.16784567087365554
+          },
+          "min_variance": {
+            "observations": 251,
+            "cumulative_return": -0.11646188403390212,
+            "max_drawdown": -0.1792292329081896
+          },
+          "quant_only_no_gate": {
+            "observations": 251,
+            "cumulative_return": -0.0018551535759572246,
+            "max_drawdown": -0.14894657416619128
+          },
+          "quant_only_gated": {
+            "observations": 251,
+            "cumulative_return": -0.03062219416004086,
+            "max_drawdown": -0.13884961258892137
+          },
+          "agents_only": {
+            "observations": 251,
+            "cumulative_return": -0.11376315422733052,
+            "max_drawdown": -0.22564922560657563
+          },
+          "hybrid": {
+            "observations": 251,
+            "cumulative_return": -0.024895547359200187,
+            "max_drawdown": -0.13310390869826938
+          }
+        }
+      }
+    },
+    {
+      "profile": {
+        "investor_id": "P4-GROWTH",
+        "as_of": "2026-06-30",
+        "age": 34,
+        "horizon_years": 20.0,
+        "risk_tolerance": 4,
+        "loss_tolerance_pct": 0.2,
+        "goal": "growth",
+        "liquidity_need": "low",
+        "current_holdings": {},
+        "exclusions": [],
+        "notes": null
+      },
+      "results": [
+        {
+          "config": "one_over_n",
+          "metrics": {
+            "annual_return": 0.128233,
+            "annual_volatility": 0.145481,
+            "sharpe": 0.6608,
+            "sortino": 0.9189,
+            "max_drawdown": -0.300707,
+            "cvar_95": 0.021262,
+            "calmar": 0.4264,
+            "turnover_per_rebalance": 0.0056,
+            "annual_cost_bps": 0.81,
+            "hit_rate": 0.5547,
+            "rebalances": 90,
+            "average_equity_weight": 0.7143,
+            "suitability_breach_rate": 0.1444
+          },
+          "final_equity": 2.453984,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P4-GROWTH",
+            "risk_class": 4,
+            "realised_volatility": 0.145481,
+            "volatility_limit": 0.185,
+            "volatility_ratio": 0.7864,
+            "volatility_ok": true,
+            "realised_drawdown": 0.300707,
+            "drawdown_limit": 0.2,
+            "drawdown_ratio": 1.5035,
+            "drawdown_ok": false,
+            "recommendation_stability": 1.0,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.660795,
+              "low": -0.116502,
+              "high": 1.626213,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.300707,
+              "low": -0.438168,
+              "high": -0.111038,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.169271,
+              "annual_volatility": 0.17633,
+              "sharpe": 0.7779,
+              "max_drawdown": -0.300707
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.017873,
+              "annual_volatility": 0.136961,
+              "sharpe": -0.1039,
+              "max_drawdown": -0.16924
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.17393,
+              "annual_volatility": 0.105739,
+              "sharpe": 1.3413,
+              "max_drawdown": -0.108216
+            }
+          }
+        },
+        {
+          "config": "sixty_forty",
+          "metrics": {
+            "annual_return": 0.099657,
+            "annual_volatility": 0.115777,
+            "sharpe": 0.5835,
+            "sortino": 0.8117,
+            "max_drawdown": -0.238285,
+            "cvar_95": 0.0168,
+            "calmar": 0.4182,
+            "turnover_per_rebalance": 0.0056,
+            "annual_cost_bps": 0.81,
+            "hit_rate": 0.5595,
+            "rebalances": 90,
+            "average_equity_weight": 0.6,
+            "suitability_breach_rate": 0.1222
+          },
+          "final_equity": 2.027557,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P4-GROWTH",
+            "risk_class": 4,
+            "realised_volatility": 0.115777,
+            "volatility_limit": 0.185,
+            "volatility_ratio": 0.6258,
+            "volatility_ok": true,
+            "realised_drawdown": 0.238285,
+            "drawdown_limit": 0.2,
+            "drawdown_ratio": 1.1914,
+            "drawdown_ok": false,
+            "recommendation_stability": 1.0,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.583508,
+              "low": -0.143487,
+              "high": 1.474137,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.238285,
+              "low": -0.405592,
+              "high": -0.089677,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.143585,
+              "annual_volatility": 0.136246,
+              "sharpe": 0.8183,
+              "max_drawdown": -0.238285
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.001288,
+              "annual_volatility": 0.115466,
+              "sharpe": -0.2669,
+              "max_drawdown": -0.167846
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.131063,
+              "annual_volatility": 0.08523,
+              "sharpe": 1.1611,
+              "max_drawdown": -0.08362
+            }
+          }
+        },
+        {
+          "config": "min_variance",
+          "metrics": {
+            "annual_return": 0.051009,
+            "annual_volatility": 0.079646,
+            "sharpe": 0.2374,
+            "sortino": 0.3216,
+            "max_drawdown": -0.182523,
+            "cvar_95": 0.011655,
+            "calmar": 0.2795,
+            "turnover_per_rebalance": 0.0497,
+            "annual_cost_bps": 7.22,
+            "hit_rate": 0.5579,
+            "rebalances": 90,
+            "average_equity_weight": 0.296,
+            "suitability_breach_rate": 0.0
+          },
+          "final_equity": 1.447982,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P4-GROWTH",
+            "risk_class": 4,
+            "realised_volatility": 0.079646,
+            "volatility_limit": 0.185,
+            "volatility_ratio": 0.4305,
+            "volatility_ok": true,
+            "realised_drawdown": 0.182523,
+            "drawdown_limit": 0.2,
+            "drawdown_ratio": 0.9126,
+            "drawdown_ok": true,
+            "recommendation_stability": 0.9941,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.237416,
+              "low": -0.481238,
+              "high": 1.164787,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.182523,
+              "low": -0.360168,
+              "high": -0.082069,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.076584,
+              "annual_volatility": 0.08236,
+              "sharpe": 0.5401,
+              "max_drawdown": -0.18061
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": -0.032842,
+              "annual_volatility": 0.09048,
+              "sharpe": -0.7178,
+              "max_drawdown": -0.179229
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.091562,
+              "annual_volatility": 0.065775,
+              "sharpe": 0.904,
+              "max_drawdown": -0.055962
+            }
+          }
+        },
+        {
+          "config": "quant_only_no_gate",
+          "metrics": {
+            "annual_return": 0.134919,
+            "annual_volatility": 0.143527,
+            "sharpe": 0.7164,
+            "sortino": 0.9897,
+            "max_drawdown": -0.270291,
+            "cvar_95": 0.021628,
+            "calmar": 0.4992,
+            "turnover_per_rebalance": 0.1066,
+            "annual_cost_bps": 15.48,
+            "hit_rate": 0.5621,
+            "rebalances": 90,
+            "average_equity_weight": 0.7234,
+            "suitability_breach_rate": 0.1111
+          },
+          "final_equity": 2.564278,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P4-GROWTH",
+            "risk_class": 4,
+            "realised_volatility": 0.143527,
+            "volatility_limit": 0.185,
+            "volatility_ratio": 0.7758,
+            "volatility_ok": true,
+            "realised_drawdown": 0.270291,
+            "drawdown_limit": 0.2,
+            "drawdown_ratio": 1.3515,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.9725,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.716373,
+              "low": -0.066975,
+              "high": 1.626915,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.270291,
+              "low": -0.436832,
+              "high": -0.109339,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.143362,
+              "annual_volatility": 0.156068,
+              "sharpe": 0.7129,
+              "max_drawdown": -0.270291
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.05678,
+              "annual_volatility": 0.146571,
+              "sharpe": 0.1684,
+              "max_drawdown": -0.15488
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.191158,
+              "annual_volatility": 0.12416,
+              "sharpe": 1.2811,
+              "max_drawdown": -0.106641
+            }
+          }
+        },
+        {
+          "config": "quant_only_gated",
+          "metrics": {
+            "annual_return": 0.126552,
+            "annual_volatility": 0.1416,
+            "sharpe": 0.667,
+            "sortino": 0.9205,
+            "max_drawdown": -0.270291,
+            "cvar_95": 0.02135,
+            "calmar": 0.4682,
+            "turnover_per_rebalance": 0.1132,
+            "annual_cost_bps": 16.43,
+            "hit_rate": 0.5589,
+            "rebalances": 90,
+            "average_equity_weight": 0.6968,
+            "suitability_breach_rate": 0.0
+          },
+          "final_equity": 2.426905,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P4-GROWTH",
+            "risk_class": 4,
+            "realised_volatility": 0.1416,
+            "volatility_limit": 0.185,
+            "volatility_ratio": 0.7654,
+            "volatility_ok": true,
+            "realised_drawdown": 0.270291,
+            "drawdown_limit": 0.2,
+            "drawdown_ratio": 1.3515,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.9675,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.667032,
+              "low": -0.068008,
+              "high": 1.581941,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.270291,
+              "low": -0.448867,
+              "high": -0.111022,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.122404,
+              "annual_volatility": 0.151601,
+              "sharpe": 0.5957,
+              "max_drawdown": -0.270291
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.05678,
+              "annual_volatility": 0.146571,
+              "sharpe": 0.1684,
+              "max_drawdown": -0.15488
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.191158,
+              "annual_volatility": 0.12416,
+              "sharpe": 1.2811,
+              "max_drawdown": -0.106641
+            }
+          }
+        },
+        {
+          "config": "agents_only",
+          "metrics": {
+            "annual_return": 0.070622,
+            "annual_volatility": 0.160199,
+            "sharpe": 0.2405,
+            "sortino": 0.3257,
+            "max_drawdown": -0.299098,
+            "cvar_95": 0.025126,
+            "calmar": 0.2361,
+            "turnover_per_rebalance": 0.8981,
+            "annual_cost_bps": 130.35,
+            "hit_rate": 0.5488,
+            "rebalances": 90,
+            "average_equity_weight": 0.7497,
+            "suitability_breach_rate": 0.4667
+          },
+          "final_equity": 1.661531,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P4-GROWTH",
+            "risk_class": 4,
+            "realised_volatility": 0.160199,
+            "volatility_limit": 0.185,
+            "volatility_ratio": 0.8659,
+            "volatility_ok": true,
+            "realised_drawdown": 0.299098,
+            "drawdown_limit": 0.2,
+            "drawdown_ratio": 1.4955,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.0935,
+            "inter_agent_agreement": 0.7746
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.240466,
+              "low": -0.498462,
+              "high": 1.149293,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.299098,
+              "low": -0.575324,
+              "high": -0.155475,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.128849,
+              "annual_volatility": 0.16104,
+              "sharpe": 0.6008,
+              "max_drawdown": -0.299098
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": -0.053733,
+              "annual_volatility": 0.191189,
+              "sharpe": -0.4489,
+              "max_drawdown": -0.281318
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.109291,
+              "annual_volatility": 0.128919,
+              "sharpe": 0.5988,
+              "max_drawdown": -0.126301
+            }
+          }
+        },
+        {
+          "config": "hybrid",
+          "metrics": {
+            "annual_return": 0.126364,
+            "annual_volatility": 0.141734,
+            "sharpe": 0.6651,
+            "sortino": 0.9181,
+            "max_drawdown": -0.270589,
+            "cvar_95": 0.021362,
+            "calmar": 0.467,
+            "turnover_per_rebalance": 0.1148,
+            "annual_cost_bps": 16.67,
+            "hit_rate": 0.5584,
+            "rebalances": 90,
+            "average_equity_weight": 0.6969,
+            "suitability_breach_rate": 0.0
+          },
+          "final_equity": 2.4239,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P4-GROWTH",
+            "risk_class": 4,
+            "realised_volatility": 0.141734,
+            "volatility_limit": 0.185,
+            "volatility_ratio": 0.7661,
+            "volatility_ok": true,
+            "realised_drawdown": 0.270589,
+            "drawdown_limit": 0.2,
+            "drawdown_ratio": 1.3529,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.9665,
+            "inter_agent_agreement": 0.8073
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.665078,
+              "low": -0.105261,
+              "high": 1.63264,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.270589,
+              "low": -0.451337,
+              "high": -0.117222,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.122158,
+              "annual_volatility": 0.151693,
+              "sharpe": 0.5937,
+              "max_drawdown": -0.270589
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.056238,
+              "annual_volatility": 0.146609,
+              "sharpe": 0.1646,
+              "max_drawdown": -0.154908
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.191368,
+              "annual_volatility": 0.124446,
+              "sharpe": 1.2798,
+              "max_drawdown": -0.107107
+            }
+          }
+        }
+      ],
+      "paired_tests": {
+        "one_over_n": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": 0.004283,
+            "low": -0.310463,
+            "high": 0.285514,
+            "p_value": 0.933067,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.030118,
+            "low": -0.045625,
+            "high": 0.072764,
+            "p_value": 0.525475,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "sixty_forty": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": 0.081571,
+            "low": -0.21847,
+            "high": 0.426486,
+            "p_value": 0.511489,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": -0.032304,
+            "low": -0.083321,
+            "high": 0.025545,
+            "p_value": 0.24975,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "min_variance": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": 0.427662,
+            "low": -0.005266,
+            "high": 0.975739,
+            "p_value": 0.055944,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": -0.088066,
+            "low": -0.138501,
+            "high": 0.032462,
+            "p_value": 0.18981,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "quant_only_no_gate": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.051295,
+            "low": -0.122032,
+            "high": 0.002506,
+            "p_value": 0.063936,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": -0.000297,
+            "low": -0.015127,
+            "high": 0.010262,
+            "p_value": 0.531469,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "quant_only_gated": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.001953,
+            "low": -0.0077,
+            "high": 0.002507,
+            "p_value": 0.405594,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": -0.000297,
+            "low": -0.001345,
+            "high": 0.000612,
+            "p_value": 0.575425,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "agents_only": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": 0.424612,
+            "low": 0.04462,
+            "high": 0.811822,
+            "p_value": 0.025974,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.028509,
+            "low": 0.006054,
+            "high": 0.220361,
+            "p_value": 0.02997,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        }
+      },
+      "regimes": {
+        "2020_crash": {
+          "one_over_n": {
+            "observations": 51,
+            "cumulative_return": -0.11960495451739317,
+            "max_drawdown": -0.3007070809159066
+          },
+          "sixty_forty": {
+            "observations": 51,
+            "cumulative_return": -0.0778547240409887,
+            "max_drawdown": -0.23828451032230913
+          },
+          "min_variance": {
+            "observations": 51,
+            "cumulative_return": -0.051508433968481815,
+            "max_drawdown": -0.18061039581669236
+          },
+          "quant_only_no_gate": {
+            "observations": 51,
+            "cumulative_return": -0.12771720620257276,
+            "max_drawdown": -0.27029144473910904
+          },
+          "quant_only_gated": {
+            "observations": 51,
+            "cumulative_return": -0.12771720620257276,
+            "max_drawdown": -0.27029144473910904
+          },
+          "agents_only": {
+            "observations": 51,
+            "cumulative_return": -0.15898279314716346,
+            "max_drawdown": -0.29909811125188324
+          },
+          "hybrid": {
+            "observations": 51,
+            "cumulative_return": -0.1280565506630995,
+            "max_drawdown": -0.27058862688459895
+          }
+        },
+        "2022_rates": {
+          "one_over_n": {
+            "observations": 251,
+            "cumulative_return": -0.07576399199058736,
+            "max_drawdown": -0.16924004269773196
+          },
+          "sixty_forty": {
+            "observations": 251,
+            "cumulative_return": -0.09247783678828903,
+            "max_drawdown": -0.16784567087365554
+          },
+          "min_variance": {
+            "observations": 251,
+            "cumulative_return": -0.11646188403390212,
+            "max_drawdown": -0.1792292329081896
+          },
+          "quant_only_no_gate": {
+            "observations": 251,
+            "cumulative_return": 0.0020996169511742213,
+            "max_drawdown": -0.15488005981730968
+          },
+          "quant_only_gated": {
+            "observations": 251,
+            "cumulative_return": 0.002099617972549428,
+            "max_drawdown": -0.15488005950407346
+          },
+          "agents_only": {
+            "observations": 251,
+            "cumulative_return": -0.03949484702542305,
+            "max_drawdown": -0.2650470476415996
+          },
+          "hybrid": {
+            "observations": 251,
+            "cumulative_return": 0.0009622755165525909,
+            "max_drawdown": -0.15490826555581216
+          }
+        }
+      }
+    },
+    {
+      "profile": {
+        "investor_id": "P5-AGGRESSIVE",
+        "as_of": "2026-06-30",
+        "age": 30,
+        "horizon_years": 30.0,
+        "risk_tolerance": 5,
+        "loss_tolerance_pct": 0.3,
+        "goal": "aggressive_growth",
+        "liquidity_need": "low",
+        "current_holdings": {},
+        "exclusions": [],
+        "notes": null
+      },
+      "results": [
+        {
+          "config": "one_over_n",
+          "metrics": {
+            "annual_return": 0.128233,
+            "annual_volatility": 0.145481,
+            "sharpe": 0.6608,
+            "sortino": 0.9189,
+            "max_drawdown": -0.300707,
+            "cvar_95": 0.021262,
+            "calmar": 0.4264,
+            "turnover_per_rebalance": 0.0056,
+            "annual_cost_bps": 0.81,
+            "hit_rate": 0.5547,
+            "rebalances": 90,
+            "average_equity_weight": 0.7143,
+            "suitability_breach_rate": 0.1222
+          },
+          "final_equity": 2.453984,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P5-AGGRESSIVE",
+            "risk_class": 5,
+            "realised_volatility": 0.145481,
+            "volatility_limit": 0.24,
+            "volatility_ratio": 0.6062,
+            "volatility_ok": true,
+            "realised_drawdown": 0.300707,
+            "drawdown_limit": 0.3,
+            "drawdown_ratio": 1.0024,
+            "drawdown_ok": false,
+            "recommendation_stability": 1.0,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.660795,
+              "low": -0.077412,
+              "high": 1.665858,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.300707,
+              "low": -0.499996,
+              "high": -0.111992,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.169271,
+              "annual_volatility": 0.17633,
+              "sharpe": 0.7779,
+              "max_drawdown": -0.300707
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.017873,
+              "annual_volatility": 0.136961,
+              "sharpe": -0.1039,
+              "max_drawdown": -0.16924
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.17393,
+              "annual_volatility": 0.105739,
+              "sharpe": 1.3413,
+              "max_drawdown": -0.108216
+            }
+          }
+        },
+        {
+          "config": "sixty_forty",
+          "metrics": {
+            "annual_return": 0.099657,
+            "annual_volatility": 0.115777,
+            "sharpe": 0.5835,
+            "sortino": 0.8117,
+            "max_drawdown": -0.238285,
+            "cvar_95": 0.0168,
+            "calmar": 0.4182,
+            "turnover_per_rebalance": 0.0056,
+            "annual_cost_bps": 0.81,
+            "hit_rate": 0.5595,
+            "rebalances": 90,
+            "average_equity_weight": 0.6,
+            "suitability_breach_rate": 0.0
+          },
+          "final_equity": 2.027557,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P5-AGGRESSIVE",
+            "risk_class": 5,
+            "realised_volatility": 0.115777,
+            "volatility_limit": 0.24,
+            "volatility_ratio": 0.4824,
+            "volatility_ok": true,
+            "realised_drawdown": 0.238285,
+            "drawdown_limit": 0.3,
+            "drawdown_ratio": 0.7943,
+            "drawdown_ok": true,
+            "recommendation_stability": 1.0,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.583508,
+              "low": -0.199901,
+              "high": 1.475361,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.238285,
+              "low": -0.3851,
+              "high": -0.095411,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.143585,
+              "annual_volatility": 0.136246,
+              "sharpe": 0.8183,
+              "max_drawdown": -0.238285
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.001288,
+              "annual_volatility": 0.115466,
+              "sharpe": -0.2669,
+              "max_drawdown": -0.167846
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.131063,
+              "annual_volatility": 0.08523,
+              "sharpe": 1.1611,
+              "max_drawdown": -0.08362
+            }
+          }
+        },
+        {
+          "config": "min_variance",
+          "metrics": {
+            "annual_return": 0.051009,
+            "annual_volatility": 0.079646,
+            "sharpe": 0.2374,
+            "sortino": 0.3216,
+            "max_drawdown": -0.182523,
+            "cvar_95": 0.011655,
+            "calmar": 0.2795,
+            "turnover_per_rebalance": 0.0497,
+            "annual_cost_bps": 7.22,
+            "hit_rate": 0.5579,
+            "rebalances": 90,
+            "average_equity_weight": 0.296,
+            "suitability_breach_rate": 0.0
+          },
+          "final_equity": 1.447982,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P5-AGGRESSIVE",
+            "risk_class": 5,
+            "realised_volatility": 0.079646,
+            "volatility_limit": 0.24,
+            "volatility_ratio": 0.3319,
+            "volatility_ok": true,
+            "realised_drawdown": 0.182523,
+            "drawdown_limit": 0.3,
+            "drawdown_ratio": 0.6084,
+            "drawdown_ok": true,
+            "recommendation_stability": 0.9941,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.237416,
+              "low": -0.609257,
+              "high": 1.109914,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.182523,
+              "low": -0.376165,
+              "high": -0.082188,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.076584,
+              "annual_volatility": 0.08236,
+              "sharpe": 0.5401,
+              "max_drawdown": -0.18061
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": -0.032842,
+              "annual_volatility": 0.09048,
+              "sharpe": -0.7178,
+              "max_drawdown": -0.179229
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.091562,
+              "annual_volatility": 0.065775,
+              "sharpe": 0.904,
+              "max_drawdown": -0.055962
+            }
+          }
+        },
+        {
+          "config": "quant_only_no_gate",
+          "metrics": {
+            "annual_return": 0.138249,
+            "annual_volatility": 0.146198,
+            "sharpe": 0.7261,
+            "sortino": 1.0039,
+            "max_drawdown": -0.274159,
+            "cvar_95": 0.022017,
+            "calmar": 0.5043,
+            "turnover_per_rebalance": 0.1073,
+            "annual_cost_bps": 15.58,
+            "hit_rate": 0.56,
+            "rebalances": 90,
+            "average_equity_weight": 0.7368,
+            "suitability_breach_rate": 0.0111
+          },
+          "final_equity": 2.620788,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P5-AGGRESSIVE",
+            "risk_class": 5,
+            "realised_volatility": 0.146198,
+            "volatility_limit": 0.24,
+            "volatility_ratio": 0.6092,
+            "volatility_ok": true,
+            "realised_drawdown": 0.274159,
+            "drawdown_limit": 0.3,
+            "drawdown_ratio": 0.9139,
+            "drawdown_ok": true,
+            "recommendation_stability": 0.9722,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.726062,
+              "low": -0.007877,
+              "high": 1.700865,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.274159,
+              "low": -0.451467,
+              "high": -0.114018,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.148296,
+              "annual_volatility": 0.159595,
+              "sharpe": 0.7281,
+              "max_drawdown": -0.274159
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.059787,
+              "annual_volatility": 0.149324,
+              "sharpe": 0.1854,
+              "max_drawdown": -0.155358
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.192763,
+              "annual_volatility": 0.125505,
+              "sharpe": 1.2801,
+              "max_drawdown": -0.107893
+            }
+          }
+        },
+        {
+          "config": "quant_only_gated",
+          "metrics": {
+            "annual_return": 0.138155,
+            "annual_volatility": 0.145996,
+            "sharpe": 0.7264,
+            "sortino": 1.0041,
+            "max_drawdown": -0.274159,
+            "cvar_95": 0.022017,
+            "calmar": 0.5039,
+            "turnover_per_rebalance": 0.1094,
+            "annual_cost_bps": 15.88,
+            "hit_rate": 0.5611,
+            "rebalances": 90,
+            "average_equity_weight": 0.7352,
+            "suitability_breach_rate": 0.0
+          },
+          "final_equity": 2.619176,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P5-AGGRESSIVE",
+            "risk_class": 5,
+            "realised_volatility": 0.145996,
+            "volatility_limit": 0.24,
+            "volatility_ratio": 0.6083,
+            "volatility_ok": true,
+            "realised_drawdown": 0.274159,
+            "drawdown_limit": 0.3,
+            "drawdown_ratio": 0.9139,
+            "drawdown_ok": true,
+            "recommendation_stability": 0.9706,
+            "inter_agent_agreement": null
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.72642,
+              "low": -0.029822,
+              "high": 1.636868,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.274159,
+              "low": -0.427243,
+              "high": -0.112652,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.148059,
+              "annual_volatility": 0.159133,
+              "sharpe": 0.7287,
+              "max_drawdown": -0.274159
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.059787,
+              "annual_volatility": 0.149324,
+              "sharpe": 0.1854,
+              "max_drawdown": -0.155358
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.192763,
+              "annual_volatility": 0.125505,
+              "sharpe": 1.2801,
+              "max_drawdown": -0.107893
+            }
+          }
+        },
+        {
+          "config": "agents_only",
+          "metrics": {
+            "annual_return": 0.063482,
+            "annual_volatility": 0.171043,
+            "sharpe": 0.1835,
+            "sortino": 0.247,
+            "max_drawdown": -0.374574,
+            "cvar_95": 0.026656,
+            "calmar": 0.1695,
+            "turnover_per_rebalance": 0.9022,
+            "annual_cost_bps": 130.96,
+            "hit_rate": 0.5499,
+            "rebalances": 90,
+            "average_equity_weight": 0.7731,
+            "suitability_breach_rate": 0.3222
+          },
+          "final_equity": 1.580824,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P5-AGGRESSIVE",
+            "risk_class": 5,
+            "realised_volatility": 0.171043,
+            "volatility_limit": 0.24,
+            "volatility_ratio": 0.7127,
+            "volatility_ok": true,
+            "realised_drawdown": 0.374574,
+            "drawdown_limit": 0.3,
+            "drawdown_ratio": 1.2486,
+            "drawdown_ok": false,
+            "recommendation_stability": 0.0887,
+            "inter_agent_agreement": 0.7727
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.183471,
+              "low": -0.519723,
+              "high": 1.189637,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.374574,
+              "low": -0.636454,
+              "high": -0.164683,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.101383,
+              "annual_volatility": 0.186566,
+              "sharpe": 0.3714,
+              "max_drawdown": -0.374574
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": -0.049964,
+              "annual_volatility": 0.190312,
+              "sharpe": -0.4312,
+              "max_drawdown": -0.266815
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.116308,
+              "annual_volatility": 0.13052,
+              "sharpe": 0.6452,
+              "max_drawdown": -0.124456
+            }
+          }
+        },
+        {
+          "config": "hybrid",
+          "metrics": {
+            "annual_return": 0.137866,
+            "annual_volatility": 0.146228,
+            "sharpe": 0.7233,
+            "sortino": 1.0,
+            "max_drawdown": -0.274512,
+            "cvar_95": 0.022047,
+            "calmar": 0.5022,
+            "turnover_per_rebalance": 0.1113,
+            "annual_cost_bps": 16.16,
+            "hit_rate": 0.5605,
+            "rebalances": 90,
+            "average_equity_weight": 0.7359,
+            "suitability_breach_rate": 0.0
+          },
+          "final_equity": 2.61424,
+          "periods": 90,
+          "risk_free": 0.0321,
+          "profile_alignment": {
+            "profile_id": "P5-AGGRESSIVE",
+            "risk_class": 5,
+            "realised_volatility": 0.146228,
+            "volatility_limit": 0.24,
+            "volatility_ratio": 0.6093,
+            "volatility_ok": true,
+            "realised_drawdown": 0.274512,
+            "drawdown_limit": 0.3,
+            "drawdown_ratio": 0.915,
+            "drawdown_ok": true,
+            "recommendation_stability": 0.9695,
+            "inter_agent_agreement": 0.8215
+          },
+          "bootstrap": {
+            "sharpe": {
+              "point": 0.723298,
+              "low": -0.01846,
+              "high": 1.660262,
+              "n_boot": 1000,
+              "block_length": 21
+            },
+            "max_drawdown": {
+              "point": -0.274512,
+              "low": -0.448058,
+              "high": -0.116555,
+              "n_boot": 1000,
+              "block_length": 21
+            }
+          },
+          "splits": {
+            "dev": {
+              "observations": 750,
+              "annual_return": 0.147591,
+              "annual_volatility": 0.159259,
+              "sharpe": 0.7252,
+              "max_drawdown": -0.274512
+            },
+            "validation": {
+              "observations": 501,
+              "annual_return": 0.059197,
+              "annual_volatility": 0.149524,
+              "sharpe": 0.1812,
+              "max_drawdown": -0.155391
+            },
+            "test": {
+              "observations": 624,
+              "annual_return": 0.192972,
+              "annual_volatility": 0.125929,
+              "sharpe": 1.2775,
+              "max_drawdown": -0.108684
+            }
+          }
+        }
+      ],
+      "paired_tests": {
+        "one_over_n": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": 0.062503,
+            "low": -0.224776,
+            "high": 0.317254,
+            "p_value": 0.595405,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.026195,
+            "low": -0.041355,
+            "high": 0.071539,
+            "p_value": 0.533467,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "sixty_forty": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": 0.139791,
+            "low": -0.146773,
+            "high": 0.459638,
+            "p_value": 0.285714,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": -0.036228,
+            "low": -0.082387,
+            "high": 0.023125,
+            "p_value": 0.21978,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "min_variance": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": 0.485882,
+            "low": 0.021301,
+            "high": 1.047073,
+            "p_value": 0.03996,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": -0.091989,
+            "low": -0.138352,
+            "high": 0.038336,
+            "p_value": 0.183816,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "quant_only_no_gate": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.002764,
+            "low": -0.015903,
+            "high": 0.009472,
+            "p_value": 0.535465,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": -0.000353,
+            "low": -0.001732,
+            "high": 0.001317,
+            "p_value": 0.361638,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "quant_only_gated": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": -0.003122,
+            "low": -0.008781,
+            "high": 0.001454,
+            "p_value": 0.20979,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": -0.000353,
+            "low": -0.001601,
+            "high": 0.000472,
+            "p_value": 0.33966,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        },
+        "agents_only": {
+          "sharpe": {
+            "metric": "sharpe",
+            "difference": 0.539827,
+            "low": 0.179853,
+            "high": 0.877682,
+            "p_value": 0.003996,
+            "n_boot": 1000,
+            "block_length": 21
+          },
+          "max_drawdown": {
+            "metric": "max_drawdown",
+            "difference": 0.100062,
+            "low": 0.031811,
+            "high": 0.266653,
+            "p_value": 0.005994,
+            "n_boot": 1000,
+            "block_length": 21
+          }
+        }
+      },
+      "regimes": {
+        "2020_crash": {
+          "one_over_n": {
+            "observations": 51,
+            "cumulative_return": -0.11960495451739317,
+            "max_drawdown": -0.3007070809159066
+          },
+          "sixty_forty": {
+            "observations": 51,
+            "cumulative_return": -0.0778547240409887,
+            "max_drawdown": -0.23828451032230913
+          },
+          "min_variance": {
+            "observations": 51,
+            "cumulative_return": -0.051508433968481815,
+            "max_drawdown": -0.18061039581669236
+          },
+          "quant_only_no_gate": {
+            "observations": 51,
+            "cumulative_return": -0.12943781054475645,
+            "max_drawdown": -0.2741589353755257
+          },
+          "quant_only_gated": {
+            "observations": 51,
+            "cumulative_return": -0.12943781054475623,
+            "max_drawdown": -0.2741589353755256
+          },
+          "agents_only": {
+            "observations": 51,
+            "cumulative_return": -0.22078992232730288,
+            "max_drawdown": -0.37343866463508346
+          },
+          "hybrid": {
+            "observations": 51,
+            "cumulative_return": -0.12974911135040368,
+            "max_drawdown": -0.27451206698026975
+          }
+        },
+        "2022_rates": {
+          "one_over_n": {
+            "observations": 251,
+            "cumulative_return": -0.07576399199058736,
+            "max_drawdown": -0.16924004269773196
+          },
+          "sixty_forty": {
+            "observations": 251,
+            "cumulative_return": -0.09247783678828903,
+            "max_drawdown": -0.16784567087365554
+          },
+          "min_variance": {
+            "observations": 251,
+            "cumulative_return": -0.11646188403390212,
+            "max_drawdown": -0.1792292329081896
+          },
+          "quant_only_no_gate": {
+            "observations": 251,
+            "cumulative_return": 0.0051482823317756665,
+            "max_drawdown": -0.155358321036413
+          },
+          "quant_only_gated": {
+            "observations": 251,
+            "cumulative_return": 0.005148281142402178,
+            "max_drawdown": -0.1553583212849694
+          },
+          "agents_only": {
+            "observations": 251,
+            "cumulative_return": -0.030918365635661083,
+            "max_drawdown": -0.25160209964988
+          },
+          "hybrid": {
+            "observations": 251,
+            "cumulative_return": 0.004017660611607798,
+            "max_drawdown": -0.15539084587040364
+          }
+        }
+      }
+    }
+  ],
+  "aggregate": {
+    "one_over_n": {
+      "metrics": {
+        "annual_return": {
+          "mean": 0.128233,
+          "min": 0.128233,
+          "max": 0.128233
+        },
+        "annual_volatility": {
+          "mean": 0.145481,
+          "min": 0.145481,
+          "max": 0.145481
+        },
+        "sharpe": {
+          "mean": 0.6608,
+          "min": 0.6608,
+          "max": 0.6608
+        },
+        "sortino": {
+          "mean": 0.9189,
+          "min": 0.9189,
+          "max": 0.9189
+        },
+        "max_drawdown": {
+          "mean": -0.300707,
+          "min": -0.300707,
+          "max": -0.300707
+        },
+        "cvar_95": {
+          "mean": 0.021262,
+          "min": 0.021262,
+          "max": 0.021262
+        },
+        "turnover_per_rebalance": {
+          "mean": 0.0056,
+          "min": 0.0056,
+          "max": 0.0056
+        },
+        "annual_cost_bps": {
+          "mean": 0.81,
+          "min": 0.81,
+          "max": 0.81
+        },
+        "suitability_breach_rate": {
+          "mean": 0.50444,
+          "min": 0.1222,
+          "max": 1.0
+        },
+        "average_equity_weight": {
+          "mean": 0.7143,
+          "min": 0.7143,
+          "max": 0.7143
+        }
+      },
+      "alignment": {
+        "realised_volatility": {
+          "mean": 0.145481,
+          "min": 0.145481,
+          "max": 0.145481
+        },
+        "volatility_ratio": {
+          "mean": 1.086,
+          "min": 0.6062,
+          "max": 1.7115
+        },
+        "realised_drawdown": {
+          "mean": 0.300707,
+          "min": 0.300707,
+          "max": 0.300707
+        },
+        "drawdown_ratio": {
+          "mean": 2.70636,
+          "min": 1.0024,
+          "max": 6.0141
+        },
+        "recommendation_stability": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "inter_agent_agreement": {
+          "mean": null,
+          "min": null,
+          "max": null
+        }
+      }
+    },
+    "sixty_forty": {
+      "metrics": {
+        "annual_return": {
+          "mean": 0.099657,
+          "min": 0.099657,
+          "max": 0.099657
+        },
+        "annual_volatility": {
+          "mean": 0.115777,
+          "min": 0.115777,
+          "max": 0.115777
+        },
+        "sharpe": {
+          "mean": 0.5835,
+          "min": 0.5835,
+          "max": 0.5835
+        },
+        "sortino": {
+          "mean": 0.8117,
+          "min": 0.8117,
+          "max": 0.8117
+        },
+        "max_drawdown": {
+          "mean": -0.238285,
+          "min": -0.238285,
+          "max": -0.238285
+        },
+        "cvar_95": {
+          "mean": 0.0168,
+          "min": 0.0168,
+          "max": 0.0168
+        },
+        "turnover_per_rebalance": {
+          "mean": 0.0056,
+          "min": 0.0056,
+          "max": 0.0056
+        },
+        "annual_cost_bps": {
+          "mean": 0.81,
+          "min": 0.81,
+          "max": 0.81
+        },
+        "suitability_breach_rate": {
+          "mean": 0.46666,
+          "min": 0.0,
+          "max": 1.0
+        },
+        "average_equity_weight": {
+          "mean": 0.6,
+          "min": 0.6,
+          "max": 0.6
+        }
+      },
+      "alignment": {
+        "realised_volatility": {
+          "mean": 0.115777,
+          "min": 0.115777,
+          "max": 0.115777
+        },
+        "volatility_ratio": {
+          "mean": 0.86426,
+          "min": 0.4824,
+          "max": 1.3621
+        },
+        "realised_drawdown": {
+          "mean": 0.238285,
+          "min": 0.238285,
+          "max": 0.238285
+        },
+        "drawdown_ratio": {
+          "mean": 2.14456,
+          "min": 0.7943,
+          "max": 4.7657
+        },
+        "recommendation_stability": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "inter_agent_agreement": {
+          "mean": null,
+          "min": null,
+          "max": null
+        }
+      }
+    },
+    "min_variance": {
+      "metrics": {
+        "annual_return": {
+          "mean": 0.051009,
+          "min": 0.051009,
+          "max": 0.051009
+        },
+        "annual_volatility": {
+          "mean": 0.079646,
+          "min": 0.079646,
+          "max": 0.079646
+        },
+        "sharpe": {
+          "mean": 0.2374,
+          "min": 0.2374,
+          "max": 0.2374
+        },
+        "sortino": {
+          "mean": 0.3216,
+          "min": 0.3216,
+          "max": 0.3216
+        },
+        "max_drawdown": {
+          "mean": -0.182523,
+          "min": -0.182523,
+          "max": -0.182523
+        },
+        "cvar_95": {
+          "mean": 0.011655,
+          "min": 0.011655,
+          "max": 0.011655
+        },
+        "turnover_per_rebalance": {
+          "mean": 0.0497,
+          "min": 0.0497,
+          "max": 0.0497
+        },
+        "annual_cost_bps": {
+          "mean": 7.22,
+          "min": 7.22,
+          "max": 7.22
+        },
+        "suitability_breach_rate": {
+          "mean": 0.6,
+          "min": 0.0,
+          "max": 1.0
+        },
+        "average_equity_weight": {
+          "mean": 0.296,
+          "min": 0.296,
+          "max": 0.296
+        }
+      },
+      "alignment": {
+        "realised_volatility": {
+          "mean": 0.079646,
+          "min": 0.079646,
+          "max": 0.079646
+        },
+        "volatility_ratio": {
+          "mean": 0.59456,
+          "min": 0.3319,
+          "max": 0.937
+        },
+        "realised_drawdown": {
+          "mean": 0.182523,
+          "min": 0.182523,
+          "max": 0.182523
+        },
+        "drawdown_ratio": {
+          "mean": 1.6427,
+          "min": 0.6084,
+          "max": 3.6505
+        },
+        "recommendation_stability": {
+          "mean": 0.9941,
+          "min": 0.9941,
+          "max": 0.9941
+        },
+        "inter_agent_agreement": {
+          "mean": null,
+          "min": null,
+          "max": null
+        }
+      }
+    },
+    "quant_only_no_gate": {
+      "metrics": {
+        "annual_return": {
+          "mean": 0.129682,
+          "min": 0.121569,
+          "max": 0.138249
+        },
+        "annual_volatility": {
+          "mean": 0.138461,
+          "min": 0.130279,
+          "max": 0.146198
+        },
+        "sharpe": {
+          "mean": 0.7041,
+          "min": 0.6866,
+          "max": 0.7261
+        },
+        "sortino": {
+          "mean": 0.97196,
+          "min": 0.9463,
+          "max": 1.0039
+        },
+        "max_drawdown": {
+          "mean": -0.264016,
+          "min": -0.274159,
+          "max": -0.253543
+        },
+        "cvar_95": {
+          "mean": 0.020811,
+          "min": 0.019442,
+          "max": 0.022017
+        },
+        "turnover_per_rebalance": {
+          "mean": 0.10226,
+          "min": 0.0933,
+          "max": 0.1073
+        },
+        "annual_cost_bps": {
+          "mean": 14.846,
+          "min": 13.55,
+          "max": 15.58
+        },
+        "suitability_breach_rate": {
+          "mean": 0.56222,
+          "min": 0.0111,
+          "max": 1.0
+        },
+        "average_equity_weight": {
+          "mean": 0.70254,
+          "min": 0.6734,
+          "max": 0.7368
+        }
+      },
+      "alignment": {
+        "realised_volatility": {
+          "mean": 0.138461,
+          "min": 0.130279,
+          "max": 0.146198
+        },
+        "volatility_ratio": {
+          "mean": 1.01754,
+          "min": 0.6092,
+          "max": 1.5327
+        },
+        "realised_drawdown": {
+          "mean": 0.264016,
+          "min": 0.253543,
+          "max": 0.274159
+        },
+        "drawdown_ratio": {
+          "mean": 2.33522,
+          "min": 0.9139,
+          "max": 5.0709
+        },
+        "recommendation_stability": {
+          "mean": 0.97386,
+          "min": 0.9722,
+          "max": 0.9767
+        },
+        "inter_agent_agreement": {
+          "mean": null,
+          "min": null,
+          "max": null
+        }
+      }
+    },
+    "quant_only_gated": {
+      "metrics": {
+        "annual_return": {
+          "mean": 0.08997,
+          "min": 0.041244,
+          "max": 0.138155
+        },
+        "annual_volatility": {
+          "mean": 0.112453,
+          "min": 0.076355,
+          "max": 0.145996
+        },
+        "sharpe": {
+          "mean": 0.45492,
+          "min": 0.1198,
+          "max": 0.7264
+        },
+        "sortino": {
+          "mean": 0.6281,
+          "min": 0.1687,
+          "max": 1.0041
+        },
+        "max_drawdown": {
+          "mean": -0.249423,
+          "min": -0.274159,
+          "max": -0.227056
+        },
+        "cvar_95": {
+          "mean": 0.016673,
+          "min": 0.010668,
+          "max": 0.022017
+        },
+        "turnover_per_rebalance": {
+          "mean": 0.08184,
+          "min": 0.0056,
+          "max": 0.1132
+        },
+        "annual_cost_bps": {
+          "mean": 11.876,
+          "min": 0.81,
+          "max": 16.43
+        },
+        "suitability_breach_rate": {
+          "mean": 0.40666,
+          "min": 0.0,
+          "max": 1.0
+        },
+        "average_equity_weight": {
+          "mean": 0.40934,
+          "min": 0.0,
+          "max": 0.7352
+        }
+      },
+      "alignment": {
+        "realised_volatility": {
+          "mean": 0.112453,
+          "min": 0.076355,
+          "max": 0.145996
+        },
+        "volatility_ratio": {
+          "mean": 0.76396,
+          "min": 0.6083,
+          "max": 0.8983
+        },
+        "realised_drawdown": {
+          "mean": 0.249423,
+          "min": 0.227056,
+          "max": 0.274159
+        },
+        "drawdown_ratio": {
+          "mean": 2.14912,
+          "min": 0.9139,
+          "max": 4.5583
+        },
+        "recommendation_stability": {
+          "mean": 0.97532,
+          "min": 0.9673,
+          "max": 1.0
+        },
+        "inter_agent_agreement": {
+          "mean": null,
+          "min": null,
+          "max": null
+        }
+      }
+    },
+    "agents_only": {
+      "metrics": {
+        "annual_return": {
+          "mean": 0.073702,
+          "min": 0.063482,
+          "max": 0.087221
+        },
+        "annual_volatility": {
+          "mean": 0.132677,
+          "min": 0.097112,
+          "max": 0.171043
+        },
+        "sharpe": {
+          "mean": 0.33482,
+          "min": 0.1835,
+          "max": 0.4774
+        },
+        "sortino": {
+          "mean": 0.46126,
+          "min": 0.247,
+          "max": 0.6684
+        },
+        "max_drawdown": {
+          "mean": -0.279389,
+          "min": -0.374574,
+          "max": -0.207302
+        },
+        "cvar_95": {
+          "mean": 0.020362,
+          "min": 0.01432,
+          "max": 0.026656
+        },
+        "turnover_per_rebalance": {
+          "mean": 0.76134,
+          "min": 0.5535,
+          "max": 0.9022
+        },
+        "annual_cost_bps": {
+          "mean": 110.506,
+          "min": 80.34,
+          "max": 130.96
+        },
+        "suitability_breach_rate": {
+          "mean": 0.74444,
+          "min": 0.3222,
+          "max": 1.0
+        },
+        "average_equity_weight": {
+          "mean": 0.5889,
+          "min": 0.4011,
+          "max": 0.7731
+        }
+      },
+      "alignment": {
+        "realised_volatility": {
+          "mean": 0.132677,
+          "min": 0.097112,
+          "max": 0.171043
+        },
+        "volatility_ratio": {
+          "mean": 0.91434,
+          "min": 0.7127,
+          "max": 1.1425
+        },
+        "realised_drawdown": {
+          "mean": 0.279389,
+          "min": 0.207302,
+          "max": 0.374574
+        },
+        "drawdown_ratio": {
+          "mean": 2.25952,
+          "min": 1.2486,
+          "max": 4.146
+        },
+        "recommendation_stability": {
+          "mean": 0.2612,
+          "min": 0.0887,
+          "max": 0.5128
+        },
+        "inter_agent_agreement": {
+          "mean": 0.7769,
+          "min": 0.7699,
+          "max": 0.7865
+        }
+      }
+    },
+    "hybrid": {
+      "metrics": {
+        "annual_return": {
+          "mean": 0.090662,
+          "min": 0.041244,
+          "max": 0.137866
+        },
+        "annual_volatility": {
+          "mean": 0.112539,
+          "min": 0.076355,
+          "max": 0.146228
+        },
+        "sharpe": {
+          "mean": 0.46236,
+          "min": 0.1198,
+          "max": 0.7233
+        },
+        "sortino": {
+          "mean": 0.63884,
+          "min": 0.1687,
+          "max": 1.0
+        },
+        "max_drawdown": {
+          "mean": -0.249414,
+          "min": -0.274512,
+          "max": -0.227056
+        },
+        "cvar_95": {
+          "mean": 0.016685,
+          "min": 0.010668,
+          "max": 0.022047
+        },
+        "turnover_per_rebalance": {
+          "mean": 0.08034,
+          "min": 0.0056,
+          "max": 0.1148
+        },
+        "annual_cost_bps": {
+          "mean": 11.664,
+          "min": 0.81,
+          "max": 16.67
+        },
+        "suitability_breach_rate": {
+          "mean": 0.40444,
+          "min": 0.0,
+          "max": 1.0
+        },
+        "average_equity_weight": {
+          "mean": 0.41036,
+          "min": 0.0,
+          "max": 0.7359
+        }
+      },
+      "alignment": {
+        "realised_volatility": {
+          "mean": 0.112539,
+          "min": 0.076355,
+          "max": 0.146228
+        },
+        "volatility_ratio": {
+          "mean": 0.7644,
+          "min": 0.6093,
+          "max": 0.8983
+        },
+        "realised_drawdown": {
+          "mean": 0.249414,
+          "min": 0.227056,
+          "max": 0.274512
+        },
+        "drawdown_ratio": {
+          "mean": 2.1487,
+          "min": 0.915,
+          "max": 4.5583
+        },
+        "recommendation_stability": {
+          "mean": 0.97598,
+          "min": 0.9665,
+          "max": 1.0
+        },
+        "inter_agent_agreement": {
+          "mean": 0.80974,
+          "min": 0.785,
+          "max": 0.8215
+        }
+      }
+    }
+  },
+  "split_aggregate": {
+    "dev": {
+      "one_over_n": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.169271,
+            "min": 0.169271,
+            "max": 0.169271
+          },
+          "annual_volatility": {
+            "mean": 0.17633,
+            "min": 0.17633,
+            "max": 0.17633
+          },
+          "sharpe": {
+            "mean": 0.7779,
+            "min": 0.7779,
+            "max": 0.7779
+          },
+          "max_drawdown": {
+            "mean": -0.300707,
+            "min": -0.300707,
+            "max": -0.300707
+          }
+        },
+        "observations": 750
+      },
+      "sixty_forty": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.143585,
+            "min": 0.143585,
+            "max": 0.143585
+          },
+          "annual_volatility": {
+            "mean": 0.136246,
+            "min": 0.136246,
+            "max": 0.136246
+          },
+          "sharpe": {
+            "mean": 0.8183,
+            "min": 0.8183,
+            "max": 0.8183
+          },
+          "max_drawdown": {
+            "mean": -0.238285,
+            "min": -0.238285,
+            "max": -0.238285
+          }
+        },
+        "observations": 750
+      },
+      "min_variance": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.076584,
+            "min": 0.076584,
+            "max": 0.076584
+          },
+          "annual_volatility": {
+            "mean": 0.08236,
+            "min": 0.08236,
+            "max": 0.08236
+          },
+          "sharpe": {
+            "mean": 0.5401,
+            "min": 0.5401,
+            "max": 0.5401
+          },
+          "max_drawdown": {
+            "mean": -0.18061,
+            "min": -0.18061,
+            "max": -0.18061
+          }
+        },
+        "observations": 750
+      },
+      "quant_only_no_gate": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.140091,
+            "min": 0.130556,
+            "max": 0.148296
+          },
+          "annual_volatility": {
+            "mean": 0.151136,
+            "min": 0.1445,
+            "max": 0.159595
+          },
+          "sharpe": {
+            "mean": 0.71448,
+            "min": 0.6814,
+            "max": 0.758
+          },
+          "max_drawdown": {
+            "mean": -0.264016,
+            "min": -0.274159,
+            "max": -0.253543
+          }
+        },
+        "observations": 750
+      },
+      "quant_only_gated": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.099446,
+            "min": 0.056425,
+            "max": 0.148059
+          },
+          "annual_volatility": {
+            "mean": 0.11192,
+            "min": 0.068184,
+            "max": 0.159133
+          },
+          "sharpe": {
+            "mean": 0.61412,
+            "min": 0.2207,
+            "max": 0.9402
+          },
+          "max_drawdown": {
+            "mean": -0.201491,
+            "min": -0.274159,
+            "max": -0.105522
+          }
+        },
+        "observations": 750
+      },
+      "agents_only": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.122481,
+            "min": 0.101383,
+            "max": 0.130044
+          },
+          "annual_volatility": {
+            "mean": 0.135041,
+            "min": 0.096077,
+            "max": 0.186566
+          },
+          "sharpe": {
+            "mean": 0.72846,
+            "min": 0.3714,
+            "max": 0.979
+          },
+          "max_drawdown": {
+            "mean": -0.23738,
+            "min": -0.374574,
+            "max": -0.143875
+          }
+        },
+        "observations": 750
+      },
+      "hybrid": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.100577,
+            "min": 0.056478,
+            "max": 0.147591
+          },
+          "annual_volatility": {
+            "mean": 0.111923,
+            "min": 0.068184,
+            "max": 0.159259
+          },
+          "sharpe": {
+            "mean": 0.6311,
+            "min": 0.2216,
+            "max": 1.0297
+          },
+          "max_drawdown": {
+            "mean": -0.201482,
+            "min": -0.274512,
+            "max": -0.105522
+          }
+        },
+        "observations": 750
+      }
+    },
+    "validation": {
+      "one_over_n": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.017873,
+            "min": 0.017873,
+            "max": 0.017873
+          },
+          "annual_volatility": {
+            "mean": 0.136961,
+            "min": 0.136961,
+            "max": 0.136961
+          },
+          "sharpe": {
+            "mean": -0.1039,
+            "min": -0.1039,
+            "max": -0.1039
+          },
+          "max_drawdown": {
+            "mean": -0.16924,
+            "min": -0.16924,
+            "max": -0.16924
+          }
+        },
+        "observations": 501
+      },
+      "sixty_forty": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.001288,
+            "min": 0.001288,
+            "max": 0.001288
+          },
+          "annual_volatility": {
+            "mean": 0.115466,
+            "min": 0.115466,
+            "max": 0.115466
+          },
+          "sharpe": {
+            "mean": -0.2669,
+            "min": -0.2669,
+            "max": -0.2669
+          },
+          "max_drawdown": {
+            "mean": -0.167846,
+            "min": -0.167846,
+            "max": -0.167846
+          }
+        },
+        "observations": 501
+      },
+      "min_variance": {
+        "metrics": {
+          "annual_return": {
+            "mean": -0.032842,
+            "min": -0.032842,
+            "max": -0.032842
+          },
+          "annual_volatility": {
+            "mean": 0.09048,
+            "min": 0.09048,
+            "max": 0.09048
+          },
+          "sharpe": {
+            "mean": -0.7178,
+            "min": -0.7178,
+            "max": -0.7178
+          },
+          "max_drawdown": {
+            "mean": -0.179229,
+            "min": -0.179229,
+            "max": -0.179229
+          }
+        },
+        "observations": 501
+      },
+      "quant_only_no_gate": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.049037,
+            "min": 0.03273,
+            "max": 0.059787
+          },
+          "annual_volatility": {
+            "mean": 0.139705,
+            "min": 0.127455,
+            "max": 0.149324
+          },
+          "sharpe": {
+            "mean": 0.11746,
+            "min": 0.0049,
+            "max": 0.1854
+          },
+          "max_drawdown": {
+            "mean": -0.151163,
+            "min": -0.155358,
+            "max": -0.1474
+          }
+        },
+        "observations": 501
+      },
+      "quant_only_gated": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.015699,
+            "min": -0.041176,
+            "max": 0.059787
+          },
+          "annual_volatility": {
+            "mean": 0.123529,
+            "min": 0.097098,
+            "max": 0.149324
+          },
+          "sharpe": {
+            "mean": -0.20892,
+            "min": -0.7547,
+            "max": 0.1854
+          },
+          "max_drawdown": {
+            "mean": -0.160975,
+            "min": -0.179593,
+            "max": -0.13885
+          }
+        },
+        "observations": 501
+      },
+      "agents_only": {
+        "metrics": {
+          "annual_return": {
+            "mean": -0.036017,
+            "min": -0.060375,
+            "max": 0.012905
+          },
+          "annual_volatility": {
+            "mean": 0.154299,
+            "min": 0.112791,
+            "max": 0.191189
+          },
+          "sharpe": {
+            "mean": -0.45926,
+            "min": -0.7506,
+            "max": -0.1246
+          },
+          "max_drawdown": {
+            "mean": -0.254048,
+            "min": -0.289154,
+            "max": -0.207302
+          }
+        },
+        "observations": 501
+      },
+      "hybrid": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.016087,
+            "min": -0.041176,
+            "max": 0.059197
+          },
+          "annual_volatility": {
+            "mean": 0.123591,
+            "min": 0.097098,
+            "max": 0.149524
+          },
+          "sharpe": {
+            "mean": -0.2057,
+            "min": -0.7547,
+            "max": 0.1812
+          },
+          "max_drawdown": {
+            "mean": -0.159838,
+            "min": -0.179593,
+            "max": -0.133104
+          }
+        },
+        "observations": 501
+      }
+    },
+    "test": {
+      "one_over_n": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.17393,
+            "min": 0.17393,
+            "max": 0.17393
+          },
+          "annual_volatility": {
+            "mean": 0.105739,
+            "min": 0.105739,
+            "max": 0.105739
+          },
+          "sharpe": {
+            "mean": 1.3413,
+            "min": 1.3413,
+            "max": 1.3413
+          },
+          "max_drawdown": {
+            "mean": -0.108216,
+            "min": -0.108216,
+            "max": -0.108216
+          }
+        },
+        "observations": 624
+      },
+      "sixty_forty": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.131063,
+            "min": 0.131063,
+            "max": 0.131063
+          },
+          "annual_volatility": {
+            "mean": 0.08523,
+            "min": 0.08523,
+            "max": 0.08523
+          },
+          "sharpe": {
+            "mean": 1.1611,
+            "min": 1.1611,
+            "max": 1.1611
+          },
+          "max_drawdown": {
+            "mean": -0.08362,
+            "min": -0.08362,
+            "max": -0.08362
+          }
+        },
+        "observations": 624
+      },
+      "min_variance": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.091562,
+            "min": 0.091562,
+            "max": 0.091562
+          },
+          "annual_volatility": {
+            "mean": 0.065775,
+            "min": 0.065775,
+            "max": 0.065775
+          },
+          "sharpe": {
+            "mean": 0.904,
+            "min": 0.904,
+            "max": 0.904
+          },
+          "max_drawdown": {
+            "mean": -0.055962,
+            "min": -0.055962,
+            "max": -0.055962
+          }
+        },
+        "observations": 624
+      },
+      "quant_only_no_gate": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.185777,
+            "min": 0.172968,
+            "max": 0.192763
+          },
+          "annual_volatility": {
+            "mean": 0.120451,
+            "min": 0.113229,
+            "max": 0.125505
+          },
+          "sharpe": {
+            "mean": 1.27544,
+            "min": 1.2441,
+            "max": 1.2891
+          },
+          "max_drawdown": {
+            "mean": -0.104895,
+            "min": -0.107893,
+            "max": -0.101881
+          }
+        },
+        "observations": 624
+      },
+      "quant_only_gated": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.142335,
+            "min": 0.074253,
+            "max": 0.192763
+          },
+          "annual_volatility": {
+            "mean": 0.102244,
+            "min": 0.065976,
+            "max": 0.125505
+          },
+          "sharpe": {
+            "mean": 1.00184,
+            "min": 0.5175,
+            "max": 1.2916
+          },
+          "max_drawdown": {
+            "mean": -0.088506,
+            "min": -0.107893,
+            "max": -0.057992
+          }
+        },
+        "observations": 624
+      },
+      "agents_only": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.110195,
+            "min": 0.102582,
+            "max": 0.116308
+          },
+          "annual_volatility": {
+            "mean": 0.108499,
+            "min": 0.083745,
+            "max": 0.13052
+          },
+          "sharpe": {
+            "mean": 0.74202,
+            "min": 0.5988,
+            "max": 0.9847
+          },
+          "max_drawdown": {
+            "mean": -0.09942,
+            "min": -0.126301,
+            "max": -0.070945
+          }
+        },
+        "observations": 624
+      },
+      "hybrid": {
+        "metrics": {
+          "annual_return": {
+            "mean": 0.142829,
+            "min": 0.074253,
+            "max": 0.192972
+          },
+          "annual_volatility": {
+            "mean": 0.102457,
+            "min": 0.065976,
+            "max": 0.125929
+          },
+          "sharpe": {
+            "mean": 1.00388,
+            "min": 0.5173,
+            "max": 1.3059
+          },
+          "max_drawdown": {
+            "mean": -0.088753,
+            "min": -0.108684,
+            "max": -0.057992
+          }
+        },
+        "observations": 624
+      }
+    }
+  },
+  "regime_windows": {
+    "2020_crash": {
+      "label": "COVID crash",
+      "start": "2020-02-19",
+      "end": "2020-04-30"
+    },
+    "2022_rates": {
+      "label": "Rate shock",
+      "start": "2022-01-01",
+      "end": "2022-12-31"
+    }
+  },
+  "regime_aggregate": {
+    "2020_crash": {
+      "one_over_n": {
+        "mean_cumulative_return": -0.119605,
+        "mean_max_drawdown": -0.300707,
+        "profiles": 5
+      },
+      "sixty_forty": {
+        "mean_cumulative_return": -0.077855,
+        "mean_max_drawdown": -0.238285,
+        "profiles": 5
+      },
+      "min_variance": {
+        "mean_cumulative_return": -0.051508,
+        "mean_max_drawdown": -0.18061,
+        "profiles": 5
+      },
+      "quant_only_no_gate": {
+        "mean_cumulative_return": -0.122109,
+        "mean_max_drawdown": -0.264016,
+        "profiles": 5
+      },
+      "quant_only_gated": {
+        "mean_cumulative_return": -0.062008,
+        "mean_max_drawdown": -0.201491,
+        "profiles": 5
+      },
+      "agents_only": {
+        "mean_cumulative_return": -0.099873,
+        "mean_max_drawdown": -0.237153,
+        "profiles": 5
+      },
+      "hybrid": {
+        "mean_cumulative_return": -0.061985,
+        "mean_max_drawdown": -0.201482,
+        "profiles": 5
+      }
+    },
+    "2022_rates": {
+      "one_over_n": {
+        "mean_cumulative_return": -0.075764,
+        "mean_max_drawdown": -0.16924,
+        "profiles": 5
+      },
+      "sixty_forty": {
+        "mean_cumulative_return": -0.092478,
+        "mean_max_drawdown": -0.167846,
+        "profiles": 5
+      },
+      "min_variance": {
+        "mean_cumulative_return": -0.116462,
+        "mean_max_drawdown": -0.179229,
+        "profiles": 5
+      },
+      "quant_only_no_gate": {
+        "mean_cumulative_return": -0.008227,
+        "mean_max_drawdown": -0.151162,
+        "profiles": 5
+      },
+      "quant_only_gated": {
+        "mean_cumulative_return": -0.058702,
+        "mean_max_drawdown": -0.160975,
+        "profiles": 5
+      },
+      "agents_only": {
+        "mean_cumulative_return": -0.108378,
+        "mean_max_drawdown": -0.247751,
+        "profiles": 5
+      },
+      "hybrid": {
+        "mean_cumulative_return": -0.05801,
+        "mean_max_drawdown": -0.159838,
+        "profiles": 5
+      }
+    }
+  }
+}

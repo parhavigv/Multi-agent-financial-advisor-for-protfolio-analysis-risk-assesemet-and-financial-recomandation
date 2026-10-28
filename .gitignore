@@ -20,9 +20,28 @@ htmlcov/
 # Runtime artifacts
 results/*
 !results/.gitkeep
+# The forecast evaluation is the evidence for the Phase-2 claim, so the final
+# report is versioned even though other run artifacts are not.
+!results/forecast_report.md
+!results/forecast_report.json
+# The Phase-3 placebo ablation is historical evidence for the agents/BL claim.
+!results/phase3_ablation.md
+!results/phase3_ablation.json
+# The Phase-4 multi-profile evaluation is the evidence for the current claim.
+!results/phase4_evaluation.md
+!results/phase4_evaluation.json
+# The same real-data evaluation is published under its stable name for the README.
+!results/evaluation.md
+!results/evaluation.json
+# A deterministic, reproducible worked example of the audit path.
+!results/trace_example.md
+!results/trace_example.json
 audits/*
 !audits/.gitkeep
 data/cache/
+data/prices.csv
+data/prices.csv.*
+data/risk_free.csv
 *.sqlite
 *.db
 *.log

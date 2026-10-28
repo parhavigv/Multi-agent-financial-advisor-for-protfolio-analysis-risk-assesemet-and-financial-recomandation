@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import date
 from pathlib import Path
 
 from intellivest.config import load_settings
@@ -70,6 +69,22 @@ def _print_trace(trace) -> None:
     print("Suitability checks")
     for line in trace.explanation.suitability_rationale:
         print(f"  {line}")
+    if trace.ml_forecast is not None:
+        section = trace.ml_forecast
+        print("-" * 78)
+        print("ML forecast")
+        print(f"  models    : {', '.join(section.model_identifiers)}")
+        if section.regime_prediction:
+            confidence = section.regime_confidence
+            suffix = f" ({confidence:.0%} confidence)" if confidence is not None else ""
+            print(f"  regime    : {section.regime_prediction}{suffix}")
+        for fallback in section.fallbacks:
+            print(f"  fallback  : {fallback}")
+        for rejected in section.rejected_models:
+            print(
+                f"  rejected  : {rejected.get('model', '?')} - "
+                f"{rejected.get('reason', '')}"
+            )
     if trace.explanation.counterfactual:
         print("-" * 78)
         print("Counterfactual")
@@ -86,6 +101,11 @@ def advise_main(argv: list[str] | None = None) -> int:
     parser.add_argument("--profile", type=Path, help="Path to an investor-profile JSON file.")
     parser.add_argument("--as-of", type=str, help="Override the as_of date (YYYY-MM-DD).")
     parser.add_argument("--json", action="store_true", help="Emit the full trace as JSON.")
+    parser.add_argument(
+        "--ml",
+        action="store_true",
+        help="Enable the validated ML forecast overlay (Ridge/log-HAR with fallback).",
+    )
     args = parser.parse_args(argv)
     _use_utf8_stdout()
 
@@ -96,7 +116,7 @@ def advise_main(argv: list[str] | None = None) -> int:
         payload["as_of"] = args.as_of
     profile = InvestorProfile(**payload)
 
-    trace = AdvisoryEngine(load_settings()).advise(profile)
+    trace = AdvisoryEngine(load_settings(), use_ml=args.ml).advise(profile)
     if args.json:
         print(json.dumps(trace.model_dump(mode="json"), indent=2))
     else:
@@ -105,83 +125,54 @@ def advise_main(argv: list[str] | None = None) -> int:
 
 
 def evaluate_main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run the walk-forward configuration comparison.")
-    parser.add_argument("--rebalance-every", type=int, default=21, help="Trading days between rebalances.")
-    parser.add_argument("--output", type=Path, default=None, help="Directory for JSON/Markdown results.")
-    parser.add_argument(
-        "--seeds",
-        default=",".join(str(s) for s in DEFAULT_SEEDS),
-        help="Comma-separated cross-sectional seeds for the robustness panel.",
+    parser = argparse.ArgumentParser(
+        description="Run the Phase 4 multi-profile, multi-regime evaluation."
     )
     parser.add_argument(
-        "--skip-robustness", action="store_true", help="Only run the primary seed."
+        "--rebalance-every",
+        type=int,
+        default=21,
+        help="Trading days between rebalances (default: 21).",
+    )
+    parser.add_argument(
+        "--lookback-days",
+        type=int,
+        default=252,
+        help="Estimation window in trading days (default: 252).",
+    )
+    parser.add_argument("--output", type=Path, default=None, help="Directory for JSON/Markdown results.")
+    parser.add_argument(
+        "--bootstrap-samples",
+        type=int,
+        default=1000,
+        help="Moving-block bootstrap replicates (default: 1000).",
+    )
+    parser.add_argument(
+        "--block-length",
+        type=int,
+        default=21,
+        help="Moving-block length in trading days (default: 21).",
+    )
+    parser.add_argument(
+        "--no-bootstrap",
+        action="store_true",
+        help="Skip bootstrap intervals and paired resampling for a fast run.",
     )
     args = parser.parse_args(argv)
     _use_utf8_stdout()
 
-    import pandas as pd
-    from dataclasses import replace
-
-    from intellivest.data.universe import TICKERS
-    from intellivest.evaluation.backtest import CONFIGS, Backtester, default_profile
+    from intellivest.evaluation.phase4 import run_phase4
 
     settings = load_settings()
-    as_of = date.fromisoformat(settings.data_end)
-    profile = default_profile(as_of)
-
-    def _run(run_settings):
-        backtester = Backtester(run_settings, rebalance_every=args.rebalance_every)
-        return backtester.run(profile, CONFIGS)
-
-    primary = _run(settings)
-
-    robustness: list[dict[str, object]] = []
-    if not args.skip_robustness:
-        seeds = [int(item) for item in args.seeds.split(",") if item.strip()]
-        for seed in dict.fromkeys(seeds):
-            print(f"robustness seed {seed} ...", flush=True)
-            run_settings = settings if seed == settings.seed else replace(settings, seed=seed)
-            robustness.append(
-                {
-                    "seed": seed,
-                    "results": [result.to_dict() for result in _run(run_settings)],
-                }
-            )
-
-    output = args.output or settings.results_dir
-    output.mkdir(parents=True, exist_ok=True)
-
-    payload = {
-        "generated_with": {
-            "seed": settings.seed,
-            "data_start": settings.data_start,
-            "data_end": settings.data_end,
-            "lookback_days": settings.lookback_days,
-            "transaction_cost_bps": settings.transaction_cost_bps,
-            "rebalance_every": args.rebalance_every,
-            "universe_size": len(TICKERS),
-            "regime_seed": 60,
-        },
-        "primary": {
-            "results": [result.to_dict() for result in primary],
-            "period_notes": {result.config: result.period_notes for result in primary},
-        },
-        "robustness": {
-            "seeds": [entry["seed"] for entry in robustness],
-            "per_seed": robustness,
-            "aggregate": _aggregate(robustness, CONFIGS),
-        },
-    }
-    (output / "evaluation.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
-    curves = pd.concat(
-        {result.config: result.equity_curve for result in primary}, axis=1
+    _, markdown = run_phase4(
+        settings,
+        output=args.output,
+        rebalance_every=args.rebalance_every,
+        lookback_days=args.lookback_days,
+        bootstrap=not args.no_bootstrap,
+        n_boot=args.bootstrap_samples,
+        block_length=args.block_length,
     )
-    curves.index.name = "date"
-    curves.to_csv(output / "equity_curves.csv", float_format="%.6f")
-
-    markdown = _markdown(primary, payload)
-    (output / "evaluation.md").write_text(markdown, encoding="utf-8")
     print(markdown)
     return 0
 
@@ -207,6 +198,8 @@ def _aggregate(robustness: list[dict[str, object]], configs) -> dict[str, object
     """Mean and standard deviation of each metric across seeds."""
     import numpy as np
 
+    if not robustness:
+        return {}
     aggregate: dict[str, object] = {}
     for config in configs:
         rows = []
@@ -232,12 +225,15 @@ def _markdown(results, payload) -> str:
         "# Walk-forward evaluation\n\n"
         f"Primary seed {generated['seed']}, window {generated['data_start']} → "
         f"{generated['data_end']}, rebalance every {generated['rebalance_every']} trading days, "
-        f"{generated['transaction_cost_bps']} bps transaction cost. The macro regime path is "
-        "fixed across seeds; the seed controls only cross-sectional asset draws.\n\n"
-        "**Configurations.** `quant_only` = constrained optimizer, no agent tilts and no "
-        "suitability gate. `agents_only` = direct agent-consensus allocation, bypassing every "
-        "quantitative guardrail. `hybrid` = bounded agent tilts inside the optimizer, followed "
-        "by the blocking suitability gate.\n\n"
+        f"{generated['transaction_cost_bps']} bps transaction cost. Market source: "
+        f"{generated.get('market_source', 'unknown')}. The macro regime path is fixed across "
+        "seeds; the seed controls only cross-sectional asset draws.\n\n"
+        "**Configurations.** `quant_only` = constrained mean-variance optimizer with a neutral "
+        "view set and no suitability gate. `agents_only` = direct agent-consensus allocation, "
+        "bypassing every quantitative guardrail. `hybrid` = agent views enter the Black-Litterman "
+        "posterior, the optimizer chooses weights, and the blocking suitability gate remediates "
+        "the result. `hybrid_shuffled` = the same pipeline with the asset-to-tilt mapping permuted "
+        "by a seeded RNG (placebo).\n\n"
     )
     columns = [
         ("Annual return", "annual_return", "{:.2%}"),
@@ -315,10 +311,55 @@ def _reading(payload) -> str:
             f"{a['max_drawdown']['mean']:.1%}."
         )
         lines.append(
-            "* **Return is not the objective function.** The configurations land close on "
-            "annual return, which is expected: the gate is a risk-control layer, not a "
-            "return-prediction layer. Its value is measured in breaches avoided, tail risk "
-            "and turnover, not in alpha."
+            "* **Return is not the objective function.** "
+            f"Hybrid annual return is {h['annual_return']['mean']:.2%} versus "
+            f"{a['annual_return']['mean']:.2%} for unconstrained agents; "
+            f"volatility is {h['annual_volatility']['mean']:.2%} versus "
+            f"{a['annual_volatility']['mean']:.2%}, and CVaR95 is "
+            f"{h['cvar_95']['mean']:.2%} versus {a['cvar_95']['mean']:.2%}. "
+            "The design optimises for suitability and risk control, not alpha."
+        )
+    if "hybrid" in aggregate and "quant_only" in aggregate:
+        h = aggregate["hybrid"]
+        q = aggregate["quant_only"]
+        lines.append(
+            f"* **Versus the numerical engine.** Hybrid annual return is "
+            f"{h['annual_return']['mean']:.2%} versus {q['annual_return']['mean']:.2%} "
+            f"for quant_only, with volatility {h['annual_volatility']['mean']:.2%} "
+            f"versus {q['annual_volatility']['mean']:.2%}, CVaR95 "
+            f"{h['cvar_95']['mean']:.2%} versus {q['cvar_95']['mean']:.2%}, and "
+            f"suitability breaches {h['suitability_breach_rate']['mean']:.1%} versus "
+            f"{q['suitability_breach_rate']['mean']:.1%}. The agent layer is a "
+            "risk-and-suitability layer here, not a return-enhancement layer."
+        )
+    if "hybrid" in aggregate and "hybrid_shuffled" in aggregate:
+        h = aggregate["hybrid"]
+        s = aggregate["hybrid_shuffled"]
+        gap_sharpe = h["sharpe"]["mean"] - s["sharpe"]["mean"]
+        gap_return = h["annual_return"]["mean"] - s["annual_return"]["mean"]
+        if abs(gap_sharpe) < 0.05 and abs(gap_return) < 0.005:
+            conclusion = (
+                "The gap is negligible in this run, so the placebo does not "
+                "support a claim that the asset-level mapping adds value."
+            )
+        elif gap_sharpe > 0 and gap_return > 0:
+            conclusion = (
+                "The true mapping is ahead on both metrics, which is consistent "
+                "with asset-level agent information adding value."
+            )
+        else:
+            conclusion = (
+                "The placebo is not worse, so this run does not support a claim "
+                "that the asset-level mapping adds value."
+            )
+        lines.append(
+            f"* **Placebo check.** Permuting which asset receives each agent tilt leaves "
+            f"Sharpe at {s['sharpe']['mean']:.2f} ± {s['sharpe']['std']:.2f} versus "
+            f"{h['sharpe']['mean']:.2f} ± {h['sharpe']['std']:.2f} for the true mapping, "
+            f"and annual return at {s['annual_return']['mean']:.2%} versus "
+            f"{h['annual_return']['mean']:.2%}. {conclusion} With "
+            f"{len(payload.get('robustness', {}).get('seeds', []))} seeds this is "
+            "descriptive, not a formal significance test."
         )
     return "\n".join(lines) + "\n"
 

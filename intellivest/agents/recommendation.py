@@ -93,14 +93,20 @@ class RecommendationAgent:
             optimization.expected_sharpe,
             optimization.expected_cvar_95,
             optimization.turnover,
+            optimization.turnover * self.settings.transaction_cost_bps / 10_000.0,
             metrics.annual_volatility,
             metrics.cvar_95,
             abs(metrics.max_drawdown),
             max_drawdown_estimate,
             agreement,
+            float(suitability.risk_class),
+            float(suitability.repair_iterations),
+            float(ctx.profile.horizon_years),
             *weights.values(),
             *classes.values(),
         )
+        # A narrator may legitimately date the advice.
+        allowed.add(ctx.snapshot.as_of.isoformat())
         system = (
             "You are the communication layer of a regulated advisory system. Rewrite the DRAFT "
             "in 4-6 factual sentences for the investor. Use only the numbers in the draft. "

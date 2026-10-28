@@ -15,8 +15,10 @@ identifies most consistently in financial LLM systems.
 from __future__ import annotations
 
 import json
+import math
 import re
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Protocol
 
 import httpx
@@ -120,23 +122,129 @@ class RemoteNarrator:
             return self.fallback.narrate(system, prompt, allowed_numbers=allowed_numbers)
 
 
-_DECIMAL = re.compile(r"-?\d+\.\d+")
-_PERCENT = re.compile(r"-?\d+(?:\.\d+)?\s*%")
+_ISO_DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+_MONTH_DATE = re.compile(
+    r"\b(?:January|February|March|April|May|June|July|August|September|October|November|December|"
+    r"Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s+"
+    r"\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}\b",
+    re.IGNORECASE,
+)
+# "12-1 momentum" is a label, not a quantity. Mask it before number checks so
+# the guard does not demand that both label components appear in the fact set.
+_LABEL = re.compile(r"(?<![\w.])\d{1,3}-\d{1,3}(?![\w.%])")
+# Numeric forms seen in prose: 1,000, 12.5, .5, -.5, +3, 1e-3, 1E+3.
+_SIGN = r"[+\-−–]?"
+_NUMBER = r"(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+"
+_NUMBER_GROUP = rf"{_SIGN}(?:{_NUMBER})"
+_RATIO = re.compile(
+    rf"(?<![\w.])({_NUMBER_GROUP})\s*([/:])\s*({_NUMBER_GROUP})"
+    r"(?!\w)(?!\.\d)"
+)
+_PERCENT = re.compile(rf"(?<![\w.])({_NUMBER_GROUP})\s*%")
+_UNIT = re.compile(
+    rf"(?<![\w.])({_NUMBER_GROUP})\s*"
+    r"(bps?|basis points?|x|×|yrs?|years?|days?|months?|weeks?|sd|σ)\b",
+    re.IGNORECASE,
+)
+_CURRENCY = re.compile(rf"[$€£]\s*({_NUMBER_GROUP})")
+_SCIENTIFIC = re.compile(
+    rf"(?<![\w.])({_SIGN}\d+(?:\.\d+)?[eE][+\-]?\d+)(?!\w)"
+)
+# A sentence-final period is punctuation, not part of a malformed number.
+# Matching the leading decimal in "1.2.3" is intentional: a dotted triple is
+# not a financial quantity, so the first component must still be grounded.
+_DECIMAL = re.compile(rf"(?<![\w.])({_SIGN}(?:\d+\.\d+|\.\d+))(?!\w)")
+_INTEGER = re.compile(rf"(?<![\w.+\-−–])({_SIGN}\d+)(?!\w)(?!\.\d)")
+# A dotted triple is not a financial quantity. Reject it rather than checking
+# only its leading component.
+_DOTTED = re.compile(r"(?<![\w.])[+\-−–]?\d+(?:\.\d+){2,}(?!\w)")
 
 
 def guard_numbers(text: str, allowed: set[str]) -> None:
-    """Reject prose containing financial numbers absent from the fact set."""
+    """Reject prose containing financial numbers absent from the fact set.
+
+    The guard covers decimals, percentages, basis points, quantities with
+    units, currency amounts, ratios and dates. Bare integers are checked too,
+    because an invented "Sharpe 3" is just as misleading as "Sharpe 3.14".
+    Structural labels such as "12-1 momentum" are masked, and ISO/month-name
+    dates must resolve to the decision date or another allowed date.
+    """
     allowed_normalised = {_normalise(token) for token in allowed}
-    for match in _DECIMAL.findall(text):
-        if _normalise(match) not in allowed_normalised:
-            raise GroundingError(f"unsupported decimal in generated text: {match}")
-    for match in _PERCENT.findall(text):
-        token = _normalise(match.replace("%", "").strip())
+    allowed_dates = {
+        token for token in allowed_normalised if _ISO_DATE.fullmatch(token)
+    }
+
+    for match in _ISO_DATE.findall(text):
+        if match not in allowed_dates:
+            raise GroundingError(f"unsupported date in generated text: {match}")
+    text = _ISO_DATE.sub(" ", text)
+
+    for match in _MONTH_DATE.findall(text):
+        iso = _month_date_to_iso(match)
+        if iso is None or iso not in allowed_dates:
+            raise GroundingError(f"unsupported date in generated text: {match}")
+    text = _MONTH_DATE.sub(" ", text)
+
+    text = _LABEL.sub(" ", text)
+
+    for match in _DOTTED.finditer(text):
+        raise GroundingError(f"unsupported dotted number in generated text: {match.group(0)}")
+
+    for match in _RATIO.finditer(text):
+        token = f"{match.group(1)}/{match.group(3)}"
         if token not in allowed_normalised:
-            raise GroundingError(f"unsupported percentage in generated text: {match}")
+            raise GroundingError(f"unsupported ratio in generated text: {match.group(0)}")
+    text = _RATIO.sub(" ", text)
+
+    for match in _PERCENT.finditer(text):
+        _check_number(match.group(1), allowed_normalised, "percentage")
+    text = _PERCENT.sub(" ", text)
+
+    for match in _UNIT.finditer(text):
+        _check_number(match.group(1), allowed_normalised, "quantity")
+    text = _UNIT.sub(" ", text)
+
+    for match in _CURRENCY.finditer(text):
+        _check_number(match.group(1), allowed_normalised, "currency amount")
+    text = _CURRENCY.sub(" ", text)
+
+    for match in _SCIENTIFIC.finditer(text):
+        _check_number(match.group(1), allowed_normalised, "scientific number")
+    text = _SCIENTIFIC.sub(" ", text)
+
+    for match in _DECIMAL.finditer(text):
+        _check_number(match.group(1), allowed_normalised, "decimal")
+    text = _DECIMAL.sub(" ", text)
+
+    for match in _INTEGER.finditer(text):
+        _check_number(match.group(1), allowed_normalised, "integer")
+
+
+def _check_number(token: str, allowed: set[str], kind: str) -> None:
+    if _normalise(token) not in allowed:
+        raise GroundingError(f"unsupported {kind} in generated text: {token}")
+
+
+def _month_date_to_iso(text: str) -> str | None:
+    cleaned = re.sub(r"(\d)(st|nd|rd|th)", r"\1", text, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\s+", " ", cleaned.replace(".", "").replace(",", "")).strip()
+    cleaned = re.sub(r"(?i)\bsept\b", "Sep", cleaned)
+    for fmt in ("%B %d %Y", "%b %d %Y"):
+        try:
+            return datetime.strptime(cleaned, fmt).date().isoformat()
+        except ValueError:
+            continue
+    return None
 
 
 def _normalise(token: str) -> str:
+    token = str(token).strip().replace("−", "-").replace("–", "-").replace(",", "")
+    token = re.sub(
+        r"(?i)\s*(bps?|basis points?|x|×|yrs?|years?|days?|months?|weeks?|sd|σ)$",
+        "",
+        token,
+    ).strip()
+    token = token.rstrip("%").strip().lstrip("$€£").strip()
     try:
         return f"{float(token):.4f}"
     except ValueError:
@@ -149,13 +257,65 @@ def build_narrator(settings: Settings) -> Narrator:
 
 
 def numeric_tokens(*values: float, decimals: int = 4) -> set[str]:
+    """Representations an LLM may legitimately use for each value.
+
+    The draft narrator formats returns as percentages, Sharpe ratios to two
+    decimals and costs in basis points, so all of those representations are
+    allowed when they are meaningful. Coarse representations that round a
+    nonzero value to zero are omitted: a cited ``0.00001`` must not whitelist a
+    bare ``0`` in the prose.
+    """
     tokens: set[str] = set()
-    for value in values:
-        tokens.add(f"{value:.{decimals}f}")
-        tokens.add(f"{value * 100:.1f}")
-        tokens.add(f"{value * 100:.2f}")
-        tokens.add(f"{abs(value) * 100:.1f}")
-        tokens.add(f"{abs(value) * 100:.2f}")
+    for raw in values:
+        try:
+            value = float(raw)
+        except (TypeError, ValueError):
+            continue
+        if not math.isfinite(value):
+            continue
+        magnitude = abs(value)
+
+        def add(token: str, *, source: float = value) -> None:
+            if source != 0.0 and float(token) == 0.0:
+                return
+            tokens.add(token)
+
+        # Raw decimal forms used by the deterministic draft.
+        if magnitude >= 0.01:
+            add(f"{value:.2f}")
+            add(f"{magnitude:.2f}")
+        if magnitude >= 0.001:
+            add(f"{value:.3f}")
+            add(f"{magnitude:.3f}")
+        add(f"{value:.{decimals}f}")
+        add(f"{magnitude:.{decimals}f}")
+
+        # Percent forms: the draft uses 1-2 decimals. Only weights, returns,
+        # volatilities and risk measures are plausibly expressed this way;
+        # emitting 400% for a risk class of 4 would whitelist a misleading
+        # number. The zero-skip in ``add`` removes forms that round a nonzero
+        # value to zero.
+        if magnitude <= 1.0:
+            percent = value * 100.0
+            percent_magnitude = abs(percent)
+            add(f"{percent:.1f}")
+            add(f"{percent:.2f}")
+            add(f"{percent_magnitude:.1f}")
+            add(f"{percent_magnitude:.2f}")
+            add(f"{percent:.0f}")
+            add(f"{percent_magnitude:.0f}")
+
+        # Basis-point forms used for turnover costs. The caller passes the cost
+        # as a return fraction (e.g. 1.08 bps is 0.000108).
+        if magnitude <= 1.0:
+            basis_points = value * 10_000.0
+            bp_magnitude = abs(basis_points)
+            add(f"{basis_points:.1f}")
+            add(f"{basis_points:.2f}")
+            add(f"{bp_magnitude:.1f}")
+            add(f"{bp_magnitude:.2f}")
+            add(f"{basis_points:.0f}")
+            add(f"{bp_magnitude:.0f}")
     return tokens
 
 

@@ -12,10 +12,9 @@ class MarketAnalysisAgent(AnalystAgent):
     coordination_weight = 1.0
 
     def analyze(self, ctx: AgentContext) -> AgentReport:
-        llm_report = self._llm_report(ctx)
-        if llm_report is not None:
-            return llm_report
+        return self._with_llm(ctx, lambda: self._deterministic(ctx))
 
+    def _deterministic(self, ctx: AgentContext) -> AgentReport:
         features = ctx.features
         signals: list[Signal] = [
             directional_signal(

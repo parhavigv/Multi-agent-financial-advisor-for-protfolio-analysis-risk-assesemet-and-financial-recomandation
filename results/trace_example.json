@@ -1,0 +1,1408 @@
+{
+  "trace_id": "92cb36d944844454",
+  "created_at": "2026-10-28T03:17:49.838414Z",
+  "as_of": "2026-06-30",
+  "investor_id": "TRACE-DEMO-001",
+  "profile_digest": "3e18f18d064843d67aed6788b481c4b954905ef67881d0a52faf1e95d0740e65",
+  "config_digest": "5c36ca78373b6f0c9d69fb976451d774efd69cd45a8fed4d1aadd73a245fcd6a",
+  "steps": [
+    {
+      "name": "profile.normalise",
+      "started_at": "2026-10-28T03:17:49.838414Z",
+      "duration_ms": 0.0,
+      "status": "ok",
+      "inputs_digest": "3e18f18d064843d67aed6788b481c4b954905ef67881d0a52faf1e95d0740e65",
+      "output_digest": "9134e874fdd72da740c20de3cb42668799a0521f67e88ca0ec975069414170e4",
+      "notes": "Binding risk class 3 = min(tolerance 3, capacity 4, loss tolerance)."
+    },
+    {
+      "name": "data.snapshot",
+      "started_at": "2026-10-28T03:17:49.838414Z",
+      "duration_ms": 24.0,
+      "status": "ok",
+      "inputs_digest": "affad297c5c54a5708c49d38bc9d444a71ab2cadead79712239622635ff3a32c",
+      "output_digest": "4a84a2f389ffb62b276e74d2336fbcaba1504192c336442b5fa0973b95e0fdee",
+      "notes": "Prices truncated at as_of; no future row can enter the pipeline."
+    },
+    {
+      "name": "quant.features",
+      "started_at": "2026-10-28T03:17:49.862414Z",
+      "duration_ms": 166.938,
+      "status": "ok",
+      "inputs_digest": "1afb960c9efd620ade3a0e033927950a6714901717f9eb9bb14babdaff1c740b",
+      "output_digest": "03bd89095ee3326fc28e454f857a127bdd3e7801524f325984a03d7473ac7416",
+      "notes": null
+    },
+    {
+      "name": "agents.analyse",
+      "started_at": "2026-10-28T03:17:50.029352Z",
+      "duration_ms": 71.058,
+      "status": "ok",
+      "inputs_digest": "8d4723959a3cf788fe123a0db90d9d50c79c4f15e9ac6f73a33f9ff6e0ca083f",
+      "output_digest": "2a6886a76ee5feeada82e37f75101a78b988218a1b78f89ea51eddc1670145ad",
+      "notes": null
+    },
+    {
+      "name": "agents.coordinate",
+      "started_at": "2026-10-28T03:17:50.100410Z",
+      "duration_ms": 4.005,
+      "status": "degraded",
+      "inputs_digest": "f7697235bc032250a9649d319f734062ed8fd7aee1455d3f3372855750f58b6a",
+      "output_digest": "2aa3c0e569607a55afff3f907ea6238ff53832d0e02a6b5a99998af04e615509",
+      "notes": "SPX: opposing agent views cancelled; FIN: opposing agent views cancelled; STPL: opposing agent views cancelled; UTIL: opposing agent views cancelled; INTL: opposing agent views cancelled; EMEQ: opposing agent views cancelled; CRED: opposing agent views cancelled; GOLD: opposing agent views cancelled"
+    },
+    {
+      "name": "portfolio.optimise",
+      "started_at": "2026-10-28T03:17:50.104415Z",
+      "duration_ms": 149.864,
+      "status": "ok",
+      "inputs_digest": "f54edd291e14fa2e29cc1d43c92bd9bc98fd82e60ff586824764a2f2f39b5e00",
+      "output_digest": "62dd0378877c63e72484a3a470f3a2f93106b12e1aaab31aacbfa66d26828755",
+      "notes": "Solver status: optimal; Black-Litterman views 14, total influence 0.0314 (cap 0.1200)"
+    },
+    {
+      "name": "suitability.validate",
+      "started_at": "2026-10-28T03:17:50.254279Z",
+      "duration_ms": 20.103,
+      "status": "ok",
+      "inputs_digest": "c154118fc460df78b48e22bf757b134b20c3b361f715be4a784d2b4d12d94e2f",
+      "output_digest": "15b5874de5c68492b24b81b65c5235b0a181b471e85abde9a15470724eb6cf7f",
+      "notes": null
+    },
+    {
+      "name": "explain.attribute",
+      "started_at": "2026-10-28T03:17:50.275324Z",
+      "duration_ms": 162.981,
+      "status": "ok",
+      "inputs_digest": "c154118fc460df78b48e22bf757b134b20c3b361f715be4a784d2b4d12d94e2f",
+      "output_digest": "29b4618bcade93dddf42a828ae883bb1d07fbb770a7f4cb6cd0849793fafa3e8",
+      "notes": null
+    },
+    {
+      "name": "recommendation.compose",
+      "started_at": "2026-10-28T03:17:50.438305Z",
+      "duration_ms": 1.013,
+      "status": "ok",
+      "inputs_digest": "fd24936d8a355720f5d4cbd971ba83697d999d212b06db315c1e72d6e6a5fc9c",
+      "output_digest": "72b852fb36c142ed03a5c96f3b7c5a4ec2cebd9bbc40cfeee7d7928da0a73310",
+      "notes": null
+    }
+  ],
+  "agents": [
+    {
+      "agent": "market_analysis",
+      "role": "Market conditions, trend and regime analyst",
+      "as_of": "2026-06-30",
+      "summary": "Elevated regime. Equal-weight benchmark: 12.5% annualised return, 12.5% volatility, -15.3% max drawdown. Cross-sectional momentum is the primary driver of the per-asset signals.",
+      "confidence": 0.65,
+      "signals": [
+        {
+          "name": "market_regime",
+          "subject": "MARKET",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Regime classified as elevated with 30% persistence over the last quarter.",
+          "confidence": 0.64,
+          "citations": []
+        },
+        {
+          "name": "trend_and_volatility",
+          "subject": "SPX",
+          "direction": "bullish",
+          "strength": 0.6758,
+          "rationale": "12-1 momentum +16.0%; forecast volatility 15.5% vs realised 14.2%.",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "trend_and_volatility",
+          "subject": "TECH",
+          "direction": "bullish",
+          "strength": 0.9113,
+          "rationale": "12-1 momentum +34.9%; forecast volatility 21.1% vs realised 19.9%.",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "trend_and_volatility",
+          "subject": "FIN",
+          "direction": "bullish",
+          "strength": 0.7957,
+          "rationale": "12-1 momentum +21.8%; forecast volatility 17.5% vs realised 17.5%.",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "trend_and_volatility",
+          "subject": "HLTH",
+          "direction": "bullish",
+          "strength": 0.8605,
+          "rationale": "12-1 momentum +27.1%; forecast volatility 13.9% vs realised 13.1%.",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "trend_and_volatility",
+          "subject": "ENRG",
+          "direction": "bearish",
+          "strength": -0.4163,
+          "rationale": "12-1 momentum -8.5%; forecast volatility 18.7% vs realised 18.0%.",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "trend_and_volatility",
+          "subject": "STPL",
+          "direction": "bullish",
+          "strength": 0.454,
+          "rationale": "12-1 momentum +9.4%; forecast volatility 10.4% vs realised 10.1%.",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "trend_and_volatility",
+          "subject": "INDU",
+          "direction": "bullish",
+          "strength": 0.9246,
+          "rationale": "12-1 momentum +38.7%; forecast volatility 16.7% vs realised 15.9%.",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "trend_and_volatility",
+          "subject": "UTIL",
+          "direction": "bullish",
+          "strength": 0.8589,
+          "rationale": "12-1 momentum +26.9%; forecast volatility 9.3% vs realised 9.4%.",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "trend_and_volatility",
+          "subject": "INTL",
+          "direction": "bullish",
+          "strength": 0.9365,
+          "rationale": "12-1 momentum +44.4%; forecast volatility 14.3% vs realised 13.5%.",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "trend_and_volatility",
+          "subject": "EMEQ",
+          "direction": "bullish",
+          "strength": 0.9334,
+          "rationale": "12-1 momentum +42.6%; forecast volatility 20.2% vs realised 19.8%.",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "trend_and_volatility",
+          "subject": "GOVT",
+          "direction": "bullish",
+          "strength": 0.1267,
+          "rationale": "12-1 momentum +2.4%; forecast volatility 33.5% vs realised 32.2%.",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "trend_and_volatility",
+          "subject": "CRED",
+          "direction": "bullish",
+          "strength": 0.4326,
+          "rationale": "12-1 momentum +8.8%; forecast volatility 6.1% vs realised 5.7%.",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "trend_and_volatility",
+          "subject": "GOLD",
+          "direction": "bearish",
+          "strength": -0.649,
+          "rationale": "12-1 momentum -15.0%; forecast volatility 14.3% vs realised 13.7%.",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "trend_and_volatility",
+          "subject": "REIT",
+          "direction": "bullish",
+          "strength": 0.6982,
+          "rationale": "12-1 momentum +20.6%; forecast volatility 18.0% vs realised 13.2%.",
+          "confidence": 0.6,
+          "citations": []
+        }
+      ],
+      "evidence": [
+        {
+          "source": "QuantEngine.regime",
+          "as_of": "2026-06-30",
+          "claim": "Regime elevated (persistence 0.30)",
+          "value": null
+        },
+        {
+          "source": "QuantEngine.momentum",
+          "as_of": "2026-06-30",
+          "claim": "12-1 cross-sectional momentum computed from prices truncated at as_of",
+          "value": null
+        }
+      ],
+      "metrics": {
+        "benchmark_return": 0.124964,
+        "benchmark_volatility": 0.124542,
+        "benchmark_max_drawdown": -0.153084,
+        "regime_confidence": 0.3
+      },
+      "degraded": false
+    },
+    {
+      "agent": "fundamental_analysis",
+      "role": "Fundamental value, quality and earnings-revision analyst",
+      "as_of": "2026-06-30",
+      "summary": "Strongest fundamental composite: TECH (+2.26), HLTH (+1.05), GOLD (+0.99). Valuation is penalised rather than rewarded when it coincides with weak quality.",
+      "confidence": 0.62,
+      "signals": [
+        {
+          "name": "fundamental_composite",
+          "subject": "SPX",
+          "direction": "bullish",
+          "strength": 0.6032,
+          "rationale": "Value +0.77, quality +1.75, growth +0.00 (cross-sectional z-scores).",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "fundamental_composite",
+          "subject": "TECH",
+          "direction": "bullish",
+          "strength": 0.9235,
+          "rationale": "Value +2.44, quality +2.34, growth +1.87 (cross-sectional z-scores).",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "fundamental_composite",
+          "subject": "FIN",
+          "direction": "bearish",
+          "strength": -0.6299,
+          "rationale": "Value -0.89, quality -1.44, growth -0.58 (cross-sectional z-scores).",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "fundamental_composite",
+          "subject": "HLTH",
+          "direction": "bullish",
+          "strength": 0.6364,
+          "rationale": "Value +1.35, quality +0.43, growth +1.67 (cross-sectional z-scores).",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "fundamental_composite",
+          "subject": "ENRG",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Value +0.20, quality -0.11, growth -0.52 (cross-sectional z-scores).",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "fundamental_composite",
+          "subject": "STPL",
+          "direction": "bearish",
+          "strength": -0.8312,
+          "rationale": "Value -1.07, quality -1.89, growth -2.12 (cross-sectional z-scores).",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "fundamental_composite",
+          "subject": "INDU",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Value -2.94, quality +1.21, growth +1.34 (cross-sectional z-scores).",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "fundamental_composite",
+          "subject": "UTIL",
+          "direction": "bullish",
+          "strength": 0.5853,
+          "rationale": "Value +0.54, quality +2.67, growth -1.36 (cross-sectional z-scores).",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "fundamental_composite",
+          "subject": "INTL",
+          "direction": "bearish",
+          "strength": -0.6566,
+          "rationale": "Value -2.05, quality -1.38, growth +0.64 (cross-sectional z-scores).",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "fundamental_composite",
+          "subject": "EMEQ",
+          "direction": "bearish",
+          "strength": -0.2683,
+          "rationale": "Value +0.51, quality -0.78, growth -0.94 (cross-sectional z-scores).",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "fundamental_composite",
+          "subject": "GOVT",
+          "direction": "bearish",
+          "strength": -0.1875,
+          "rationale": "Value +1.16, quality -1.77, growth +0.26 (cross-sectional z-scores).",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "fundamental_composite",
+          "subject": "CRED",
+          "direction": "bearish",
+          "strength": -0.8757,
+          "rationale": "Value -1.16, quality -2.11, growth -2.56 (cross-sectional z-scores).",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "fundamental_composite",
+          "subject": "GOLD",
+          "direction": "bullish",
+          "strength": 0.6067,
+          "rationale": "Value +0.84, quality +1.13, growth +0.95 (cross-sectional z-scores).",
+          "confidence": 0.6,
+          "citations": []
+        },
+        {
+          "name": "fundamental_composite",
+          "subject": "REIT",
+          "direction": "bullish",
+          "strength": 0.2918,
+          "rationale": "Value +0.30, quality -0.04, growth +1.35 (cross-sectional z-scores).",
+          "confidence": 0.6,
+          "citations": []
+        }
+      ],
+      "evidence": [
+        {
+          "source": "Fundamentals (latest quarter)",
+          "as_of": "2026-06-30",
+          "claim": "TECH PE 16.6, ROE 27.7%, revision +0.68",
+          "value": 2.2573727193382176
+        },
+        {
+          "source": "Fundamentals (latest quarter)",
+          "as_of": "2026-06-30",
+          "claim": "HLTH PE 19.9, ROE 10.3%, revision +0.19",
+          "value": 1.0529047709520813
+        },
+        {
+          "source": "Fundamentals (latest quarter)",
+          "as_of": "2026-06-30",
+          "claim": "GOLD PE 19.1, ROE 18.1%, revision -0.18",
+          "value": 0.9850968584722495
+        }
+      ],
+      "metrics": {
+        "mean_composite": -0.0,
+        "dispersion_composite": 1.138039
+      },
+      "degraded": false
+    },
+    {
+      "agent": "sentiment_analysis",
+      "role": "Financial news and disclosure sentiment analyst",
+      "as_of": "2026-06-30",
+      "summary": "Scored 71 items. Most positive tone: FIN (+1.23); most negative: UTIL (-0.80). Sentiment is a bounded overlay, not a price forecast.",
+      "confidence": 0.8,
+      "signals": [
+        {
+          "name": "news_sentiment",
+          "subject": "SPX",
+          "direction": "bearish",
+          "strength": -0.6857,
+          "rationale": "3 tagged items over 45 days; recency-weighted score -0.76. Lead: \u201cUS Large Cap Equity shares move after underperform\u201d (2026-06-29).",
+          "confidence": 0.48,
+          "citations": []
+        },
+        {
+          "name": "news_sentiment",
+          "subject": "TECH",
+          "direction": "bullish",
+          "strength": 0.7946,
+          "rationale": "3 tagged items over 45 days; recency-weighted score +0.99. Lead: \u201cSector update \u2014 Technology Sector Equity buyback announced\u201d (2026-06-23).",
+          "confidence": 0.48,
+          "citations": []
+        },
+        {
+          "name": "news_sentiment",
+          "subject": "FIN",
+          "direction": "bullish",
+          "strength": 0.8747,
+          "rationale": "4 tagged items over 45 days; recency-weighted score +1.23. Lead: \u201cFinancials Sector Equity shares move after debt reduction\u201d (2026-06-29).",
+          "confidence": 0.54,
+          "citations": []
+        },
+        {
+          "name": "news_sentiment",
+          "subject": "HLTH",
+          "direction": "bullish",
+          "strength": 0.2534,
+          "rationale": "2 tagged items over 45 days; recency-weighted score +0.24. Lead: \u201cHealthcare Sector Equity: accelerating growth\u201d (2026-06-09).",
+          "confidence": 0.42,
+          "citations": []
+        },
+        {
+          "name": "news_sentiment",
+          "subject": "ENRG",
+          "direction": "bullish",
+          "strength": 0.2817,
+          "rationale": "6 tagged items over 45 days; recency-weighted score +0.26. Lead: \u201cEnergy Sector Equity: order win\u201d (2026-06-17).",
+          "confidence": 0.66,
+          "citations": []
+        },
+        {
+          "name": "news_sentiment",
+          "subject": "STPL",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "3 tagged items over 45 days; recency-weighted score -0.01. Lead: \u201cConsumer Staples Equity debt reduction\u201d (2026-05-30).",
+          "confidence": 0.48,
+          "citations": []
+        },
+        {
+          "name": "news_sentiment",
+          "subject": "INDU",
+          "direction": "bullish",
+          "strength": 0.8135,
+          "rationale": "2 tagged items over 45 days; recency-weighted score +1.03. Lead: \u201cIndustrials Sector Equity shares move after order win\u201d (2026-06-25).",
+          "confidence": 0.42,
+          "citations": []
+        },
+        {
+          "name": "news_sentiment",
+          "subject": "UTIL",
+          "direction": "bearish",
+          "strength": -0.7085,
+          "rationale": "4 tagged items over 45 days; recency-weighted score -0.80. Lead: \u201cUtilities Sector Equity: slowing growth\u201d (2026-06-26).",
+          "confidence": 0.54,
+          "citations": []
+        },
+        {
+          "name": "news_sentiment",
+          "subject": "INTL",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "3 tagged items over 45 days; recency-weighted score +0.08. Lead: \u201cSector update \u2014 Developed ex-US Equity beats expectations\u201d (2026-05-16).",
+          "confidence": 0.48,
+          "citations": []
+        },
+        {
+          "name": "news_sentiment",
+          "subject": "EMEQ",
+          "direction": "bearish",
+          "strength": -0.2101,
+          "rationale": "10 tagged items over 45 days; recency-weighted score -0.19. Lead: \u201cEmerging Market Equity shares move after litigation risk\u201d (2026-06-27).",
+          "confidence": 0.85,
+          "citations": []
+        },
+        {
+          "name": "news_sentiment",
+          "subject": "GOVT",
+          "direction": "bullish",
+          "strength": 0.6852,
+          "rationale": "3 tagged items over 45 days; recency-weighted score +0.76. Lead: \u201cAnalysts note Long Duration Government Bonds order win\u201d (2026-06-19).",
+          "confidence": 0.48,
+          "citations": []
+        },
+        {
+          "name": "news_sentiment",
+          "subject": "CRED",
+          "direction": "bullish",
+          "strength": 0.6822,
+          "rationale": "1 tagged items over 45 days; recency-weighted score +0.76. Lead: \u201cInvestment Grade Corporate Credit shares move after accelerating growth\u201d (2026-06-20).",
+          "confidence": 0.36,
+          "citations": []
+        },
+        {
+          "name": "news_sentiment",
+          "subject": "GOLD",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "3 tagged items over 45 days; recency-weighted score -0.04. Lead: \u201cSector update \u2014 Gold upgrade\u201d (2026-06-03).",
+          "confidence": 0.48,
+          "citations": []
+        },
+        {
+          "name": "news_sentiment",
+          "subject": "REIT",
+          "direction": "bullish",
+          "strength": 0.2472,
+          "rationale": "4 tagged items over 45 days; recency-weighted score +0.23. Lead: \u201cSector update \u2014 Real Estate Investment Trusts weak demand\u201d (2026-06-30).",
+          "confidence": 0.54,
+          "citations": []
+        },
+        {
+          "name": "macro_sentiment",
+          "subject": "MARKET",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Macro commentary inside the window scores +0.00 (recency weighted, finance lexicon).",
+          "confidence": 0.8,
+          "citations": []
+        }
+      ],
+      "evidence": [
+        {
+          "source": "Market Wire",
+          "as_of": "2026-06-23",
+          "claim": "Sector update \u2014 Technology Sector Equity buyback announced",
+          "value": null
+        },
+        {
+          "source": "Market Wire",
+          "as_of": "2026-05-16",
+          "claim": "Sector update \u2014 Developed ex-US Equity beats expectations",
+          "value": null
+        },
+        {
+          "source": "Market Wire",
+          "as_of": "2026-06-26",
+          "claim": "Utilities Sector Equity: slowing growth",
+          "value": null
+        },
+        {
+          "source": "Market Wire",
+          "as_of": "2026-05-30",
+          "claim": "Consumer Staples Equity debt reduction",
+          "value": null
+        },
+        {
+          "source": "Market Wire",
+          "as_of": "2026-06-29",
+          "claim": "Financials Sector Equity shares move after debt reduction",
+          "value": null
+        }
+      ],
+      "metrics": {
+        "items_scored": 71.0
+      },
+      "degraded": false
+    },
+    {
+      "agent": "portfolio_analysis",
+      "role": "Current-holdings, concentration and drift analyst",
+      "as_of": "2026-06-30",
+      "summary": "Existing portfolio has 4 positions and 3.5 effective holdings; largest is GOVT at 35.0%. Signal logic trims positions above the class-3 anchor and tops up the underweight sleeves.",
+      "confidence": 0.7,
+      "signals": [
+        {
+          "name": "allocation_drift",
+          "subject": "SPX",
+          "direction": "bearish",
+          "strength": -0.55,
+          "rationale": "Held 30.0% versus class-appropriate anchor 5.0% (drift +25.0%).",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "allocation_drift",
+          "subject": "TECH",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Held 0.0% versus class-appropriate anchor 5.0% (drift -5.0%).",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "allocation_drift",
+          "subject": "FIN",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Held 0.0% versus class-appropriate anchor 5.0% (drift -5.0%).",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "allocation_drift",
+          "subject": "HLTH",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Held 0.0% versus class-appropriate anchor 5.0% (drift -5.0%).",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "allocation_drift",
+          "subject": "ENRG",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Held 0.0% versus class-appropriate anchor 5.0% (drift -5.0%).",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "allocation_drift",
+          "subject": "STPL",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Held 0.0% versus class-appropriate anchor 5.0% (drift -5.0%).",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "allocation_drift",
+          "subject": "INDU",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Held 0.0% versus class-appropriate anchor 5.0% (drift -5.0%).",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "allocation_drift",
+          "subject": "UTIL",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Held 0.0% versus class-appropriate anchor 5.0% (drift -5.0%).",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "allocation_drift",
+          "subject": "INTL",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Held 0.0% versus class-appropriate anchor 5.0% (drift -5.0%).",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "allocation_drift",
+          "subject": "EMEQ",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Held 0.0% versus class-appropriate anchor 5.0% (drift -5.0%).",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "allocation_drift",
+          "subject": "GOVT",
+          "direction": "bearish",
+          "strength": -0.2353,
+          "rationale": "Held 35.0% versus class-appropriate anchor 24.3% (drift +10.7%).",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "allocation_drift",
+          "subject": "CRED",
+          "direction": "bearish",
+          "strength": -0.1681,
+          "rationale": "Held 25.0% versus class-appropriate anchor 17.4% (drift +7.6%).",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "concentration",
+          "subject": "PORTFOLIO",
+          "direction": "bearish",
+          "strength": -0.14,
+          "rationale": "Effective holdings 3.5 (HHI 0.285); largest position GOVT at 35.0%.",
+          "confidence": 0.7,
+          "citations": []
+        }
+      ],
+      "evidence": [
+        {
+          "source": "Investor holdings",
+          "as_of": "2026-06-30",
+          "claim": "GOVT held at 35.0% versus anchor 24.3%",
+          "value": 0.35000000000000003
+        },
+        {
+          "source": "Investor holdings",
+          "as_of": "2026-06-30",
+          "claim": "SPX held at 30.0% versus anchor 5.0%",
+          "value": 0.30000000000000004
+        },
+        {
+          "source": "Investor holdings",
+          "as_of": "2026-06-30",
+          "claim": "CRED held at 25.0% versus anchor 17.4%",
+          "value": 0.25000000000000006
+        },
+        {
+          "source": "Investor holdings",
+          "as_of": "2026-06-30",
+          "claim": "GOLD held at 10.0% versus anchor 8.3%",
+          "value": 0.10000000000000002
+        }
+      ],
+      "metrics": {
+        "effective_n": 3.508772,
+        "herfindahl": 0.285,
+        "positions": 4.0
+      },
+      "degraded": false
+    },
+    {
+      "agent": "risk_analysis",
+      "role": "Portfolio risk-budget and tail-risk analyst",
+      "as_of": "2026-06-30",
+      "summary": "Portfolio volatility 7.2%, CVaR95 1.02% per day, max drawdown 8.8%. Risk class 3 permits volatility up to 14.5% and CVaR up to 3.10%. Board is inside budget.",
+      "confidence": 0.78,
+      "signals": [
+        {
+          "name": "risk_budget",
+          "subject": "PORTFOLIO",
+          "direction": "bullish",
+          "strength": 0.2496,
+          "rationale": "Volatility 7.2% vs limit 14.5%; CVaR95 1.02% vs limit 3.10%; drawdown 8.8% vs tolerance 15.0%.",
+          "confidence": 0.8,
+          "citations": []
+        },
+        {
+          "name": "tail_risk",
+          "subject": "SPX",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Daily CVaR95 2.62% versus universe median 2.55%; risk-class sensitivity 0.33.",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "tail_risk",
+          "subject": "TECH",
+          "direction": "bearish",
+          "strength": -0.2132,
+          "rationale": "Daily CVaR95 4.19% versus universe median 2.55%; risk-class sensitivity 0.33.",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "tail_risk",
+          "subject": "FIN",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Daily CVaR95 3.38% versus universe median 2.55%; risk-class sensitivity 0.33.",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "tail_risk",
+          "subject": "HLTH",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Daily CVaR95 2.15% versus universe median 2.55%; risk-class sensitivity 0.33.",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "tail_risk",
+          "subject": "ENRG",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Daily CVaR95 3.05% versus universe median 2.55%; risk-class sensitivity 0.33.",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "tail_risk",
+          "subject": "STPL",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Daily CVaR95 1.83% versus universe median 2.55%; risk-class sensitivity 0.33.",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "tail_risk",
+          "subject": "INDU",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Daily CVaR95 2.69% versus universe median 2.55%; risk-class sensitivity 0.33.",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "tail_risk",
+          "subject": "UTIL",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Daily CVaR95 1.89% versus universe median 2.55%; risk-class sensitivity 0.33.",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "tail_risk",
+          "subject": "INTL",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Daily CVaR95 2.49% versus universe median 2.55%; risk-class sensitivity 0.33.",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "tail_risk",
+          "subject": "EMEQ",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Daily CVaR95 3.40% versus universe median 2.55%; risk-class sensitivity 0.33.",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "tail_risk",
+          "subject": "GOVT",
+          "direction": "bullish",
+          "strength": 0.1679,
+          "rationale": "Daily CVaR95 1.27% versus universe median 2.55%; risk-class sensitivity 0.33.",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "tail_risk",
+          "subject": "CRED",
+          "direction": "bullish",
+          "strength": 0.218,
+          "rationale": "Daily CVaR95 0.88% versus universe median 2.55%; risk-class sensitivity 0.33.",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "tail_risk",
+          "subject": "GOLD",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Daily CVaR95 2.20% versus universe median 2.55%; risk-class sensitivity 0.33.",
+          "confidence": 0.65,
+          "citations": []
+        },
+        {
+          "name": "tail_risk",
+          "subject": "REIT",
+          "direction": "neutral",
+          "strength": 0.0,
+          "rationale": "Daily CVaR95 2.94% versus universe median 2.55%; risk-class sensitivity 0.33.",
+          "confidence": 0.65,
+          "citations": []
+        }
+      ],
+      "evidence": [
+        {
+          "source": "Suitability policy",
+          "as_of": "2026-06-30",
+          "claim": "Class 3: vol<=14.5%, CVaR<=3.10%, max single 25%",
+          "value": null
+        },
+        {
+          "source": "QuantEngine.risk",
+          "as_of": "2026-06-30",
+          "claim": "Realised portfolio vol 7.2%, CVaR 1.02%, drawdown 8.8%",
+          "value": null
+        }
+      ],
+      "metrics": {
+        "portfolio_volatility": 0.072293,
+        "portfolio_cvar": 0.010204,
+        "portfolio_drawdown": 0.087591,
+        "vol_ratio": 0.498571,
+        "cvar_ratio": 0.329166
+      },
+      "degraded": false
+    }
+  ],
+  "optimizer": {
+    "method": "mean_variance+suitability_repair",
+    "weights": {
+      "UTIL": 0.07220269295221905,
+      "INDU": 0.08404863352369167,
+      "ENRG": 0.03100213931152511,
+      "SPX": 0.06336500148465564,
+      "STPL": 0.04607534407251096,
+      "FIN": 0.05111566444146773,
+      "TECH": 0.06172765646904506,
+      "REIT": 0.0484074479178764,
+      "EMEQ": 0.08344528559244943,
+      "INTL": 0.09557288444819856,
+      "GOVT": 0.13952440762066412,
+      "HLTH": 0.06500472489777963,
+      "CRED": 0.1168414506012498,
+      "GOLD": 0.04166666666666666
+    },
+    "expected_return": 0.08503821230160764,
+    "expected_volatility": 0.11228526437623121,
+    "expected_sharpe": 0.1784580765154201,
+    "expected_cvar_95": 0.01723656689683516,
+    "turnover": 0.6386024736267639,
+    "objective": 0.10902210049605468,
+    "solver_status": "optimal",
+    "binding_constraints": []
+  },
+  "suitability": {
+    "passed": true,
+    "risk_class": 3,
+    "checks": [
+      {
+        "rule_id": "R-EQUITY",
+        "description": "Equity exposure within the investor's risk class",
+        "passed": true,
+        "observed": 0.6536,
+        "limit": 0.72,
+        "severity": "breach",
+        "remediation": "Reduce equity to <= 72%"
+      },
+      {
+        "rule_id": "R-VOLATILITY",
+        "description": "Expected annualised volatility within policy",
+        "passed": true,
+        "observed": 0.1123,
+        "limit": 0.145,
+        "severity": "breach",
+        "remediation": "Lower-volatility mix targeting <= 14.5%"
+      },
+      {
+        "rule_id": "R-CVAR",
+        "description": "One-day 95% CVaR within policy",
+        "passed": true,
+        "observed": 0.0172,
+        "limit": 0.031,
+        "severity": "breach",
+        "remediation": "Reduce tail risk to <= 3.1% daily"
+      },
+      {
+        "rule_id": "R-DRAWDOWN",
+        "description": "Historical max drawdown within stated loss tolerance",
+        "passed": true,
+        "observed": 0.1411,
+        "limit": 0.15,
+        "severity": "breach",
+        "remediation": "Shift toward defensive assets to respect loss tolerance"
+      },
+      {
+        "rule_id": "R-SINGLE",
+        "description": "Single-position cap",
+        "passed": true,
+        "observed": 0.1395,
+        "limit": 0.25,
+        "severity": "breach",
+        "remediation": "Diversify the largest position"
+      },
+      {
+        "rule_id": "R-SECTOR",
+        "description": "Sector concentration cap",
+        "passed": true,
+        "observed": 0.1395,
+        "limit": 0.45,
+        "severity": "warning",
+        "remediation": "Reduce the most concentrated sector"
+      },
+      {
+        "rule_id": "R-DIVERSIFICATION",
+        "description": "Effective number of holdings",
+        "passed": true,
+        "observed": 12.002,
+        "limit": 4.0,
+        "severity": "warning",
+        "remediation": "Add uncorrelated positions"
+      },
+      {
+        "rule_id": "R-EXCLUSION",
+        "description": "No holdings that violate stated exclusions",
+        "passed": true,
+        "observed": "none",
+        "limit": "none",
+        "severity": "breach",
+        "remediation": "Remove excluded holdings"
+      },
+      {
+        "rule_id": "R-DEFENSIVE",
+        "description": "Defensive allocation floor for the risk class",
+        "passed": true,
+        "observed": 0.298,
+        "limit": 0.15,
+        "severity": "warning",
+        "remediation": "Hold at least 15% in defensive assets"
+      },
+      {
+        "rule_id": "R-LIQUIDITY",
+        "description": "Defensive sleeve appropriate to a short horizon",
+        "passed": true,
+        "observed": 0.298,
+        "limit": null,
+        "severity": "breach",
+        "remediation": "Increase liquid defensive assets for a short horizon"
+      },
+      {
+        "rule_id": "R-TURNOVER",
+        "description": "Turnover budget",
+        "passed": false,
+        "observed": 0.8272,
+        "limit": 0.6,
+        "severity": "warning",
+        "remediation": "Stage the rebalance across periods"
+      }
+    ],
+    "violations": [],
+    "repaired": true,
+    "repair_iterations": 2
+  },
+  "explanation": {
+    "portfolio_variance_contributions": {
+      "UTIL": 0.054658,
+      "INDU": 0.120104,
+      "ENRG": 0.040644,
+      "SPX": 0.087567,
+      "STPL": 0.040181,
+      "FIN": 0.08108,
+      "TECH": 0.118321,
+      "REIT": 0.067046,
+      "EMEQ": 0.141295,
+      "INTL": 0.134539,
+      "GOVT": -0.009013,
+      "HLTH": 0.070537,
+      "CRED": 0.049871,
+      "GOLD": 0.003169
+    },
+    "return_contributions": {
+      "UTIL": 0.00694,
+      "INDU": 0.013263,
+      "ENRG": 0.000697,
+      "SPX": 0.006589,
+      "STPL": 0.001786,
+      "FIN": 0.004329,
+      "TECH": 0.007871,
+      "REIT": 0.006411,
+      "EMEQ": 0.01414,
+      "INTL": 0.017727,
+      "GOVT": -0.002859,
+      "HLTH": 0.006168,
+      "CRED": 0.004343,
+      "GOLD": -0.002368
+    },
+    "agent_contributions": {
+      "market_analysis": 0.4485,
+      "fundamental_analysis": 0.2961,
+      "sentiment_analysis": 0.1837,
+      "portfolio_analysis": 0.0369,
+      "risk_analysis": 0.0348
+    },
+    "binding_constraints": [],
+    "suitability_rationale": [
+      "[PASS] R-EQUITY: observed 0.6536 (limit 0.72)",
+      "[PASS] R-VOLATILITY: observed 0.1123 (limit 0.145)",
+      "[PASS] R-CVAR: observed 0.0172 (limit 0.031)",
+      "[PASS] R-DRAWDOWN: observed 0.1411 (limit 0.15)",
+      "[PASS] R-SINGLE: observed 0.1395 (limit 0.25)",
+      "[PASS] R-SECTOR: observed 0.1395 (limit 0.45)",
+      "[PASS] R-DIVERSIFICATION: observed 12.002 (limit 4.0)",
+      "[PASS] R-EXCLUSION: observed none (limit none)",
+      "[PASS] R-DEFENSIVE: observed 0.298 (limit 0.15)",
+      "[PASS] R-LIQUIDITY: observed 0.298 (limit n/a)",
+      "[FAIL] R-TURNOVER: observed 0.8272 (limit 0.6)"
+    ],
+    "counterfactual": {
+      "question": "What changes if the investor accepts one risk class higher?",
+      "alternative_risk_class": 4,
+      "current_equity_weight": 0.6536,
+      "alternative_equity_weight": 0.8131,
+      "equity_shift": 0.1596,
+      "alternative_expected_volatility": 0.1444,
+      "alternative_max_single_weight": 0.1193
+    }
+  },
+  "recommendation": {
+    "investor_id": "TRACE-DEMO-001",
+    "as_of": "2026-06-30",
+    "headline": "Risk class 3 balanced growth portfolio with 11.3% expected volatility",
+    "rationale": "Recommended allocation: commodity 4%, equity 65%, fixed_income 26%, real_estate 5%. Expected annual return 8.5%, expected volatility 11.2%, Sharpe 0.18, one-day CVaR95 1.72%, estimated max drawdown 14.1%. Rebalancing turnover is 64%, about 7.7 bps in cost. The allocation satisfies every mandatory suitability rule after 2 remediation step(s). Specialist-agent agreement is 67%. The quantitative engine, not the language layer, produced every number above.",
+    "weights": {
+      "UTIL": 0.07220269295221905,
+      "INDU": 0.08404863352369167,
+      "ENRG": 0.03100213931152511,
+      "SPX": 0.06336500148465564,
+      "STPL": 0.04607534407251096,
+      "FIN": 0.05111566444146773,
+      "TECH": 0.06172765646904506,
+      "REIT": 0.0484074479178764,
+      "EMEQ": 0.08344528559244943,
+      "INTL": 0.09557288444819856,
+      "GOVT": 0.13952440762066412,
+      "HLTH": 0.06500472489777963,
+      "CRED": 0.1168414506012498,
+      "GOLD": 0.04166666666666666
+    },
+    "allocation_changes": {
+      "CRED": -0.133159,
+      "EMEQ": 0.083445,
+      "ENRG": 0.031002,
+      "FIN": 0.051116,
+      "GOLD": -0.058333,
+      "GOVT": -0.210476,
+      "HLTH": 0.065005,
+      "INDU": 0.084049,
+      "INTL": 0.095573,
+      "REIT": 0.048407,
+      "SPX": -0.236635,
+      "STPL": 0.046075,
+      "TECH": 0.061728,
+      "UTIL": 0.072203
+    },
+    "expected_return": 0.08503821230160764,
+    "expected_volatility": 0.11228526437623121,
+    "expected_sharpe": 0.1784580765154201,
+    "cvar_95": 0.01723656689683516,
+    "max_drawdown_estimate": 0.14109125687345836,
+    "turnover": 0.6386024736267639,
+    "estimated_cost_bps": 7.663229683521167,
+    "suitability": {
+      "passed": true,
+      "risk_class": 3,
+      "checks": [
+        {
+          "rule_id": "R-EQUITY",
+          "description": "Equity exposure within the investor's risk class",
+          "passed": true,
+          "observed": 0.6536,
+          "limit": 0.72,
+          "severity": "breach",
+          "remediation": "Reduce equity to <= 72%"
+        },
+        {
+          "rule_id": "R-VOLATILITY",
+          "description": "Expected annualised volatility within policy",
+          "passed": true,
+          "observed": 0.1123,
+          "limit": 0.145,
+          "severity": "breach",
+          "remediation": "Lower-volatility mix targeting <= 14.5%"
+        },
+        {
+          "rule_id": "R-CVAR",
+          "description": "One-day 95% CVaR within policy",
+          "passed": true,
+          "observed": 0.0172,
+          "limit": 0.031,
+          "severity": "breach",
+          "remediation": "Reduce tail risk to <= 3.1% daily"
+        },
+        {
+          "rule_id": "R-DRAWDOWN",
+          "description": "Historical max drawdown within stated loss tolerance",
+          "passed": true,
+          "observed": 0.1411,
+          "limit": 0.15,
+          "severity": "breach",
+          "remediation": "Shift toward defensive assets to respect loss tolerance"
+        },
+        {
+          "rule_id": "R-SINGLE",
+          "description": "Single-position cap",
+          "passed": true,
+          "observed": 0.1395,
+          "limit": 0.25,
+          "severity": "breach",
+          "remediation": "Diversify the largest position"
+        },
+        {
+          "rule_id": "R-SECTOR",
+          "description": "Sector concentration cap",
+          "passed": true,
+          "observed": 0.1395,
+          "limit": 0.45,
+          "severity": "warning",
+          "remediation": "Reduce the most concentrated sector"
+        },
+        {
+          "rule_id": "R-DIVERSIFICATION",
+          "description": "Effective number of holdings",
+          "passed": true,
+          "observed": 12.002,
+          "limit": 4.0,
+          "severity": "warning",
+          "remediation": "Add uncorrelated positions"
+        },
+        {
+          "rule_id": "R-EXCLUSION",
+          "description": "No holdings that violate stated exclusions",
+          "passed": true,
+          "observed": "none",
+          "limit": "none",
+          "severity": "breach",
+          "remediation": "Remove excluded holdings"
+        },
+        {
+          "rule_id": "R-DEFENSIVE",
+          "description": "Defensive allocation floor for the risk class",
+          "passed": true,
+          "observed": 0.298,
+          "limit": 0.15,
+          "severity": "warning",
+          "remediation": "Hold at least 15% in defensive assets"
+        },
+        {
+          "rule_id": "R-LIQUIDITY",
+          "description": "Defensive sleeve appropriate to a short horizon",
+          "passed": true,
+          "observed": 0.298,
+          "limit": null,
+          "severity": "breach",
+          "remediation": "Increase liquid defensive assets for a short horizon"
+        },
+        {
+          "rule_id": "R-TURNOVER",
+          "description": "Turnover budget",
+          "passed": false,
+          "observed": 0.8272,
+          "limit": 0.6,
+          "severity": "warning",
+          "remediation": "Stage the rebalance across periods"
+        }
+      ],
+      "violations": [],
+      "repaired": true,
+      "repair_iterations": 2
+    },
+    "confidence": 0.7536,
+    "agent_agreement": 0.6675,
+    "degraded": false,
+    "disclaimers": [
+      "Research prototype. Not personalised investment advice and not a solicitation.",
+      "Backtested or synthetic performance does not guarantee future results.",
+      "Allocations must be reviewed by a qualified adviser before acting.",
+      "Narrative generated deterministically; no external LLM was called."
+    ]
+  },
+  "previous_hash": "GENESIS",
+  "hash": "7597c850acb539ffe204c8b68bfbbc8384222bb5f9a583e6e1625f5d9f616728",
+  "ml_forecast": null,
+  "black_litterman": {
+    "tau": 0.05,
+    "view_shift": 0.03,
+    "max_total_influence": 0.12,
+    "prior_expected_returns": {
+      "SPX": 0.10174405713379452,
+      "TECH": 0.12259158968327627,
+      "FIN": 0.08209665562572503,
+      "HLTH": 0.09086188410254366,
+      "ENRG": 0.02149338162516972,
+      "STPL": 0.03774185174774934,
+      "INDU": 0.15432834901549616,
+      "UTIL": 0.09469051902710302,
+      "INTL": 0.1835910543727567,
+      "EMEQ": 0.16698949866687526,
+      "GOVT": -0.021345791370876693,
+      "CRED": 0.036524756137209485,
+      "GOLD": -0.05668385498564734,
+      "REIT": 0.12780020841435846
+    },
+    "posterior_expected_returns": {
+      "SPX": 0.10398872693222634,
+      "TECH": 0.12751953226610988,
+      "FIN": 0.0846910913196811,
+      "HLTH": 0.09488372573466398,
+      "ENRG": 0.022496668365518883,
+      "STPL": 0.03876661618271262,
+      "INDU": 0.15779940503471315,
+      "UTIL": 0.09611386437471016,
+      "INTL": 0.18548498129560587,
+      "EMEQ": 0.1694582200301181,
+      "GOVT": -0.020489711885021383,
+      "CRED": 0.037167288242259046,
+      "GOLD": -0.05683807208224115,
+      "REIT": 0.13243793117180935
+    },
+    "views": {
+      "SPX": 0.0228,
+      "TECH": 0.3068,
+      "FIN": 0.0487,
+      "HLTH": 0.2796,
+      "ENRG": -0.0368,
+      "STPL": -0.0201,
+      "INDU": 0.2297,
+      "UTIL": 0.06,
+      "INTL": 0.0221,
+      "EMEQ": 0.03,
+      "GOVT": 0.0661,
+      "CRED": 0.0046,
+      "GOLD": -0.0085,
+      "REIT": 0.2523
+    },
+    "view_confidence": {
+      "asset:SPX": 0.4446,
+      "asset:TECH": 0.4484,
+      "asset:FIN": 0.4488,
+      "asset:HLTH": 0.4861,
+      "asset:ENRG": 0.5627,
+      "asset:STPL": 0.4773,
+      "asset:INDU": 0.4702,
+      "asset:UTIL": 0.4594,
+      "asset:INTL": 0.4473,
+      "asset:EMEQ": 0.5181,
+      "asset:GOVT": 0.5184,
+      "asset:CRED": 0.4366,
+      "asset:GOLD": 0.4611,
+      "asset:REIT": 0.5234
+    },
+    "view_dispersion": {
+      "SPX": 0.5264,
+      "TECH": 0.5139,
+      "FIN": 0.5347,
+      "HLTH": 0.3641,
+      "ENRG": 0.2163,
+      "STPL": 0.4182,
+      "INDU": 0.4177,
+      "UTIL": 0.5001,
+      "INTL": 0.5175,
+      "EMEQ": 0.4296,
+      "GOVT": 0.282,
+      "CRED": 0.508,
+      "GOLD": 0.4465,
+      "REIT": 0.269
+    },
+    "view_returns": {
+      "asset:SPX": 0.10245223653379451,
+      "asset:TECH": 0.13212095108327626,
+      "asset:FIN": 0.08360930197572503,
+      "asset:HLTH": 0.09954639990254366,
+      "asset:ENRG": 0.02035035522516972,
+      "asset:STPL": 0.037117535697749345,
+      "asset:INDU": 0.16146294586549617,
+      "asset:UTIL": 0.09655414902710302,
+      "asset:INTL": 0.18427749142275668,
+      "asset:EMEQ": 0.16792131366687527,
+      "asset:GOVT": -0.019292692320876693,
+      "asset:CRED": 0.03666763443720949,
+      "asset:GOLD": -0.05694786923564734,
+      "asset:REIT": 0.13563677256435847
+    },
+    "omega": {
+      "asset:SPX": 0.0020836386353185353,
+      "asset:TECH": 0.0043935508790551685,
+      "asset:FIN": 0.0032392757743975624,
+      "asset:HLTH": 0.0014094966629863799,
+      "asset:ENRG": 0.00186970489081857,
+      "asset:STPL": 0.0008912753032401439,
+      "asset:INDU": 0.0019663760743255576,
+      "asset:UTIL": 0.001048320242031399,
+      "asset:INTL": 0.002569003369244187,
+      "asset:EMEQ": 0.002497879838133493,
+      "asset:GOVT": 0.000604130155885348,
+      "asset:CRED": 0.00033457763004308174,
+      "asset:GOLD": 0.0014860194134554455,
+      "asset:REIT": 0.002312132815928062
+    },
+    "total_influence": 0.03136454,
+    "influence_capped": false,
+    "n_views": 14
+  },
+  "risk_free_rate": 0.065,
+  "risk_free_source": "settings"
+}

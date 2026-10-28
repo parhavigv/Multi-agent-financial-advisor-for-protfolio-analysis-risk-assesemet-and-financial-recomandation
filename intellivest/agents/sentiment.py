@@ -26,18 +26,20 @@ class SentimentAnalysisAgent(AnalystAgent):
     coordination_weight = 0.7
 
     def analyze(self, ctx: AgentContext) -> AgentReport:
-        llm_report = self._llm_report(ctx)
-        if llm_report is not None:
-            return llm_report
+        return self._with_llm(ctx, lambda: self._deterministic(ctx))
 
+    def _deterministic(self, ctx: AgentContext) -> AgentReport:
         as_of = ctx.snapshot.as_of
         cutoff = as_of - timedelta(days=WINDOW_DAYS)
         items = [item for item in ctx.snapshot.news if cutoff <= item.published <= as_of]
         if not items:
             return self._report(
                 ctx,
-                summary="No news items inside the sentiment window; no textual view is asserted.",
+                summary="No real news items inside the sentiment window; no textual view is asserted.",
                 confidence=0.0,
+                signals=[],
+                evidence=[],
+                metrics={"items_scored": 0.0, "news_available": 0.0},
             )
 
         weighted: dict[str, float] = defaultdict(float)

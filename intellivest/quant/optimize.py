@@ -88,6 +88,53 @@ def _group_penalty(w: np.ndarray, groups: dict[str, np.ndarray], limit: float) -
     return penalty
 
 
+def _sector_ok(
+    weights: np.ndarray,
+    groups: dict[str, np.ndarray],
+    limit: float,
+    tol: float = 1e-8,
+) -> bool:
+    return all(float(vector @ weights) <= limit + tol for vector in groups.values())
+
+
+def _feasible_start(
+    target: np.ndarray,
+    caps: np.ndarray,
+    groups: dict[str, np.ndarray],
+    limit: float,
+) -> np.ndarray:
+    """Project a target onto sum-to-one, position caps and sector caps.
+
+    The iterative cap projection is exact for the position-cap problem, but it
+    does not know about sector limits. When the projected target breaches a
+    sector cap, solve a small feasibility LP so the fallback path remains
+    feasible whenever the constraint set itself is feasible.
+    """
+    candidate = project_to_caps(target, caps)
+    if not groups or _sector_ok(candidate, groups, limit):
+        return candidate
+    if sum(caps) < 1.0 - 1e-9:
+        return candidate
+    matrix = np.vstack(list(groups.values()))
+    result = linprog(
+        -np.asarray(target, dtype=float),
+        A_ub=matrix,
+        b_ub=np.full(len(groups), float(limit)),
+        A_eq=np.ones((1, len(candidate))),
+        b_eq=[1.0],
+        bounds=[(0.0, float(cap)) for cap in caps],
+        method="highs",
+    )
+    if not result.success:
+        return candidate
+    weights = np.clip(np.asarray(result.x, dtype=float), 0.0, caps)
+    total = float(weights.sum())
+    if total <= 0:
+        return candidate
+    weights = weights / total
+    return weights if _sector_ok(weights, groups, limit, tol=1e-7) else candidate
+
+
 def _solve(
     objective,
     n: int,
@@ -95,6 +142,7 @@ def _solve(
     *,
     x0: np.ndarray,
     extra_constraints: list[dict] | None = None,
+    fallback: np.ndarray | None = None,
 ) -> tuple[np.ndarray, str]:
     constraints: list[dict] = [
         {"type": "eq", "fun": lambda w: float(np.sum(w) - 1.0), "jac": lambda w: np.ones(n)}
@@ -113,7 +161,7 @@ def _solve(
         weights = np.clip(result.x, 0.0, caps)
         total = weights.sum()
         return (weights / total if total > 0 else inverse_volatility(np.eye(n))), "optimal"
-    return x0, f"fallback:{result.message[:80]}"
+    return (fallback if fallback is not None else x0), f"fallback:{result.message[:80]}"
 
 
 def _result(
@@ -125,6 +173,8 @@ def _result(
     previous: Mapping[str, float] | None,
     status: str,
     binding: list[str] | None = None,
+    *,
+    risk_free: float = 0.0,
 ) -> OptimizationResult:
     w = pd.Series(weights, index=list(tickers))
     expected_return = float(w @ mu.reindex(tickers).fillna(0.0))
@@ -142,7 +192,11 @@ def _result(
         weights=weights_dict,
         expected_return=expected_return,
         expected_volatility=volatility,
-        expected_sharpe=(expected_return - 0.0) / volatility if volatility > 1e-9 else 0.0,
+        expected_sharpe=(
+            (expected_return - float(risk_free)) / volatility
+            if volatility > 1e-9
+            else 0.0
+        ),
         expected_cvar_95=0.0,
         turnover=turnover,
         objective=expected_return - 0.5 * variance,
@@ -174,6 +228,7 @@ def mean_variance(
     constraints: Constraints | None = None,
     sector_of=None,
     exclude: set[str] | None = None,
+    risk_free: float = 0.0,
 ) -> OptimizationResult:
     constraints = constraints or Constraints()
     tickers = [t for t in cov.columns if t in expected.index]
@@ -197,7 +252,9 @@ def mean_variance(
             + 1000.0 * _group_penalty(w, groups, constraints.max_sector_weight)
         )
 
-    x0 = project_to_caps(inverse_volatility(sigma), caps)
+    start = _feasible_start(
+        inverse_volatility(sigma), caps, groups, constraints.max_sector_weight
+    )
     group_constraints = [
         {
             "type": "ineq",
@@ -205,7 +262,14 @@ def mean_variance(
         }
         for vec in groups.values()
     ]
-    weights, status = _solve(objective, len(tickers), caps, x0=x0, extra_constraints=group_constraints)
+    weights, status = _solve(
+        objective,
+        len(tickers),
+        caps,
+        x0=start,
+        extra_constraints=group_constraints,
+        fallback=start,
+    )
     weights = project_to_caps(weights, caps)
     return _result(
         "mean_variance",
@@ -216,6 +280,7 @@ def mean_variance(
         previous_weights,
         status,
         _binding_constraints(weights, caps, groups, constraints.max_sector_weight, tickers),
+        risk_free=risk_free,
     )
 
 
@@ -226,6 +291,7 @@ def min_variance(
     constraints: Constraints | None = None,
     sector_of=None,
     exclude: set[str] | None = None,
+    risk_free: float = 0.0,
 ) -> OptimizationResult:
     constraints = constraints or Constraints()
     tickers = list(cov.columns)
@@ -238,12 +304,21 @@ def min_variance(
     def objective(w: np.ndarray) -> float:
         return float(w @ sigma @ w) + 1000.0 * _group_penalty(w, groups, constraints.max_sector_weight)
 
-    x0 = project_to_caps(inverse_volatility(sigma), caps)
+    start = _feasible_start(
+        inverse_volatility(sigma), caps, groups, constraints.max_sector_weight
+    )
     group_constraints = [
         {"type": "ineq", "fun": (lambda w, vec=vec: float(constraints.max_sector_weight - vec @ w))}
         for vec in groups.values()
     ]
-    weights, status = _solve(objective, len(tickers), caps, x0=x0, extra_constraints=group_constraints)
+    weights, status = _solve(
+        objective,
+        len(tickers),
+        caps,
+        x0=start,
+        extra_constraints=group_constraints,
+        fallback=start,
+    )
     weights = project_to_caps(weights, caps)
     return _result(
         "min_variance",
@@ -254,6 +329,7 @@ def min_variance(
         previous_weights,
         status,
         _binding_constraints(weights, caps, groups, constraints.max_sector_weight, tickers),
+        risk_free=risk_free,
     )
 
 
@@ -263,6 +339,7 @@ def risk_parity(
     previous_weights: Mapping[str, float] | None = None,
     constraints: Constraints | None = None,
     exclude: set[str] | None = None,
+    risk_free: float = 0.0,
 ) -> OptimizationResult:
     constraints = constraints or Constraints()
     tickers = list(cov.columns)
@@ -278,10 +355,19 @@ def risk_parity(
             return 1e6
         return 0.5 * variance - (1.0 / n) * float(np.sum(np.log(np.clip(w, 1e-9, None))))
 
-    x0 = project_to_caps(inverse_volatility(sigma), caps)
-    weights, status = _solve(objective, n, caps, x0=x0)
+    start = project_to_caps(inverse_volatility(sigma), caps)
+    weights, status = _solve(objective, n, caps, x0=start, fallback=start)
     weights = project_to_caps(weights, caps)
-    return _result("risk_parity", tickers, weights, zero_mu, cov, previous_weights, status)
+    return _result(
+        "risk_parity",
+        tickers,
+        weights,
+        zero_mu,
+        cov,
+        previous_weights,
+        status,
+        risk_free=risk_free,
+    )
 
 
 def min_cvar(
@@ -293,6 +379,7 @@ def min_cvar(
     sector_of=None,
     exclude: set[str] | None = None,
     alpha: float = 0.95,
+    risk_free: float = 0.0,
 ) -> OptimizationResult:
     """Rockafellar–Uryasev LP formulation of minimum CVaR."""
     constraints = constraints or Constraints()
@@ -308,6 +395,7 @@ def min_cvar(
             constraints=constraints,
             sector_of=sector_of,
             exclude=exclude,
+            risk_free=risk_free,
         )
     groups = _sector_matrix(tickers, sector_of) if sector_of else {}
     zero_mu = pd.Series(0.0, index=tickers)
@@ -336,7 +424,12 @@ def min_cvar(
         weights = project_to_caps(result.x[:n_assets], caps)
         status = "optimal"
     else:
-        weights = project_to_caps(inverse_volatility(cov.loc[tickers, tickers].to_numpy()), caps)
+        weights = _feasible_start(
+            inverse_volatility(cov.loc[tickers, tickers].to_numpy()),
+            caps,
+            groups,
+            constraints.max_sector_weight,
+        )
         status = f"fallback:{result.message[:80]}"
     return _result(
         "min_cvar",
@@ -347,6 +440,7 @@ def min_cvar(
         previous_weights,
         status,
         _binding_constraints(weights, caps, groups, constraints.max_sector_weight, tickers),
+        risk_free=risk_free,
     )
 
 

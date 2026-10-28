@@ -50,7 +50,7 @@ class Settings:
     data_start: str = "2018-01-01"
     data_end: str = "2026-06-30"
     lookback_days: int = 756
-    risk_free_rate: float = 0.065
+    risk_free_rate: float = 0.065  # fallback only; prefer provider.get_risk_free()
     trading_days: int = 252
 
     # Portfolio construction
@@ -59,6 +59,11 @@ class Settings:
     turnover_penalty: float = 0.0020
     transaction_cost_bps: float = 12.0
     max_repair_iterations: int = 4
+
+    # Black-Litterman view blending
+    bl_tau: float = 0.05
+    bl_view_shift: float = 0.03
+    bl_max_total_influence: float = 0.12
 
     # LLM layer
     llm_provider: str = "deterministic"
@@ -86,6 +91,9 @@ class Settings:
             turnover_penalty=_env_float("INTELLIVEST_TURNOVER_PENALTY", 0.0020),
             transaction_cost_bps=_env_float("INTELLIVEST_TRANSACTION_COST_BPS", 12.0),
             max_repair_iterations=_env_int("INTELLIVEST_MAX_REPAIR_ITERATIONS", 4),
+            bl_tau=_env_float("INTELLIVEST_BL_TAU", 0.05),
+            bl_view_shift=_env_float("INTELLIVEST_BL_VIEW_SHIFT", 0.03),
+            bl_max_total_influence=_env_float("INTELLIVEST_BL_MAX_TOTAL_INFLUENCE", 0.12),
             llm_provider=_env_str("INTELLIVEST_LLM_PROVIDER", "deterministic").lower(),
             llm_model=_env_str("INTELLIVEST_LLM_MODEL", "gpt-4o-mini"),
             llm_base_url=_env_str("INTELLIVEST_LLM_BASE_URL", "https://api.openai.com/v1"),
