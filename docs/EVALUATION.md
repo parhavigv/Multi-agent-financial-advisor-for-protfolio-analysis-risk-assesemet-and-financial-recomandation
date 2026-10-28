@@ -60,6 +60,28 @@ The panel spans the binding suitability classes:
 - 12 bps transaction cost applied to turnover at each rebalance, including the
   initial build from cash.
 
+## Data split
+
+The forecast models use a fixed time split: dev through `2021-12-31`,
+validation `2022-01-01` to `2023-12-31`, and test from `2024-01-01`. Selection
+uses validation only; the test window is not used to choose a model.
+
+The advisory panel is a walk-forward analysis, not a model-selection experiment.
+The same split boundaries are applied to its return paths only to make the final
+readout transparent. The strategies are not trained on dev or validation, and
+their weights are not chosen on test.
+
+| Window | Hybrid annual return | Hybrid Sharpe | Hybrid max drawdown |
+|---|---:|---:|---:|
+| Dev (through 2021-12-31) | 10.1% | 0.63 | -20.1% |
+| Validation (2022-2023) | 1.6% | -0.21 | -16.0% |
+| Test (from 2024-01-01) | 14.3% | 1.00 | -8.9% |
+
+The test window was strong for almost every configuration, including 1/N and
+60/40. The validation window was weak for almost every configuration. This is a
+descriptive out-of-sample readout, not a tuned improvement, and it does not
+overturn the full-panel null result.
+
 ## Regime windows
 
 The windows are fixed before looking at strategy results and are descriptive,
@@ -95,8 +117,10 @@ passes at each decision date. This is visible in the results rather than hidden.
 
 ## Versioned results
 
-The report is generated at `results/phase4_evaluation.md` and
-`results/phase4_evaluation.json`. The aggregate table is:
+The report is generated at `results/evaluation.md` and
+`results/evaluation.json`. The same run is also published as
+`results/phase4_evaluation.md` and `results/phase4_evaluation.json`. The
+aggregate table is:
 
 | Config | Return | Vol | Sharpe | MaxDD | Turnover | Cost | Breach | Vol/limit | DD/limit | Stability | Agreement |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -131,6 +155,10 @@ Key readings:
 - **Regimes.** In the 2020 crash window hybrid returned -6.2% versus -7.8% for
   60/40. In the 2022 rate shock hybrid returned -5.8% versus -9.2% for 60/40.
   Both are risk-reduction observations in a small number of episodes.
+- **Test-window readout.** Hybrid annual return is 14.3% in test versus 1.6% in
+  validation, with Sharpe 1.00 versus -0.21 and test max drawdown -8.9%. This is
+  descriptive: the same strong test period lifted 1/N and 60/40 as well, and the
+  full-panel result remains the claim of record.
 - **No seed-robustness claim.** The real-data path is identical across seeds,
   so repeated seeds would not be independent trials. Phase 4 replaces the old
   five-seed standard deviations with the five-profile panel and moving-block
@@ -140,10 +168,10 @@ Key readings:
 
 ```bash
 # Full Phase 4 panel, bootstrap and paired tests
-python -c "from intellivest.cli import evaluate_main; raise SystemExit(evaluate_main([]))"
+python scripts/run_evaluation.py
 
 # Faster run without bootstrap
-python -c "from intellivest.cli import evaluate_main; raise SystemExit(evaluate_main(['--no-bootstrap']))"
+python scripts/run_evaluation.py --no-bootstrap
 
 # Tests
 python -m pytest -q

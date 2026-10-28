@@ -30,6 +30,22 @@ No seed-robustness claim is made. The real-data market path does not vary with t
 | `agents_only` | 7.4% | 13.3% | 0.33 | -27.9% | 76.1% | 110.5 bps | 74% | 0.91x | 2.26x | 0.26 | 0.78 |
 | `hybrid` | 9.1% | 11.3% | 0.46 | -24.9% | 8.0% | 11.7 bps | 40% | 0.76x | 2.15x | 0.98 | 0.81 |
 
+## Data split and test-window readout
+
+The forecast models use dev through **2021-12-31**, validation **2022-01-01 to 2023-12-31**, and test from **2024-01-01**. The advisory strategies are not trained; these same fixed boundaries are applied descriptively to their walk-forward returns, and no advisory parameter is estimated from the test window.
+
+| Config | Dev return | Validation return | Test return | Test Sharpe | Test MaxDD |
+|---|---:|---:|---:|---:|---:|
+| `one_over_n` | 16.9% | 1.8% | 17.4% | 1.34 | -10.8% |
+| `sixty_forty` | 14.4% | 0.1% | 13.1% | 1.16 | -8.4% |
+| `min_variance` | 7.7% | -3.3% | 9.2% | 0.90 | -5.6% |
+| `quant_only_no_gate` | 14.0% | 4.9% | 18.6% | 1.28 | -10.5% |
+| `quant_only_gated` | 9.9% | 1.6% | 14.2% | 1.00 | -8.9% |
+| `agents_only` | 12.2% | -3.6% | 11.0% | 0.74 | -9.9% |
+| `hybrid` | 10.1% | 1.6% | 14.3% | 1.00 | -8.9% |
+
+The advisory panel is a walk-forward analysis, not a model-selection experiment. These split labels describe fixed calendar boundaries and are reported for transparency; they do not imply that a strategy was trained on dev or selected on validation.
+
 ## Per-profile results
 
 | Profile | Class | Config | Return | Vol | Sharpe | MaxDD | Turnover | Cost | Breach | Vol/limit | DD/limit | Stability | Agreement |
@@ -126,7 +142,7 @@ Delta is hybrid minus baseline. For Sharpe, positive is better. For max drawdown
 | P2-INCOME | `sixty_forty` | -0.30 [-1.08, 0.38] | 0.376 | 1.1% [-6.8%, 23.2%] | 0.390 |
 | P2-INCOME | `min_variance` | 0.05 [-0.43, 0.51] | 0.881 | -4.5% [-5.1%, 15.8%] | 0.569 |
 | P2-INCOME | `quant_only_no_gate` | -0.40 [-1.22, 0.31] | 0.232 | 3.1% [-5.9%, 26.6%] | 0.302 |
-| P2-INCOME | `quant_only_gated` | 0.03 [-0.01, 0.09] | 0.282 | 0.0% [-0.1%, 1.2%] | 0.979 |
+| P2-INCOME | `quant_only_gated` | 0.03 [-0.01, 0.09] | 0.282 | 0.0% [-0.1%, 1.2%] | 0.981 |
 | P2-INCOME | `agents_only` | -0.06 [-0.63, 0.50] | 0.871 | 6.3% [-5.2%, 18.1%] | 0.258 |
 | P3-BALANCED | `one_over_n` | -0.14 [-0.56, 0.19] | 0.404 | 5.4% [-4.7%, 9.8%] | 0.398 |
 | P3-BALANCED | `sixty_forty` | -0.07 [-0.44, 0.30] | 0.707 | -0.9% [-7.8%, 4.1%] | 0.523 |
@@ -169,5 +185,6 @@ Mean cumulative return and mean max drawdown across the five profiles. The windo
 * **Agents without guardrails.** `agents_only` is the failure mode the guardrails contain: 7.4% return, 76.1% turnover per rebalance, 110.5 bps annual cost, and a 74% breach rate. Holdings-aware portfolio views make it churn.
 * **Paired bootstrap.** At the 5% level, 4 of 30 hybrid-vs-baseline Sharpe differences and 2 of 30 max-drawdown differences have a percentile p-value below 0.05. No multiple-testing correction is applied, so this is descriptive rather than a family-wise significance claim.
 * **Regimes.** In the 2020 crash window hybrid returned -6.2% versus -7.8% for 60/40; in the 2022 rate shock hybrid returned -5.8% versus -9.2% for 60/40.
+* **Test-window readout.** Hybrid annual return is 14.3% in the test window versus 1.6% in validation (higher), with Sharpe 1.00 versus -0.21 and test max drawdown -8.9%. This is a descriptive out-of-sample readout: the advisory weights are not fitted on the dev or validation labels, and the test window is not used to choose a strategy. Differences therefore reflect the macro path and sampling variation, not a tuned improvement.
 * **What is not claimed.** The real-data path is identical across seeds, so the old five-seed standard deviations are not an independent-sample robustness result. This report replaces that claim with the five-profile panel and moving-block intervals.
 

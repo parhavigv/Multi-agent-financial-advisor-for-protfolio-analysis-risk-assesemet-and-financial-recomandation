@@ -35,6 +35,7 @@ from intellivest.evaluation.backtest import (
 )
 from intellivest.evaluation.bootstrap import paired_bootstrap_test
 from intellivest.evaluation.profiles import phase4_profiles
+from intellivest.evaluation.splits import DEFAULT_SPLIT
 from intellivest.quant import risk
 
 PHASE4_LOOKBACK_DAYS = 252
@@ -115,13 +116,24 @@ def run_phase4(
         profile_payloads.append(
             {
                 "profile": profile.model_dump(mode="json"),
-                "results": [result.to_dict() for result in results],
+                "results": [
+                    {
+                        **result.to_dict(),
+                        "splits": _split_statistics(
+                            result.daily_returns,
+                            result.risk_free,
+                            settings.trading_days,
+                        ),
+                    }
+                    for result in results
+                ],
                 "paired_tests": paired,
                 "regimes": regimes,
             }
         )
 
     aggregate = _aggregate(profile_payloads)
+    split_aggregate = _split_aggregate(profile_payloads)
     regime_aggregate = _regime_aggregate(profile_payloads)
     payload: dict[str, Any] = {
         "generated_with": {
@@ -133,6 +145,18 @@ def run_phase4(
             "market_source": type(provider).__name__,
             "configs": list(CONFIGS),
             "profiles": [profile.investor_id for profile in profiles],
+            "data_split": {
+                "dev_end": DEFAULT_SPLIT.dev_end.isoformat(),
+                "validation_start": DEFAULT_SPLIT.val_start.isoformat(),
+                "validation_end": DEFAULT_SPLIT.val_end.isoformat(),
+                "test_start": DEFAULT_SPLIT.test_start.isoformat(),
+                "note": (
+                    "The advisory strategies are not trained; these same fixed "
+                    "boundaries are applied descriptively to their walk-forward "
+                    "returns, and no advisory parameter is estimated from the test "
+                    "window."
+                ),
+            },
             "bootstrap": {
                 "method": "moving_block",
                 "block_length": block_length,
@@ -149,6 +173,7 @@ def run_phase4(
         },
         "profiles": profile_payloads,
         "aggregate": aggregate,
+        "split_aggregate": split_aggregate,
         "regime_windows": {
             key: {
                 "label": window["label"],
@@ -266,6 +291,69 @@ def _aggregate(profiles: list[dict[str, Any]]) -> dict[str, Any]:
     return output
 
 
+def _split_statistics(
+    daily_returns: pd.Series,
+    risk_free: float,
+    periods: int,
+) -> dict[str, Any]:
+    """Descriptive performance for the fixed dev/validation/test boundaries."""
+    output: dict[str, Any] = {}
+    boundaries = {
+        "dev": (None, DEFAULT_SPLIT.dev_end),
+        "validation": (DEFAULT_SPLIT.val_start, DEFAULT_SPLIT.val_end),
+        "test": (DEFAULT_SPLIT.test_start, None),
+    }
+    for name, (start, end) in boundaries.items():
+        subset = daily_returns.dropna()
+        if start is not None:
+            subset = subset[subset.index >= pd.Timestamp(start)]
+        if end is not None:
+            subset = subset[subset.index <= pd.Timestamp(end)]
+        if subset.empty:
+            output[name] = {
+                "observations": 0,
+                "annual_return": 0.0,
+                "annual_volatility": 0.0,
+                "sharpe": 0.0,
+                "max_drawdown": 0.0,
+            }
+            continue
+        output[name] = {
+            "observations": int(subset.size),
+            "annual_return": round(risk.annualized_return(subset, periods), 6),
+            "annual_volatility": round(risk.annualized_volatility(subset, periods), 6),
+            "sharpe": round(risk.sharpe_ratio(subset, risk_free, periods), 4),
+            "max_drawdown": round(risk.max_drawdown(subset), 6),
+        }
+    return output
+
+
+def _split_aggregate(profiles: list[dict[str, Any]]) -> dict[str, Any]:
+    output: dict[str, Any] = {}
+    for split in ("dev", "validation", "test"):
+        output[split] = {}
+        for config in CONFIGS:
+            rows = [
+                next(result for result in entry["results"] if result["config"] == config)[
+                    "splits"
+                ][split]
+                for entry in profiles
+            ]
+            metrics: dict[str, Any] = {}
+            for key in ("annual_return", "annual_volatility", "sharpe", "max_drawdown"):
+                values = [float(row[key]) for row in rows]
+                metrics[key] = {
+                    "mean": round(float(mean(values)), 6),
+                    "min": round(float(min(values)), 6),
+                    "max": round(float(max(values)), 6),
+                }
+            output[split][config] = {
+                "metrics": metrics,
+                "observations": rows[0]["observations"] if rows else 0,
+            }
+    return output
+
+
 def _regime_aggregate(profiles: list[dict[str, Any]]) -> dict[str, Any]:
     output: dict[str, Any] = {}
     for window in REGIME_WINDOWS:
@@ -379,6 +467,42 @@ def render_markdown(payload: dict[str, Any]) -> str:
                 ]
             )
             + " |"
+        )
+
+    split = generated.get("data_split")
+    if split:
+        lines.extend(["", "## Data split and test-window readout", ""])
+        lines.append(
+            f"The forecast models use dev through **{split['dev_end']}**, "
+            f"validation **{split['validation_start']} to {split['validation_end']}**, "
+            f"and test from **{split['test_start']}**. {split['note']}"
+        )
+        lines.append("")
+        lines.append(
+            "| Config | Dev return | Validation return | Test return | Test Sharpe | Test MaxDD |"
+        )
+        lines.append("|---|---:|---:|---:|---:|---:|")
+        for config in CONFIGS:
+            values = [f"`{config}`"]
+            for period in ("dev", "validation"):
+                entry = payload.get("split_aggregate", {}).get(period, {}).get(config, {})
+                values.append(_fmt_pct(_mean(entry.get("metrics", {}), "annual_return")))
+            test = payload.get("split_aggregate", {}).get("test", {}).get(config, {})
+            test_metrics = test.get("metrics", {})
+            values.extend(
+                [
+                    _fmt_pct(_mean(test_metrics, "annual_return")),
+                    _fmt_num(_mean(test_metrics, "sharpe")),
+                    _fmt_pct(_mean(test_metrics, "max_drawdown")),
+                ]
+            )
+            lines.append("| " + " | ".join(values) + " |")
+        lines.append("")
+        lines.append(
+            "The advisory panel is a walk-forward analysis, not a model-selection "
+            "experiment. These split labels describe fixed calendar boundaries and "
+            "are reported for transparency; they do not imply that a strategy was "
+            "trained on dev or selected on validation."
         )
 
     lines.extend(["", "## Per-profile results", ""])
@@ -559,6 +683,27 @@ def _reading(payload: dict[str, Any]) -> str:
         f"{_fmt_pct(rates['hybrid']['mean_cumulative_return'])} versus "
         f"{_fmt_pct(rates['sixty_forty']['mean_cumulative_return'])} for 60/40."
     )
+    split_aggregate = payload.get("split_aggregate", {})
+    if split_aggregate:
+        validation = split_aggregate["validation"]["hybrid"]["metrics"]
+        test = split_aggregate["test"]["hybrid"]["metrics"]
+        validation_return = _mean(validation, "annual_return")
+        test_return = _mean(test, "annual_return")
+        validation_sharpe = _mean(validation, "sharpe")
+        test_sharpe = _mean(test, "sharpe")
+        direction = "lower" if test_return < validation_return else "higher"
+        lines.append(
+            "* **Test-window readout.** Hybrid annual return is "
+            f"{_fmt_pct(test_return)} in the test window versus "
+            f"{_fmt_pct(validation_return)} in validation ({direction}), with "
+            f"Sharpe {_fmt_num(test_sharpe)} versus {_fmt_num(validation_sharpe)} "
+            "and test max drawdown "
+            f"{_fmt_pct(_mean(test, 'max_drawdown'))}. This is a descriptive "
+            "out-of-sample readout: the advisory weights are not fitted on the "
+            "dev or validation labels, and the test window is not used to choose "
+            "a strategy. Differences therefore reflect the macro path and "
+            "sampling variation, not a tuned improvement."
+        )
     lines.append(
         "* **What is not claimed.** The real-data path is identical across seeds, "
         "so the old five-seed standard deviations are not an independent-sample "

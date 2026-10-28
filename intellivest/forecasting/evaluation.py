@@ -1042,6 +1042,111 @@ def render_markdown(result: EvaluationResult) -> str:
     )
     add("")
 
+    if result.include_test:
+        selected_return = next(
+            (report for report in result.returns_board if report.name == result.selected_return),
+            None,
+        )
+        selected_vol = next(
+            (report for report in result.vol_board if report.name == result.selected_vol),
+            None,
+        )
+        add("## Final test readout")
+        add("")
+        add(
+            "The selected models were fixed using the validation split. The test "
+            "split is reported below for transparency and is not used to re-select "
+            "or tune a model."
+        )
+        add("")
+        add("| Task | Model | Metric | Validation | Test |")
+        add("|---|---|---|---:|---:|")
+        for task, report, metrics in (
+            ("return", selected_return, ("rank_ic", "rmse", "mae")),
+            ("volatility", selected_vol, ("qlike", "rmse", "mae")),
+        ):
+            if report is None:
+                continue
+            for metric in metrics:
+                validation_value = report.val.get(metric)
+                test_value = report.test.get(metric)
+                if validation_value is None or test_value is None:
+                    continue
+                add(
+                    f"| {task} | `{report.name}` | {metric} | "
+                    f"{_fmt(validation_value, 4)} | {_fmt(test_value, 4)} |"
+                )
+        add("")
+        if selected_return is not None:
+            add(
+                f"Return rank IC moved from {_fmt(selected_return.val.get('rank_ic'), 4)} "
+                f"in validation to {_fmt(selected_return.test.get('rank_ic'), 4)} in "
+                f"test, and RMSE moved from {_fmt(selected_return.val.get('rmse'), 4)} "
+                f"to {_fmt(selected_return.test.get('rmse'), 4)}."
+            )
+            add("")
+        if selected_vol is not None:
+            val_qlike = selected_vol.val.get("qlike")
+            test_qlike = selected_vol.test.get("qlike")
+            val_rmse = selected_vol.val.get("rmse")
+            test_rmse = selected_vol.test.get("rmse")
+            val_mae = selected_vol.val.get("mae")
+            test_mae = selected_vol.test.get("mae")
+            qlike_word = (
+                "improved"
+                if test_qlike is not None
+                and val_qlike is not None
+                and test_qlike < val_qlike
+                else "worsened"
+            )
+            error_word = (
+                "improved"
+                if test_rmse is not None
+                and val_rmse is not None
+                and test_rmse < val_rmse
+                and test_mae is not None
+                and val_mae is not None
+                and test_mae < val_mae
+                else "worsened or was mixed"
+            )
+            add(
+                f"Volatility QLIKE {qlike_word} "
+                f"({_fmt(val_qlike, 4)} to {_fmt(test_qlike, 4)}), while absolute "
+                f"error {error_word} (RMSE {_fmt(val_rmse, 4)} to "
+                f"{_fmt(test_rmse, 4)}; MAE {_fmt(val_mae, 4)} to "
+                f"{_fmt(test_mae, 4)}). This distinction matters: QLIKE is the "
+                "selection criterion, but it does not mean the forecast is closer "
+                "in absolute volatility terms."
+            )
+            add("")
+            best_test_error = min(
+                (
+                    report
+                    for report in result.vol_board
+                    if report.name != selected_vol.name
+                    and report.test.get("rmse") is not None
+                ),
+                key=lambda report: report.test["rmse"],
+                default=None,
+            )
+            if best_test_error is not None and best_test_error.test.get("rmse") < (
+                selected_vol.test.get("rmse") or float("inf")
+            ):
+                add(
+                    f"`{best_test_error.name}` has a lower test RMSE than the selected "
+                    f"`{selected_vol.name}` ({_fmt(best_test_error.test.get('rmse'), 4)} "
+                    f"versus {_fmt(selected_vol.test.get('rmse'), 4)}), but the "
+                    "selection rule is fixed on validation QLIKE. The test window is "
+                    "not used to promote it after the fact."
+                )
+                add("")
+        add(
+            "The test result is therefore mixed rather than uniformly better: the "
+            "forecast ranking/QLIKE objective does not guarantee lower absolute "
+            "errors, and the advisory evaluation should not be read as if it did."
+        )
+        add("")
+
     add("## Train-vs-validation gaps")
     add("")
     flagged = [r for r in (*result.returns_board, *result.vol_board) if r.flagged]

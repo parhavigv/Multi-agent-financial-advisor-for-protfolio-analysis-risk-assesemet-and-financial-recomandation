@@ -243,10 +243,14 @@ def test_phase4_runner_writes_report_without_seed_robustness_claim(
     assert payload["generated_with"]["configs"] == list(CONFIGS)
     assert payload["generated_with"]["seed_robustness_claim"] is False
     assert payload["generated_with"]["bootstrap"]["n_boot"] == 0
+    assert payload["generated_with"]["data_split"]["test_start"] == "2024-01-01"
+    assert payload["split_aggregate"]["test"]["hybrid"]["observations"] > 0
     assert payload["profiles"][0]["paired_tests"]
     assert payload["profiles"][0]["results"][0]["profile_alignment"]
+    assert payload["profiles"][0]["results"][0]["splits"]
     assert "No seed-robustness claim is made" in markdown
     assert "Robustness across" not in markdown
     assert "## Bootstrap intervals" not in markdown
+    assert "## Data split and test-window readout" in markdown
     assert "Paired tests: hybrid vs each baseline" in markdown
     assert "Regime windows" in markdown

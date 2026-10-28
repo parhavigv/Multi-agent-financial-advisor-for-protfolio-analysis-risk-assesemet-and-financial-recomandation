@@ -371,6 +371,7 @@ class AdvisoryEngine:
 
         bl_result = self._black_litterman(features, decision)
         adjusted_expected = bl_result.posterior
+        rf = self._risk_free(profile)
         result = mean_variance(
             adjusted_expected,
             features.covariance,
@@ -378,8 +379,9 @@ class AdvisoryEngine:
             constraints=constraints,
             sector_of=sector_of,
             exclude=exclude,
+            risk_free=rf,
         )
-        result = annotate(result, adjusted_expected, returns, self._risk_free(profile))
+        result = annotate(result, adjusted_expected, returns, rf)
         return result, adjusted_expected, bl_result
 
     def apply_suitability(
@@ -478,6 +480,7 @@ class AdvisoryEngine:
             constraints=constraints,
             sector_of=sector_of,
             exclude=excluded_tickers(profile.exclusions),
+            risk_free=self._risk_free(profile),
         )
         current_equity = sum(
             w for t, w in current.weights.items() if asset_class_of(t) == "equity"

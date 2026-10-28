@@ -30,6 +30,12 @@ results/*
 # The Phase-4 multi-profile evaluation is the evidence for the current claim.
 !results/phase4_evaluation.md
 !results/phase4_evaluation.json
+# The same real-data evaluation is published under its stable name for the README.
+!results/evaluation.md
+!results/evaluation.json
+# A deterministic, reproducible worked example of the audit path.
+!results/trace_example.md
+!results/trace_example.json
 audits/*
 !audits/.gitkeep
 data/cache/

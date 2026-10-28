@@ -290,18 +290,20 @@ class Backtester:
                 diversification=0.6,
             )
             cov = features.covariance.loc[allowed, allowed]
+            rf = self._risk_free_at(snapshot.as_of)  # type: ignore[union-attr]
             optimization = min_variance(
                 cov,
                 previous_weights=dict(previous),
                 constraints=constraints,
                 sector_of=sector_of,
                 exclude=excluded,
+                risk_free=rf,
             )
             optimization = annotate(
                 optimization,
                 features.expected_returns,
                 snapshot.returns,  # type: ignore[union-attr]
-                self._risk_free_at(snapshot.as_of),  # type: ignore[union-attr]
+                rf,
             )
             return self._unoptimized(
                 optimization.weights, profile_at, features, ctx_at, previous, optimization

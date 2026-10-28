@@ -161,7 +161,7 @@
         "HLTH": 0.008429279678458905,
         "FIN": 0.00841286759379449
       },
-      "fit_seconds": 13.542386299999635,
+      "fit_seconds": 14.045027799991658,
       "seed_ics": []
     },
     {
@@ -254,7 +254,7 @@
         "intercept": 0.007742944904236091,
         "cs_mom_12_1": 0.0010549044376364223
       },
-      "fit_seconds": 4.939426299999468,
+      "fit_seconds": 6.098835000011604,
       "seed_ics": []
     },
     {
@@ -346,7 +346,7 @@
       "coefficients": {
         "mean": 0.007742944904236076
       },
-      "fit_seconds": 2.0805711000011797,
+      "fit_seconds": 2.781796800001757,
       "seed_ics": []
     },
     {
@@ -445,7 +445,7 @@
         "dd_252": -0.005598893051784628,
         "cs_dd_252": 0.005097931860814459
       },
-      "fit_seconds": 21.950920700001006,
+      "fit_seconds": 20.226257300004363,
       "seed_ics": []
     },
     {
@@ -544,7 +544,7 @@
         "mom_21": -0.0,
         "mom_63": -0.0
       },
-      "fit_seconds": 72.63193490000049,
+      "fit_seconds": 82.17251490001217,
       "seed_ics": []
     },
     {
@@ -643,7 +643,7 @@
         "cs_mom_12_1": 142.0,
         "mom_12_1": 126.0
       },
-      "fit_seconds": 89.99121539999942,
+      "fit_seconds": 85.13457090000156,
       "seed_ics": []
     }
   ],
@@ -715,7 +715,7 @@
       "flagged": false,
       "flag_reasons": [],
       "coefficients": {},
-      "fit_seconds": 1.1831450999998196,
+      "fit_seconds": 0.6516242000216153,
       "seed_ics": []
     },
     {
@@ -790,7 +790,7 @@
         "rv_5": 0.16650541878605363,
         "rv_1": 0.010672138317121393
       },
-      "fit_seconds": 2.4824234999996406,
+      "fit_seconds": 1.3989756000228226,
       "seed_ics": []
     },
     {
@@ -867,7 +867,7 @@
         "CRED:beta": 0.8558413636279983,
         "HLTH:beta": 0.8480002402566655
       },
-      "fit_seconds": 365.5966189999999,
+      "fit_seconds": 359.4687890000059,
       "seed_ics": []
     }
   ],
@@ -877,60 +877,60 @@
     "kind": "return",
     "metrics": {
       "dev": {
-        "rank_ic": 0.043808523672004905,
-        "hit_rate": 0.4982935153583618,
-        "mae": 0.04282734068606365,
-        "rmse": 0.059274487618157755,
-        "n_obs": 4102.0,
-        "rank_ic_positive_share": 0.5130830489192264,
         "constant": 0.0,
-        "dispersion": 0.029978904848130223,
+        "rank_ic": 0.043808523672004905,
+        "rank_ic_t": 0.5778908272063452,
+        "mae": 0.04282734068606365,
+        "n_obs": 4102.0,
+        "hit_rate": 0.4982935153583618,
         "n_dates": 293.0,
-        "rank_ic_t": 0.5778908272063452
+        "dispersion": 0.029978904848130223,
+        "rmse": 0.059274487618157755,
+        "rank_ic_positive_share": 0.5130830489192264
       },
       "validation": {
-        "rank_ic": 0.02413003663003663,
-        "hit_rate": 0.47341269841269834,
-        "mae": 0.04467560247573779,
-        "rmse": 0.056481497933821144,
-        "n_obs": 6720.0,
-        "rank_ic_positive_share": 0.5229166666666667,
         "constant": 0.0,
-        "dispersion": 0.009273437767534228,
+        "rank_ic": 0.02413003663003663,
+        "rank_ic_t": 0.45875807063457996,
+        "mae": 0.04467560247573779,
+        "n_obs": 6720.0,
+        "hit_rate": 0.47341269841269834,
         "n_dates": 480.0,
-        "rank_ic_t": 0.45875807063457996
+        "dispersion": 0.009273437767534228,
+        "rmse": 0.056481497933821144,
+        "rank_ic_positive_share": 0.5229166666666667
       },
       "test": {
-        "rank_ic": -0.06166845868338405,
-        "hit_rate": 0.6084261233514964,
-        "mae": 0.03243675442436502,
-        "rmse": 0.04388015350526107,
-        "n_obs": 8442.0,
-        "rank_ic_positive_share": 0.40243228302929795,
         "constant": 0.0,
-        "dispersion": 0.005746452523954095,
+        "rank_ic": -0.06166845868338405,
+        "rank_ic_t": -1.4800988241301403,
+        "mae": 0.03243675442436502,
+        "n_obs": 8442.0,
+        "hit_rate": 0.6084261233514964,
         "n_dates": 603.0,
-        "rank_ic_t": -1.4800988241301403
+        "dispersion": 0.005746452523954095,
+        "rmse": 0.04388015350526107,
+        "rank_ic_positive_share": 0.40243228302929795
       }
     },
     "train_metrics": {
-      "rank_ic": 0.00048522905665762716,
-      "hit_rate": 0.5791383219954649,
-      "mae": 0.040365411333284716,
-      "rmse": 0.05858573490271285,
-      "n_obs": 16170.0,
-      "rank_ic_positive_share": 0.5033189033189034,
       "constant": 0.0,
-      "dispersion": 0.012963589859787142,
+      "rank_ic": 0.00048522905665762716,
+      "rank_ic_t": 0.06299460610405862,
+      "mae": 0.040365411333284716,
+      "n_obs": 16170.0,
+      "hit_rate": 0.5791383219954649,
       "n_dates": 1155.0,
-      "rank_ic_t": 0.06299460610405862
+      "dispersion": 0.012963589859787142,
+      "rmse": 0.05858573490271285,
+      "rank_ic_positive_share": 0.5033189033189034
     },
     "dm_vs_baseline": {},
     "dm_by_split": {},
     "flagged": false,
     "flag_reasons": [],
     "coefficients": {},
-    "fit_seconds": 97.98797650000051,
+    "fit_seconds": 109.14954090001993,
     "seed_ics": [
       0.02576923076923077,
       0.0228937728937729,
@@ -3215,5 +3215,5 @@
   "selected_vol": "ewma",
   "selection_note": "Best model per task is chosen on the validation window only. A candidate must beat the best baseline by at least 0.01 rank IC (returns) or 0.01 QLIKE (volatility), must have positive validation rank IC for returns, and must not be flagged for a large train/validation gap; otherwise the baseline is retained.",
   "include_test": true,
-  "elapsed_seconds": 684.4351150000002
+  "elapsed_seconds": 693.5999254999915
 }

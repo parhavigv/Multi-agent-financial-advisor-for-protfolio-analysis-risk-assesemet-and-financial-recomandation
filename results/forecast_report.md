@@ -55,6 +55,27 @@ Seed-averaged validation rank IC of the shuffled control: **0.0241** (t = 0.46),
 
 QLIKE is computed on variance, `log(sigma^2_pred) + sigma^2_true / sigma^2_pred` (lower is better). `ewma` is the designated baseline; GARCH parameters are estimated with `arch` on each training fold and filtered forward with the standard GARCH(1,1) recursion.
 
+## Final test readout
+
+The selected models were fixed using the validation split. The test split is reported below for transparency and is not used to re-select or tune a model.
+
+| Task | Model | Metric | Validation | Test |
+|---|---|---|---:|---:|
+| return | `shrunk_mean` | rank_ic | 0.0613 | 0.0977 |
+| return | `shrunk_mean` | rmse | 0.0564 | 0.0436 |
+| return | `shrunk_mean` | mae | 0.0445 | 0.0321 |
+| volatility | `ewma` | qlike | -2.4874 | -2.7941 |
+| volatility | `ewma` | rmse | 0.0531 | 0.0704 |
+| volatility | `ewma` | mae | 0.0419 | 0.0440 |
+
+Return rank IC moved from 0.0613 in validation to 0.0977 in test, and RMSE moved from 0.0564 to 0.0436.
+
+Volatility QLIKE improved (-2.4874 to -2.7941), while absolute error worsened or was mixed (RMSE 0.0531 to 0.0704; MAE 0.0419 to 0.0440). This distinction matters: QLIKE is the selection criterion, but it does not mean the forecast is closer in absolute volatility terms.
+
+`har` has a lower test RMSE than the selected `ewma` (0.0649 versus 0.0704), but the selection rule is fixed on validation QLIKE. The test window is not used to promote it after the fact.
+
+The test result is therefore mixed rather than uniformly better: the forecast ranking/QLIKE objective does not guarantee lower absolute errors, and the advisory evaluation should not be read as if it did.
+
 ## Train-vs-validation gaps
 
 - **`ridge`** (return): rank IC falls 0.102 from train to validation

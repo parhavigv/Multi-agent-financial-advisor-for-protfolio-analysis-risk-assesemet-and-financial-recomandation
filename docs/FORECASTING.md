@@ -1,4 +1,4 @@
-# Forecasting evaluation and production integration
+# Forecasting evaluation and advisory integration
 
 This document describes the Phase-2 forecasting layer: what is estimated, how it
 is validated, what the held-out test period actually showed, and how the
@@ -162,6 +162,13 @@ validation and test, so it fails the pre-registered requirement that it improve
 validation QLIKE by at least 0.01; the test DM difference (0.14) is not
 significant either. The baseline is retained.
 
+The test result is not uniformly better. EWMA's test QLIKE improves, but its
+absolute volatility RMSE rises from 0.0531 to 0.0704 and its MAE rises from
+0.0419 to 0.0440. HAR has a lower test RMSE (0.0649) but a slightly worse test
+QLIKE (-2.7909 versus -2.7941). Because selection is fixed on validation QLIKE,
+EWMA remains selected; switching to HAR after seeing test would be test-set
+selection. The test report states both readings.
+
 ### Regimes
 
 Three states are selected by BIC (-274.9), fitted through 2021-12-31. Realised
@@ -177,7 +184,7 @@ For the selected return model, test rank IC is 0.109 (calm), 0.081 (elevated)
 and 0.141 (stress); the stress bucket has only 32 dates and its t-statistic
 (2.79) should be read as indicative, not precise.
 
-## Production integration
+## Advisory integration
 
 `AdvisoryEngine(use_ml=True)` (CLI: `--ml`) enables the overlay:
 
@@ -197,7 +204,7 @@ and 0.141 (stress); the stress bucket has only 32 dates and its t-statistic
   written to `DecisionTrace.ml_forecast`.
 
 On real data at 2023-06-30 the inner split rejects Ridge (gap 0.220) and HAR
-(no QLIKE margin), so production uses `shrunk_mean` + `ewma`; the trace records
+(no QLIKE margin), so the advisory service uses `shrunk_mean` + `ewma`; the trace records
 both rejections. That is the intended behaviour: the integration does not
 override the evaluation evidence.
 
